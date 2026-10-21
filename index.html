@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>APProf · Aulões para Professores</title>
+<meta name="description" content="Aulões de revisão gratuitos e gamificados para SAEPE e SPAECE — Língua Portuguesa, 9º ano e 3º ano. Abra e jogue direto no site.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><rect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%236A4C93%22/><text x=%2216%22 y=%2222%22 font-size=%2216%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Georgia,serif%22>A</text></svg>">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+
+<header class="nav">
+  <div class="container">
+    <div class="brand">APProf <small>Aulões para Professores</small></div>
+    <nav class="nav-links" role="tablist" aria-label="Seções do site">
+      <button data-view="inicio" class="active" role="tab" aria-selected="true">Início</button>
+      <button data-view="auloes" role="tab" aria-selected="false">Aulões</button>
+      <button data-view="simulados" role="tab" aria-selected="false">Simulados</button>
+    </nav>
+    <a class="nav-cta" id="whatsapp-nav" href="#" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2zm5.6 14.3c-.2.7-1.4 1.4-2 1.5-.5.1-1.1.1-1.8-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5.1-4.5-.1-.2-1.2-1.6-1.2-3s.7-2.1 1-2.4c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.4.2.5.7 1.7.8 1.8.1.1.1.3 0 .5-.3.6-.6.9-.9 1.3-.1.2-.3.3-.1.6.6 1.1 1.3 1.9 2.2 2.5.9.6 1.4.8 1.6.9.2.1.4.1.5-.1.3-.3.7-1 1-1.4.2-.3.4-.3.6-.2.3.1 1.5.7 1.8.8.3.2.5.2.6.4.1.2.1.8-.1 1.1z"/></svg>
+      <span>Tirar dúvida</span>
+    </a>
+  </div>
+</header>
+
+<main id="conteudo">
+
+  <!-- ===================== INÍCIO ===================== -->
+  <section class="view active" id="view-inicio">
+    <div class="container hero">
+      <div class="hero-grid">
+        <div>
+          <div class="hero-eyebrow">6 aulões prontos · gratuitos</div>
+          <h1>Revisão de Língua Portuguesa que vira jogo de sala.</h1>
+          <p class="hero-sub">Aulões interativos calibrados pelos descritores do SAEPE e do SPAECE, para abrir direto aqui e jogar com a turma — sem instalar nada, sem pagar nada.</p>
+          <div class="hero-actions">
+            <button class="btn btn-primary" data-goto="auloes">Ver os aulões</button>
+            <a class="btn btn-ghost" href="#" id="whatsapp-hero" target="_blank" rel="noopener">Falar no WhatsApp</a>
+          </div>
+          <div class="hero-stats">
+            <div class="stat"><b id="stat-prontos">—</b><span>aulões prontos</span></div>
+            <div class="stat"><b>2</b><span>provas (SAEPE/SPAECE)</span></div>
+            <div class="stat"><b>21</b><span>descritores cobertos</span></div>
+          </div>
+        </div>
+        <div class="placar-mock" aria-hidden="true">
+          <div class="placar-head"><strong>Questão 7 de 18</strong><span>D11 · Básico</span></div>
+          <div class="placar-row"><b>Elos</b><div class="placar-bar"><i></i></div><span>72%</span></div>
+          <div class="placar-row"><b>Conectores</b><div class="placar-bar"><i></i></div><span>46%</span></div>
+          <div class="placar-foot"><span class="placar-badge">avança 3 casas</span><small>Trilha · O Nó da Coesão</small></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== AULÕES ===================== -->
+  <section class="view" id="view-auloes">
+    <div class="container">
+      <div class="section-head">
+        <h2>Escolha o aulão</h2>
+        <p>Filtre pela prova e pela série — cada card mostra os descritores e o jogo usado.</p>
+      </div>
+
+      <div class="toggles">
+        <div class="toggle-group" data-filter="prova">
+          <button data-value="saepe" class="active">SAEPE · PE</button>
+          <button data-value="spaece">SPAECE · CE</button>
+        </div>
+        <div class="toggle-group" data-filter="serie">
+          <button data-value="9" class="active">9º ano EF</button>
+          <button data-value="3">3º ano EM</button>
+        </div>
+      </div>
+
+      <div class="grid-auloes" id="grid-auloes"></div>
+    </div>
+  </section>
+
+  <!-- ===================== SIMULADOS ===================== -->
+  <section class="view" id="view-simulados">
+    <div class="container">
+      <div class="section-head">
+        <h2>Simulados</h2>
+        <p>A próxima etapa do projeto.</p>
+      </div>
+      <div class="soon-panel">
+        <div class="ic">📝</div>
+        <h2>Simulados gratuitos, em breve</h2>
+        <p>Um simulado de 10 questões para cada aulão, no mesmo padrão do SAEPE e do SPAECE, para fechar o ciclo de revisão: jogou o aulão, agora testa o que aprendeu.</p>
+        <span class="badge-soon">Em breve</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===================== RODAPÉ (sempre visível) ===================== -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-about">
+        <h3>Sobre o APProf</h3>
+        <p>O APProf nasceu da vontade de tornar o estudo para o SAEPE e o SPAECE menos cansativo — tanto pra quem ensina quanto pra quem aprende. A ideia é simples: transformar a revisão de conteúdo em aulões gamificados, com desafios e competição em equipe, pra engajar a turma de um jeito que a apostila tradicional não consegue. Todo o material aqui é gratuito e pensado por professores, pra professores.</p>
+      </div>
+      <div class="footer-support">
+        <p><b>Quer apoiar o projeto pra que ele continue existindo?</b> Esse site é mantido de forma independente. Se ele te ajudou em sala, ou se você quiser contratar um material sob medida, é só chamar.</p>
+        <a class="btn btn-primary" href="#" id="whatsapp-footer" target="_blank" rel="noopener" style="width:100%;justify-content:center;">Chamar no WhatsApp</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 · Desenvolvido por loycuras</span>
+      <div class="footer-links">
+        <button data-goto="auloes" style="background:none;border:none;color:inherit;font:inherit;cursor:pointer;padding:0;">Aulões</button>
+        <button data-goto="simulados" style="background:none;border:none;color:inherit;font:inherit;cursor:pointer;padding:0;">Simulados</button>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ===================== PAINEL DO AULÃO (overlay) ===================== -->
+<div class="player-overlay" id="player-overlay" role="dialog" aria-modal="true" aria-label="Aulão em execução">
+  <div class="player-panel">
+    <div class="player-bar">
+      <strong id="player-title">Aulão</strong>
+      <button id="player-close" aria-label="Fechar aulão">✕</button>
+    </div>
+    <iframe id="player-frame" title="Aulão" allow="autoplay; fullscreen" allowfullscreen loading="eager"></iframe>
+  </div>
+</div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

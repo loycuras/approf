@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aulão SAEPE · 9º ano EF · 04 — O Nó da Coesão</title>
+<style>
+/* Tipografia do sistema (serif/sans) — sem CDN externo, 100% offline */
+:root{
+  --bg:#F5F3F8;--bg-tint:#E9E3F2;--surface:#FFFFFF;
+  --ink:#241B33;--muted:#5C5370;--line:rgba(36,27,51,.12);--line-2:rgba(36,27,51,.22);
+  --c1:#6A4C93;--c1-d:#4E3770;--c1-soft:#ECE5F6;--c2:#7B9E1E;--c2-soft:#EDF3D6;
+  --good:#2E9E5B;--good-soft:#E4F5EB;--red:#E24A4A;--gold:#E0922F;--gold-soft:#FBEAD0;
+  --serif:'Fraunces',Georgia,serif;--body:'Inter',system-ui,sans-serif;
+  --r:20px;--r-sm:13px;--sh:0 10px 30px rgba(36,27,51,.09);--sh-lg:0 18px 46px rgba(106,76,147,.16);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--body);background:var(--bg);color:var(--ink);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important}}
+img{max-width:100%}
+#fsBtn{position:fixed;top:10px;right:12px;z-index:400;background:var(--surface);border:1px solid var(--line);color:var(--ink);width:40px;height:40px;border-radius:12px;cursor:pointer;font-size:1.1rem;display:grid;place-items:center;box-shadow:var(--sh)}
+#fsBtn:hover{background:var(--c1-soft);border-color:var(--c1)}
+#topbar{display:none;align-items:center;gap:1rem;padding:.6rem 60px .6rem 1.2rem;background:rgba(255,255,255,.92);border-bottom:1px solid var(--line);flex-shrink:0}
+body.in-game #topbar{display:flex}
+.brand{font-family:var(--serif);font-weight:700;font-size:1rem;display:flex;align-items:center;gap:.5rem;white-space:nowrap;color:var(--c1-d)}
+.brand .mk{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,var(--c1),var(--c2));display:grid;place-items:center;font-size:.7rem;color:#fff;font-weight:700;font-family:var(--body)}
+#scoreboard{display:flex;gap:.5rem;flex:1;justify-content:center;flex-wrap:wrap}
+.chip{display:flex;align-items:center;gap:.5rem;background:var(--surface);border:1px solid var(--line);padding:.32rem .8rem;border-radius:999px;box-shadow:var(--sh);transition:transform .25s,box-shadow .25s}
+.chip .tag{width:10px;height:10px;border-radius:50%}
+.chip .nm{font-size:.8rem;color:var(--muted);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip .pt{font-family:var(--serif);font-weight:700;font-size:1.05rem}
+.chip.bump{transform:scale(1.15);box-shadow:0 0 0 2px var(--c2)}
+.chip.turn{box-shadow:0 0 0 3px var(--c2)}
+.ibtn{background:var(--surface);border:1px solid var(--line);color:var(--ink);width:38px;height:38px;border-radius:11px;cursor:pointer;font-size:1.02rem;display:grid;place-items:center}
+.ibtn:hover{background:var(--c1-soft)}
+#stage{position:relative;flex:1;min-height:0}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;padding:clamp(1rem,3vw,2.4rem);overflow:auto}
+.screen.active{display:flex;animation:pop .4s ease both}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.screen.center{align-items:center;justify-content:center;text-align:center}
+.wrap{width:100%;max-width:1280px;margin:0 auto}
+.fill{flex:1;min-height:0;display:flex;flex-direction:column}
+.toprow{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem;flex-wrap:wrap}
+.back{display:inline-flex;align-items:center;gap:.35rem;background:var(--surface);border:1px solid var(--line);color:var(--muted);padding:.5rem .95rem;border-radius:999px;cursor:pointer;font-weight:600;font-size:.88rem;box-shadow:var(--sh)}
+.back:hover{color:var(--c1-d);border-color:var(--c1)}
+.phase-tag{font-family:var(--serif);font-weight:700;font-size:.95rem;color:var(--c1-d);background:var(--c1-soft);padding:.4rem .9rem;border-radius:999px}
+.btn{font-family:var(--serif);font-weight:700;font-size:1.05rem;border:none;border-radius:14px;padding:.9rem 1.8rem;cursor:pointer;color:#fff;background:var(--c1);transition:transform .16s,box-shadow .16s,background .16s;box-shadow:0 10px 24px rgba(46,125,119,.25)}
+.btn:hover{transform:translateY(-2px);background:var(--c1-d)}
+.btn:active{transform:translateY(0)}
+.btn.accent{background:var(--c2);color:#223100;box-shadow:0 10px 24px rgba(123,158,30,.3)}.btn.accent:hover{background:#6b8a1a}
+.btn.good{background:var(--good)}.btn.good:hover{background:#25814a}
+.btn.red{background:var(--red)}.btn.red:hover{background:#c93c3c}
+.btn.ghost{background:var(--surface);color:var(--c1-d);border:1.5px solid var(--line-2);box-shadow:var(--sh)}.btn.ghost:hover{background:var(--c1-soft)}
+.btn.neutral{background:var(--bg-tint);color:var(--muted);box-shadow:none;border:1.5px solid var(--line)}.btn.neutral:hover{background:#d6e2df;color:var(--ink)}
+.btn.sm{font-size:.92rem;padding:.6rem 1.15rem;border-radius:11px}
+/* INTRO */
+#screen-intro{background:radial-gradient(680px 420px at 12% 8%,var(--c1-soft),transparent 60%),radial-gradient(680px 420px at 88% 14%,var(--c2-soft),transparent 60%),var(--bg)}
+.hero{display:grid;grid-template-columns:auto 1fr;gap:clamp(1.5rem,4vw,3.5rem);align-items:center;max-width:1180px;margin:auto;width:100%;padding:1rem 0}
+@media(max-width:820px){.hero{grid-template-columns:1fr;text-align:center}}
+.index{font-family:var(--serif);font-weight:700;letter-spacing:-4px;line-height:.78;font-size:clamp(6rem,17vw,13rem);color:var(--c1);position:relative;text-align:center}
+.index .ring{position:absolute;inset:-8%;border:3px dashed var(--c2);border-radius:50%;opacity:.5;animation:spin 26s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.index small{display:block;color:var(--muted);font-size:.12em;letter-spacing:3px;font-weight:600;margin-top:.4rem}
+.hero-right{text-align:left}@media(max-width:820px){.hero-right{text-align:center}}
+.eyebrow{display:inline-flex;align-items:center;gap:.5rem;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:.4rem .9rem;font-weight:600;font-size:.86rem;color:var(--c1-d);box-shadow:var(--sh);margin-bottom:1rem}
+.hero h1{font-family:var(--serif);font-weight:700;font-size:clamp(2rem,5vw,3.6rem);line-height:1;margin-bottom:.5rem}
+.hero h1 .amp{color:var(--c2)}
+.hero .sub{font-size:clamp(1.02rem,2.1vw,1.3rem);color:var(--muted);line-height:1.5;max-width:44ch;margin-bottom:1.3rem}
+@media(max-width:820px){.hero .sub{margin-inline:auto}}
+.d-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:1.5rem}
+@media(max-width:620px){.d-grid{grid-template-columns:1fr}}
+.d-card{display:flex;align-items:center;gap:.7rem;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:.6rem .8rem;box-shadow:var(--sh);text-align:left}
+.d-card .ic{width:34px;height:34px;border-radius:9px;background:var(--c1-soft);display:grid;place-items:center;flex-shrink:0;font-size:1.1rem}
+.d-card b{font-family:var(--serif);color:var(--c1-d);font-size:.95rem}
+.d-card span{display:block;font-size:.78rem;color:var(--muted);line-height:1.25}
+.hero-cta{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap}@media(max-width:820px){.hero-cta{justify-content:center}}
+.hero-cta .meta{font-size:.84rem;color:var(--muted)}
+/* WARMUP */
+.hook{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(1.2rem,3vw,2.6rem);align-items:center}
+@media(max-width:900px){.hook{grid-template-columns:1fr}}
+.hook h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2.4rem);line-height:1.1;margin-bottom:.7rem}
+.hook h2 .pc{color:var(--c2)}
+.hook .lead{color:var(--muted);font-size:clamp(1rem,1.9vw,1.15rem);line-height:1.55;max-width:46ch;margin-bottom:1.1rem}
+.trapb{display:flex;gap:.8rem;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--c2);border-radius:var(--r-sm);padding:.8rem .95rem;box-shadow:var(--sh)}
+.trapb .e{width:38px;height:38px;border-radius:10px;background:var(--c2-soft);display:grid;place-items:center;font-size:1.2rem;flex-shrink:0}
+.trapb b{display:block}.trapb span{color:var(--muted);font-size:.92rem;line-height:1.4}
+.hook .cap{color:var(--muted);font-size:.88rem;margin-top:.7rem;text-align:center}
+.sarc-real{background:var(--c1-soft);border-radius:10px;padding:.6rem .8rem;font-size:.92rem;color:var(--c1-d);line-height:1.45;margin-top:.2rem}
+/* SPLASH */
+.splash{background:radial-gradient(820px 560px at 50% 40%,var(--c1-soft),transparent 62%),var(--bg)}
+.splash .emoji{font-size:clamp(3.5rem,11vw,6.5rem);line-height:1;animation:bob 2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-12px)}}
+.splash h1{font-family:var(--serif);font-weight:700;font-size:clamp(1.9rem,5.5vw,3.4rem);margin:.4rem 0;color:var(--ink)}
+.splash p{color:var(--muted);font-size:clamp(1.02rem,2.2vw,1.3rem);max-width:42ch;margin:0 auto 1.8rem;line-height:1.5}
+/* LESSON */
+.lesson{max-width:1180px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:1rem;flex:1;min-height:0}
+.l-head{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.l-head .step{font-family:var(--serif);color:var(--muted);font-weight:600;font-size:.95rem}
+.dots{display:flex;gap:.3rem;flex-wrap:wrap;max-width:50%}.dots i{width:8px;height:8px;border-radius:50%;background:var(--bg-tint);transition:.3s}
+.dots i.on{background:var(--c1);transform:scale(1.4)}
+.l-card{background:linear-gradient(165deg,#FFFFFF 0%,#EDE7F6 100%);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:clamp(1.3rem,2.6vw,2.2rem);flex:1;min-height:0;overflow:auto}
+.sec-banner{display:flex;align-items:center;gap:1rem;background:linear-gradient(120deg,var(--c1),var(--c1-d));color:#fff;border-radius:16px;padding:1rem 1.3rem;margin-bottom:1.3rem}
+.sec-banner.alt{background:linear-gradient(120deg,var(--c2),#cc8220);color:#422a00}
+.sec-banner .big{font-family:var(--serif);font-weight:700;font-size:2.2rem;line-height:1;background:rgba(255,255,255,.2);border-radius:12px;padding:.3rem .7rem;white-space:nowrap}
+.sec-banner.alt .big{background:rgba(66,42,0,.14)}
+.sec-banner h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.15rem,2.6vw,1.55rem);line-height:1.1;margin-bottom:.15rem}
+.sec-banner p{font-size:.82rem;opacity:.92;line-height:1.3}
+.concept{display:grid;grid-template-columns:.8fr 1.2fr;gap:1.6rem;align-items:start}
+@media(max-width:860px){.concept{grid-template-columns:1fr}}
+.concept .art{background:#fff;border:1px solid var(--line);border-radius:var(--r);min-height:170px;display:grid;place-items:center;padding:1.2rem;align-self:stretch}
+.concept .info{display:flex;flex-direction:column;gap:.8rem}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:.6rem .8rem;align-items:start}
+.kv .ic{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;font-size:1.1rem;flex-shrink:0}
+.kv.a .ic{background:var(--c1-soft)}.kv.b .ic{background:var(--c2-soft)}.kv.c .ic{background:var(--good-soft)}.kv.d .ic{background:var(--gold-soft)}
+.kv h4{font-family:var(--serif);font-size:1.05rem;margin-bottom:.1rem}
+.kv p{color:var(--muted);font-size:clamp(.95rem,1.7vw,1.05rem);line-height:1.45}
+.kv p b{color:var(--ink)}
+.genres{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.2rem}
+.genres span{font-size:.8rem;font-weight:600;background:var(--bg-tint);color:var(--muted);padding:.25rem .6rem;border-radius:999px}
+.goldtip{background:var(--gold-soft);border-radius:12px;padding:.8rem 1rem;font-size:.95rem;line-height:1.45;color:#6a4400}
+.goldtip b{color:#9a6508}
+.energ{max-width:640px;margin:auto;text-align:center}
+.energ .ebadge{display:inline-block;font-family:var(--serif);font-weight:700;font-size:.8rem;letter-spacing:1px;color:#9a6508;background:var(--gold-soft);padding:.3rem .9rem;border-radius:999px;margin-bottom:1rem}
+.energ .emoji{font-size:clamp(3rem,9vw,4.5rem);line-height:1;display:block;margin-bottom:.4rem}
+.energ h2{font-family:var(--serif);font-weight:700;font-size:clamp(1.5rem,4vw,2.1rem);margin-bottom:.6rem}
+.energ p{color:var(--muted);font-size:1.08rem;line-height:1.55}
+.ex-slide{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;align-items:start}
+@media(max-width:860px){.ex-slide{grid-template-columns:1fr}}
+.ex-left{background:var(--bg-tint);border:1px solid var(--line);border-radius:var(--r-sm);padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.6rem}
+.ex-left .gt{font-size:.8rem;color:var(--muted);font-weight:600}
+.ex-left .mini{font-size:1.04rem;line-height:1.58;white-space:pre-line}
+.ex-left .src{font-size:.76rem;color:var(--muted);font-style:italic}
+.ex-right .ecmd{background:var(--c1-soft);border-left:3px solid var(--c1);border-radius:8px;padding:.7rem .85rem;font-weight:600;margin-bottom:.7rem}
+.ex-opts{display:flex;flex-direction:column;gap:.5rem;margin-bottom:.7rem}
+.eopt{display:flex;gap:.6rem;align-items:center;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:.65rem .8rem;font-size:.98rem}
+.eopt .lt{font-family:var(--serif);font-weight:700;width:26px;height:26px;display:grid;place-items:center;border-radius:7px;background:var(--bg-tint);flex-shrink:0}
+.eopt.correct{background:var(--good-soft);border-color:var(--good)}.eopt.correct .lt{background:var(--good);color:#fff}
+.eopt.dim{opacity:.55}
+.eexpl{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--c2);border-radius:10px;padding:.8rem .95rem;font-size:.94rem;line-height:1.5}
+.eexpl b{color:var(--c1-d)}.eexpl .wr{color:var(--red);font-weight:600}
+.l-nav{display:flex;justify-content:space-between;gap:1rem}
+.metodo{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem}
+@media(max-width:820px){.metodo{grid-template-columns:1fr}}
+.m-step{background:var(--bg-tint);border:1px solid var(--line);border-radius:var(--r);padding:1.3rem 1.2rem}
+.m-step .big{font-family:var(--serif);font-weight:700;font-size:2rem;line-height:1;color:var(--c1);display:flex;align-items:baseline;gap:.4rem}
+.m-step .big b{font-size:1rem;color:var(--c2);font-weight:700}
+.m-step h4{font-family:var(--serif);font-size:1.15rem;margin:.3rem 0 .4rem}.m-step p{color:var(--muted);font-size:1rem;line-height:1.45}
+.triad{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem}
+@media(max-width:820px){.triad{grid-template-columns:1fr}}
+.tri{background:var(--bg-tint);border:1px solid var(--line);border-radius:var(--r);padding:1.3rem 1.2rem;display:flex;flex-direction:column;gap:.5rem}
+.tri .bigic{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-size:1.5rem;background:var(--surface);box-shadow:var(--sh)}
+.tri h4{font-family:var(--serif);font-size:1.12rem}.tri p{color:var(--muted);font-size:.96rem;line-height:1.4}
+/* WORKED */
+.worked{max-width:1120px;margin:0 auto;width:100%;flex:1;min-height:0;display:flex;flex-direction:column;gap:1rem}
+.worked .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:clamp(1.3rem,2.6vw,2.2rem);flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:1.4rem}
+@media(max-width:860px){.worked .panel{grid-template-columns:1fr}}
+.w-text{background:var(--bg-tint);border:1px solid var(--line);border-radius:var(--r-sm);padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.6rem}
+.w-text .gt{font-size:.8rem;color:var(--muted);font-weight:600}
+.w-text .mini{font-size:clamp(1rem,1.7vw,1.08rem);line-height:1.58}
+.w-text .src{font-size:.76rem;color:var(--muted);font-style:italic}
+.w-text .cmd{margin-top:auto;background:var(--c1-soft);border-left:3px solid var(--c1);border-radius:8px;padding:.7rem .85rem;font-weight:600}
+.w-steps{display:flex;flex-direction:column;gap:.7rem;justify-content:center}
+.stp{display:grid;grid-template-columns:auto 1fr;gap:.8rem;align-items:start;opacity:.32;transition:.3s}
+.stp.show{opacity:1}
+.stp .n{width:44px;height:40px;border-radius:11px;background:var(--bg-tint);display:grid;place-items:center;font-family:var(--serif);font-weight:700;font-size:1.05rem;flex-shrink:0}
+.stp.show .n{background:var(--c1);color:#fff}
+.stp p{color:var(--muted);font-size:1rem;line-height:1.45}.stp.show p{color:var(--ink)}.stp p b{color:var(--c1-d)}
+.ans{background:var(--good-soft);border:1px solid rgba(46,158,91,.35);border-radius:var(--r-sm);padding:.85rem 1rem;font-size:1rem;line-height:1.45;opacity:0;transition:.3s}
+.ans.show{opacity:1}.ans b{color:var(--good)}
+/* SETUP */
+.setup{max-width:540px;margin:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh-lg);padding:clamp(1.6rem,4vw,2.5rem);text-align:center;width:100%;position:relative}
+.setup h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.6rem,4vw,2.2rem);margin-bottom:.35rem}
+.setup .sub{color:var(--muted);margin-bottom:1.3rem}
+.rows{display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.2rem}
+.row{display:flex;align-items:center;gap:.6rem}
+.row .tag{width:16px;height:16px;border-radius:5px;flex-shrink:0}
+.row input{flex:1;padding:.8rem 1rem;background:var(--bg);border:1.5px solid var(--line);border-radius:11px;color:var(--ink);font-size:1.02rem;font-family:var(--body)}
+.row input:focus{outline:none;border-color:var(--c1)}
+.row .rm{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.3rem;padding:0 .3rem}.row .rm:hover{color:var(--red)}
+.setup .acts{display:flex;flex-direction:column;gap:.7rem}
+/* DIAGRAMAS ANIMADOS */
+.diag{width:100%;display:flex;flex-direction:column;align-items:center;gap:.8rem}
+.diag-cap{font-size:.82rem;color:var(--muted);text-align:center;max-width:30ch}
+.d-svg{width:100%;max-width:260px;height:auto;max-height:34vh}
+.ice-bob{animation:bob 3.6s ease-in-out infinite}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes draw{to{stroke-dashoffset:0}}
+.iro{width:100%;max-width:290px;display:flex;flex-direction:column;align-items:center;gap:.5rem}
+.iro-said{width:100%;background:var(--c1);color:#fff;border-radius:12px;padding:.8rem 1rem;text-align:center;font-weight:600;box-shadow:var(--sh)}
+.iro-arrow{width:34px;height:22px}
+.iro-arrow path{stroke-dasharray:60;stroke-dashoffset:60;animation:draw 1s ease .2s forwards}
+.iro-meant{width:100%;background:var(--c2-soft);color:#5a3d00;border:1px dashed var(--c2);border-radius:12px;padding:.8rem 1rem;text-align:center;font-weight:600;opacity:0;animation:fadeUp .6s ease .5s forwards}
+.lex{width:100%;max-width:290px;display:flex;flex-direction:column;align-items:center;gap:.6rem}
+.lex-scale{display:flex;justify-content:space-between;width:100%;font-size:.78rem;color:var(--muted);font-weight:600}
+.lex-mid{color:var(--c1-d)}
+.lex-bar{position:relative;width:100%;height:10px;border-radius:999px;background:linear-gradient(90deg,#2E9E5B,#E0922F,#E24A4A)}
+.lex-dot{position:absolute;top:50%;width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid var(--c1-d);transform:translate(-50%,-50%);animation:lexslide 3.8s ease-in-out infinite}
+@keyframes lexslide{0%,100%{left:12%}50%{left:88%}}
+.lex-ex{display:flex;gap:.5rem;font-weight:700;font-size:.95rem}
+.lex-ex .pos{color:#2E9E5B}.lex-ex .neu{color:var(--c1-d)}.lex-ex .neg{color:var(--red)}
+/* JOGO — DECIFRA A ENTRELINHA */
+.game-wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:1.6rem;align-items:center;flex:1;min-height:0}
+@media(max-width:860px){.game-wrap{grid-template-columns:1fr}}
+.mural{background:#d9b98a;background-image:radial-gradient(circle at 18% 28%,rgba(90,60,20,.14) 1.5px,transparent 2px),radial-gradient(circle at 68% 58%,rgba(90,60,20,.12) 1.5px,transparent 2px),radial-gradient(circle at 42% 82%,rgba(90,60,20,.12) 1.5px,transparent 2px);background-size:24px 24px,30px 30px,27px 27px;border:7px solid #8a5a2b;border-radius:12px;box-shadow:inset 0 0 44px rgba(60,40,10,.22),var(--sh-lg);padding:.85rem;display:flex;flex-direction:column;gap:.6rem;align-items:center}
+.mural-head{font-family:var(--serif);font-weight:700;color:var(--c1-d);font-size:1.1rem;display:flex;gap:.5rem;align-items:center}
+.phrase{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center}
+.wb{min-width:40px;min-height:46px;display:grid;place-items:center;padding:.4rem .7rem;border-radius:10px;font-family:var(--serif);font-weight:700;font-size:1.05rem;background:var(--c1);color:#fff;box-shadow:var(--sh);position:relative}
+.wb:not(.on){background:repeating-linear-gradient(45deg,#cdddda,#cdddda 6px,#bcd0cd 6px,#bcd0cd 12px);color:transparent;box-shadow:none}
+.wb:not(.on)::after{content:'?';position:absolute;inset:0;display:grid;place-items:center;color:#6f8a86;font-size:1.2rem}
+.wb.on.new{animation:flipIn .55s ease}
+@keyframes flipIn{from{transform:rotateX(90deg);opacity:0}to{transform:none;opacity:1}}
+.mural-hint{font-size:.85rem;color:var(--muted)}
+.game-side{display:flex;flex-direction:column;gap:.85rem}
+.turn-banner{display:flex;align-items:center;justify-content:center;gap:.6rem;font-family:var(--serif);font-weight:700;font-size:clamp(1.1rem,2.4vw,1.4rem)}
+.turn-banner .dot{width:16px;height:16px;border-radius:50%}
+.side-rule{text-align:center;color:var(--muted);font-size:.86rem;line-height:1.45;margin-top:-.3rem}
+.rank{display:flex;flex-direction:column;gap:.55rem}
+.rank-row{display:grid;grid-template-columns:120px 1fr auto;gap:.7rem;align-items:center}
+@media(max-width:560px){.rank-row{grid-template-columns:84px 1fr auto}}
+.rank-row .nm{font-weight:700;font-size:.9rem;display:flex;align-items:center;gap:.4rem}
+.rank-row .nm .dot{width:11px;height:11px;border-radius:50%}
+.rank-track{height:16px;border-radius:999px;background:var(--bg-tint);overflow:hidden}
+.rank-track>i{display:block;height:100%;border-radius:999px;transition:width .6s ease}
+.rank-row .sc{font-family:var(--serif);font-weight:700;font-size:.9rem;min-width:58px;text-align:right}
+.game-btns{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap}
+.guess-panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:.9rem;box-shadow:var(--sh);text-align:center}
+.guess-panel h4{font-family:var(--serif);margin-bottom:.6rem;font-size:.95rem}
+.guess-panel .jb{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap}
+.case-tab{align-self:center;background:#fff;border-radius:6px 6px 0 0;padding:.3rem .9rem;font-family:var(--serif);font-weight:700;color:#7a4a18;font-size:.9rem;box-shadow:0 3px 8px rgba(0,0,0,.22);transform:rotate(-1deg)}
+.case-intro{background:#fff8e6;border-radius:3px;padding:.45rem .8rem;font-size:.8rem;color:#5a4a2a;line-height:1.35;text-align:center;max-width:52ch;box-shadow:0 4px 9px rgba(0,0,0,.2);transform:rotate(.5deg)}
+.suspects{display:flex;flex-wrap:wrap;gap:.45rem .7rem;justify-content:center}
+.suspect{width:76px;background:#fff;border-radius:3px;padding:6px 6px 4px;box-shadow:0 5px 11px rgba(0,0,0,.28);position:relative;transition:.35s}
+.suspect:nth-child(odd){transform:rotate(-2.5deg)}
+.suspect:nth-child(even){transform:rotate(2deg)}
+.suspect:nth-child(3n){transform:rotate(1.4deg)}
+.suspect::before{content:'';position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff9a9a,#d22);box-shadow:0 2px 3px rgba(0,0,0,.35);z-index:2}
+.suspect .ph{height:44px;border-radius:2px;background:var(--c1-soft);display:grid;place-items:center;font-size:1.6rem}
+.suspect .snm{font-family:var(--serif);font-size:.64rem;font-weight:700;text-align:center;margin-top:3px;color:#333;line-height:1.05}
+.suspect .strait{font-size:.54rem;color:#8a7a5a;text-align:center;line-height:1;margin-top:1px}
+.suspect.out{filter:grayscale(.85);opacity:.62}
+.suspect.out::after,.suspect.culprit::after{position:absolute;top:40%;left:50%;font-family:var(--serif);font-weight:700;font-size:.6rem;letter-spacing:1px;padding:.08rem .3rem;border-radius:3px;z-index:3;background:rgba(255,255,255,.7)}
+.suspect.out::after{content:'INOCENTE';transform:translate(-50%,-50%) rotate(-13deg);border:2px solid var(--good);color:var(--good)}
+.suspect.culprit{animation:culpritGlow 1.4s ease-in-out infinite}
+.suspect.culprit::after{content:'CULPADO';transform:translate(-50%,-50%) rotate(-13deg);border:2px solid var(--red);color:var(--red)}
+@keyframes culpritGlow{0%,100%{box-shadow:0 5px 11px rgba(0,0,0,.28)}50%{box-shadow:0 5px 14px rgba(0,0,0,.3),0 0 10px 3px rgba(226,74,74,.6)}}
+.clue-list{width:100%;display:flex;flex-wrap:wrap;gap:.45rem;justify-content:center}
+.clue{width:47%;min-width:200px;flex:1 1 200px;background:#fff6a0;padding:.4rem .6rem;font-size:.71rem;line-height:1.28;color:#4a431f;box-shadow:0 3px 7px rgba(0,0,0,.2);position:relative}
+.clue:nth-child(odd){transform:rotate(-1.1deg)}.clue:nth-child(even){transform:rotate(1deg)}
+.clue::before{content:'';position:absolute;top:-5px;left:50%;transform:translateX(-50%);width:10px;height:10px;border-radius:50%;background:#e0922f;box-shadow:0 2px 3px rgba(0,0,0,.3)}
+.clue .cn{display:block;font-family:var(--serif);font-weight:700;color:#b06a00;font-size:.64rem;letter-spacing:.5px;margin-bottom:.05rem}
+.clue.locked{background:#e9dfc2;color:#9a8c6a}
+.clue.locked .cn{color:#9a8c6a}
+.qprog{width:100%}
+.qprog-top{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);font-weight:600;margin-bottom:.25rem}
+.qprog-bar{height:12px;border-radius:999px;background:var(--bg-tint);overflow:hidden}
+.qprog-bar>i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--c1),var(--c2));transition:width .5s ease;width:0}
+.q-prog-mini{font-size:.82rem;color:var(--muted);font-weight:600;margin-right:auto}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#1c2b29;color:#fff;padding:.7rem 1.2rem;border-radius:999px;font-weight:600;font-size:.9rem;box-shadow:0 10px 30px rgba(0,0,0,.3);z-index:500;animation:toastIn .3s ease;max-width:90vw;text-align:center}
+.toast.out{opacity:0;transition:opacity .4s}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translateX(-50%)}}
+.bank-group{margin-bottom:1.4rem}
+.bank-group h3{font-family:var(--serif);color:var(--c1-d);font-size:1.15rem;margin-bottom:.6rem}
+.bank-q{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh);padding:1rem 1.2rem;margin-bottom:.8rem}
+.bank-q .qh{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-bottom:.5rem}
+.bank-q .tag{font-size:.72rem;font-weight:700;padding:.2rem .6rem;border-radius:999px;background:var(--c1-soft);color:var(--c1-d)}
+.bank-q .tag.lv{background:var(--c2-soft);color:#9a6508}
+.bank-q .bt{font-size:.9rem;line-height:1.55;color:var(--muted);white-space:pre-line;background:var(--bg-tint);border-radius:8px;padding:.6rem .8rem;margin-bottom:.5rem}
+.bank-q .bsrc{font-size:.72rem;color:var(--muted);font-style:italic;margin-bottom:.5rem}
+.bank-q .bcmd{font-weight:600;margin-bottom:.5rem}
+.bank-q .bopt{font-size:.9rem;padding:.3rem .5rem;border-radius:7px;margin-bottom:.2rem}
+.bank-q .bopt.ok{background:var(--good-soft);color:#176b38;font-weight:600}
+.bank-q .bcmt{font-size:.85rem;color:var(--muted);line-height:1.45;margin-top:.5rem;border-top:1px dashed var(--line);padding-top:.5rem}
+/* QUESTION */
+.q-badge{font-family:var(--serif);font-weight:700;background:var(--c2-soft);color:#9a6508;padding:.4rem 1rem;border-radius:10px;font-size:.88rem}
+.q-meta{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:-.2rem 0 .6rem}
+.q-full{color:var(--muted);font-size:.84rem;font-style:italic}
+.q-turn{font-weight:700;font-size:.9rem;display:inline-flex;align-items:center;gap:.4rem}.q-turn .dot{width:12px;height:12px;border-radius:50%}
+.q-grid{display:grid;grid-template-columns:1.15fr 1fr;gap:1.3rem;flex:1;min-height:0}
+@media(max-width:980px){.q-grid{grid-template-columns:1fr}}
+.stim{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:clamp(1.1rem,2.2vw,1.6rem);overflow:auto;display:flex;flex-direction:column;gap:.85rem}
+.stim .gtag{align-self:flex-start;display:inline-flex;align-items:center;gap:.4rem;background:var(--bg-tint);color:var(--muted);font-size:.8rem;font-weight:600;padding:.3rem .7rem;border-radius:999px}
+.stim .txt{font-size:clamp(1rem,1.6vw,1.13rem);line-height:1.68;white-space:pre-line}
+.stim .src{font-size:.76rem;color:var(--muted);font-style:italic;text-align:right;margin-top:auto}
+.inter{display:flex;flex-direction:column;gap:.7rem;overflow:auto}
+.timer{display:flex;align-items:center;justify-content:center;gap:.9rem;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:.5rem;box-shadow:var(--sh)}
+.timer .tv{font-family:var(--serif);font-weight:700;font-size:1.9rem;min-width:108px;text-align:center;color:var(--c1-d)}
+.tbtn{background:var(--bg-tint);border:none;color:var(--ink);width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:1.05rem}.tbtn:hover{background:var(--c1-soft)}
+.cmd{font-size:clamp(1.03rem,1.9vw,1.24rem);font-weight:600;background:var(--c1-soft);border-left:4px solid var(--c1);padding:.85rem 1rem;border-radius:10px;line-height:1.4}
+.lar-hint{font-size:.76rem;color:var(--c1-d);font-weight:600;opacity:.85}
+.opts{display:flex;flex-direction:column;gap:.5rem}
+.opt{display:flex;align-items:center;gap:.8rem;text-align:left;background:var(--surface);border:1.5px solid var(--line);color:var(--ink);padding:.78rem 1rem;border-radius:12px;font-size:clamp(.97rem,1.55vw,1.05rem);box-shadow:var(--sh)}
+.opt .lt{font-family:var(--serif);font-weight:700;width:30px;height:30px;flex-shrink:0;display:grid;place-items:center;border-radius:9px;background:var(--bg-tint)}
+.opt.correct{background:var(--good-soft);border-color:var(--good)}.opt.correct .lt{background:var(--good);color:#fff}
+.opt.dim{opacity:.5}
+.cmt{background:var(--c1-soft);border:1px solid rgba(46,125,119,.22);border-radius:12px;padding:.85rem 1.05rem}
+.cmt h4{font-family:var(--serif);color:var(--c1-d);margin-bottom:.3rem}.cmt p{color:var(--ink);line-height:1.5;font-size:.94rem}
+.judge{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:.9rem;box-shadow:var(--sh);text-align:center}
+.judge h4{font-family:var(--serif);color:var(--ink);margin-bottom:.6rem;font-size:.95rem}
+.judge .jb{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap}
+.hide{display:none!important}
+/* PODIUM */
+#screen-podium{background:radial-gradient(760px 480px at 50% -5%,var(--c2-soft),transparent 60%),var(--bg)}
+.pod-list{max-width:460px;margin:1rem auto 0;display:flex;flex-direction:column;gap:.5rem}
+.pod-list .r{display:flex;justify-content:space-between;align-items:center;gap:.6rem;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:.6rem 1rem;box-shadow:var(--sh);font-weight:600}
+.pod-list .r .pos{font-family:var(--serif);font-weight:700;color:var(--c1-d)}
+.pod-list .r.first{border-color:var(--c2);background:var(--gold-soft)}
+.raiox{max-width:720px;margin:1rem auto 0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:1rem 1.3rem}
+.raiox h3{font-family:var(--serif);font-size:1.2rem;margin-bottom:.1rem;display:flex;align-items:center;gap:.5rem}
+.raiox .sb{color:var(--muted);font-size:.88rem;margin-bottom:.9rem}
+.rx-row{display:grid;grid-template-columns:200px 1fr auto;gap:.7rem;align-items:center;margin-bottom:.6rem}
+@media(max-width:560px){.rx-row{grid-template-columns:110px 1fr auto}}
+.rx-row .lab{font-weight:600;font-size:.82rem;line-height:1.1}
+.rx-bar{height:15px;border-radius:999px;background:var(--bg-tint);overflow:hidden}
+.rx-bar>i{display:block;height:100%;border-radius:999px;transition:width .8s ease}
+.rx-row .pct{font-family:var(--serif);font-weight:700;font-size:.9rem;min-width:52px;text-align:right}
+.rx-tip{margin-top:.7rem;font-size:.88rem;color:var(--muted);line-height:1.45;background:var(--bg-tint);border-radius:10px;padding:.65rem .85rem}.rx-tip b{color:var(--c1-d)}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:.9rem;height:min(28vh,230px);margin:.8rem auto .3rem;padding-top:32px;max-width:580px}
+.pstep{position:relative;width:clamp(84px,22vw,146px);border-radius:14px 14px 0 0;display:flex;flex-direction:column;align-items:center;padding-top:1.1rem;color:#fff;box-shadow:var(--sh-lg);animation:rise .7s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rise{from{height:0!important;opacity:0}}
+.pstep .medal{position:absolute;top:-20px;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-family:var(--serif);font-weight:700;color:#422a00;background:#fff;border:3px solid var(--c2);box-shadow:var(--sh)}
+.pstep .nm{font-family:var(--serif);font-weight:700;font-size:clamp(.8rem,2vw,1rem);text-align:center;padding:0 .3rem;margin-top:.5rem;text-shadow:0 1px 3px rgba(0,0,0,.28)}
+.pstep .sc{font-weight:700;font-size:.88rem;opacity:.95}
+.pstep .rk{position:absolute;bottom:.7rem;font-family:var(--serif);font-weight:700;font-size:clamp(1.5rem,6vw,2.3rem);color:rgba(255,255,255,.3)}
+.p1{height:100%}.p2{height:74%}.p3{height:54%}
+.pstep .crown{position:absolute;top:-30px;font-size:1.7rem;animation:bob 2.2s ease-in-out infinite}
+.cf{position:fixed;top:-12px;width:9px;height:14px;z-index:200;animation:fall linear forwards;pointer-events:none;border-radius:2px}
+@keyframes fall{to{transform:translateY(106vh) rotate(560deg)}}
+/* TRILHA */
+.trail-wrap{display:grid;grid-template-columns:1.25fr .75fr;gap:1.4rem;align-items:center;flex:1;min-height:0}
+@media(max-width:900px){.trail-wrap{grid-template-columns:1fr}}
+.board-panel{background:linear-gradient(160deg,#fff,#EDE7F6);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:1rem}
+.board{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center}
+.space{position:relative;width:52px;height:52px;border-radius:12px;background:#fff;border:1.5px solid var(--line);display:grid;place-items:center;font-family:var(--serif);font-weight:700;color:var(--muted);box-shadow:var(--sh)}
+.space .sn{font-size:.82rem;opacity:.65}
+.space .sic{position:absolute;top:-9px;right:-6px;font-size:.95rem}
+.space.start{background:var(--c1);color:#fff;border-color:var(--c1-d)}
+.space.end{background:var(--c2);color:#223100;border-color:#6b8a1a}
+.space.sp.bonus{background:#E7F3CF;border-color:var(--c2)}
+.space.sp.shortcut{background:#DDEBFB;border-color:#4a86c7}
+.space.sp.back{background:#FBE6D2;border-color:#E0922F}
+.space.sp.trap{background:#F6DADA;border-color:var(--red)}
+.space .toks{position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);display:flex;gap:1px}
+.tok{width:17px;height:17px;border-radius:50%;color:#fff;font-size:.6rem;font-weight:700;display:grid;place-items:center;border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,.25);transition:.4s}
+.board-legend{display:flex;flex-wrap:wrap;gap:.4rem .9rem;justify-content:center;margin-top:1rem;font-size:.74rem;color:var(--muted)}
+.board-legend span{display:inline-flex;align-items:center;gap:.25rem}
+.board-legend .lg{width:13px;height:13px;border-radius:4px;border:1.5px solid var(--line);display:inline-block}
+.board-legend .lg.start{background:var(--c1)}.board-legend .lg.end{background:var(--c2)}
+.board-legend .lg.bonus{background:#E7F3CF}.board-legend .lg.shortcut{background:#DDEBFB}.board-legend .lg.back{background:#FBE6D2}.board-legend .lg.trap{background:#F6DADA}
+.board-cap{text-align:center;font-size:.82rem;color:var(--muted);margin-top:.6rem}
+/* diagramas D02/D11/D15 */
+.refd{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;justify-content:center}
+.rb{background:#fff;border:1px solid var(--line);box-shadow:var(--sh);border-radius:10px;padding:.5rem .8rem;font-weight:700;font-size:.9rem}
+.rb.main{background:var(--c1-soft);color:var(--c1-d)}
+.ref-link{color:var(--c2);font-weight:700;font-size:.82rem}
+.ccd{display:flex;align-items:stretch;gap:.5rem;flex-wrap:wrap;justify-content:center}
+.cc{border-radius:12px;padding:.6rem .8rem;text-align:center;font-size:.72rem;min-width:94px;display:flex;flex-direction:column;gap:.15rem}
+.cc small{font-weight:600;font-size:.82rem}
+.cc.cause{background:var(--c1-soft);color:var(--c1-d)}
+.cc.effect{background:var(--c2-soft);color:#394d10}
+.cc-arrow{align-self:center;font-weight:700;color:var(--muted);font-size:.8rem;animation:ccpulse 2.4s ease-in-out infinite}
+@keyframes ccpulse{0%,100%{opacity:1}50%{opacity:.45}}
+.cjd{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;justify-content:center;font-weight:700}
+.cj{background:#fff;border:1px solid var(--line);box-shadow:var(--sh);border-radius:10px;padding:.5rem .7rem;font-size:.86rem}
+.cj.op{background:var(--c2-soft);color:#394d10}
+.cj-note{font-size:.8rem;color:var(--muted);text-align:center;margin-top:.5rem}
+/* tabela de bolso */
+.tabela{max-width:780px;margin:0 auto;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--sh)}
+.trow{display:grid;grid-template-columns:.8fr 1.6fr;gap:.5rem;padding:.5rem .9rem;border-bottom:1px solid var(--line);font-size:clamp(.82rem,1.6vw,.95rem)}
+.trow:last-child{border-bottom:none}
+.trow:nth-child(even){background:var(--c1-soft)}
+.trow.th{background:var(--c1);color:#fff;font-family:var(--serif);font-weight:700}
+.tr-rel{font-weight:700;color:var(--c1-d)}
+.trow.th .tr-rel,.trow.th span{color:#fff}
+.tr-con{color:var(--ink)}
+/* warmup conn-demo */
+.conn-demo{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh-lg);padding:1.1rem 1.2rem;max-width:400px;margin:0 auto}
+.cd-head{font-family:var(--serif);font-weight:700;color:var(--c1-d);margin-bottom:.6rem}
+.cd-line{display:flex;flex-wrap:wrap;align-items:baseline;gap:.3rem;padding:.5rem 0;border-top:1px solid var(--line);font-size:.98rem}
+.cd-line em{margin-left:auto;font-style:normal;font-size:.72rem;font-weight:700;color:#394d10;background:var(--c2-soft);padding:.1rem .5rem;border-radius:999px}
+.cd-k{background:var(--c1);color:#fff;border-radius:6px;padding:.05rem .4rem}
+footer{text-align:center;padding:.5rem;font-family:var(--serif);letter-spacing:2.5px;font-size:.68rem;color:var(--muted);border-top:1px solid var(--line);background:var(--bg);flex-shrink:0}
+</style>
+</head>
+<body>
+<button id="fsBtn" title="Tela cheia" onclick="app.fullscreen()">⛶</button>
+<header id="topbar">
+  <div class="brand"><span class="mk">S4</span> Aulão SAEPE · 9º</div>
+  <div id="scoreboard"></div>
+  <button class="ibtn" id="sfx-btn" title="Ligar/desligar som do jogo" onclick="app.toggleSfx()" style="position:absolute;right:100px">🔊</button>
+  <button class="ibtn" title="Trilha" onclick="app.toGame()" style="position:absolute;right:56px">🧩</button>
+  <button class="ibtn" title="Ver pódio" onclick="app.finish()" style="position:absolute;right:12px">🏁</button>
+</header>
+<div id="stage">
+  <section id="screen-intro" class="screen center active">
+    <div class="hero">
+      <div><div class="index"><span class="ring"></span>04<small>AULÃO 04 / 06</small></div></div>
+      <div class="hero-right">
+        <span class="eyebrow">🔍 Língua Portuguesa · 9º ano EF · SAEPE/PE</span>
+        <h1>O Nó <span class="amp">da Coesão</span></h1>
+        <p class="sub">Coesão, causa/consequência e conectivos: aprenda a amarrar as ideias do texto — com o <b>Método 3C</b> e o jogo <b>A Trilha da Coesão</b>.</p>
+        <div class="d-grid">
+          <div class="d-card"><span class="ic">🔗</span><div><b>D02</b><span>Coesão referencial</span></div></div>
+          <div class="d-card"><span class="ic">⛓️</span><div><b>D11</b><span>Causa e consequência</span></div></div>
+          <div class="d-card"><span class="ic">🔀</span><div><b>D15</b><span>Conectivos lógicos</span></div></div>
+        </div>
+        <div class="hero-cta"><button class="btn" onclick="app.flowGo(0)">Bora investigar 🔍</button><button class="btn ghost" onclick="app.openBank()">📋 Banco de questões</button></div><div class="hero-cta" style="margin-top:.6rem"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-warmup" class="screen">
+    <div class="wrap fill">
+      <div class="toprow"><button class="back" onclick="app.go('screen-intro')">‹ Voltar</button><span class="phase-tag">Aquecimento</span></div>
+      <div class="hook">
+        <div>
+          <h2>Trocar um <span class="pc">“portanto”</span> por um <span class="pc">“porém”</span> muda tudo.</h2>
+          <p class="lead">Os conectivos são as placas de trânsito do texto: dizem se uma ideia é causa, consequência, oposição ou conclusão. Dominar isso é dominar a lógica — e as pegadinhas do SAEPE:</p>
+          <div style="display:flex;flex-direction:column;gap:.6rem">
+            <div class="trapb"><span class="e">🔗</span><div><b>Referente errado</b><span>Achar que um pronome (ele, isso, esse) retoma a palavra mais próxima — e não a certa.</span></div></div>
+            <div class="trapb"><span class="e">🔄</span><div><b>Causa virada consequência</b><span>Confundir o motivo (o que vem antes) com o resultado (o que vem depois).</span></div></div>
+            <div class="trapb"><span class="e">⚠️</span><div><b>Conectivo trocado</b><span>Ler “portanto” (conclusão) como se fosse “porém” (oposição) e inverter o sentido.</span></div></div>
+          </div>
+        </div>
+        <div>
+          <div class="conn-demo">
+            <div class="cd-head">A mesma ideia, 3 conectivos:</div>
+            <div class="cd-line"><span>Estudou pouco</span> <b class="cd-k">mas</b> <span>passou.</span><em>oposição</em></div>
+            <div class="cd-line"><span>Passou</span> <b class="cd-k">porque</b> <span>estudou muito.</span><em>causa</em></div>
+            <div class="cd-line"><span>Estudou muito,</span> <b class="cd-k">portanto</b> <span>passou.</span><em>conclusão</em></div>
+          </div>
+          <p class="cap">👆 Troque o conector e a relação entre as ideias muda por completo.</p>
+        </div>
+      </div>
+      <div class="center" style="margin-top:1.2rem"><button class="btn" onclick="app.flowNext()">Conhecer o Método 3C ▸</button></div>
+    </div>
+  </section>
+
+  <section id="screen-lesson" class="screen">
+    <div class="lesson">
+      <div class="l-head"><span class="step" id="l-step"></span><div class="dots" id="l-dots"></div></div>
+      <div class="l-card" id="l-card"></div>
+      <div class="l-nav"><button class="btn ghost" onclick="app.lessonPrev()">‹ Voltar</button><button class="btn" id="l-next" onclick="app.lessonNext()">Próximo ▸</button></div>
+    </div>
+  </section>
+
+  <section id="screen-worked" class="screen">
+    <div class="worked">
+      <div class="l-head"><span class="step">🤝 Resolva comigo · Método 3C em ação</span><button class="back" onclick="app.flowBack()">‹ Voltar à aula</button></div>
+      <div class="panel">
+        <div class="w-text"><span class="gt" id="wk-gt"></span><div class="mini" id="wk-text"></div><div class="src" id="wk-src"></div><div class="cmd" id="wk-cmd"></div></div>
+        <div class="w-steps" id="wk-steps"></div>
+      </div>
+      <div class="l-nav"><button class="btn ghost" id="wk-step-btn" onclick="app.workedStep()">Passo 1 — Caça</button><button class="btn accent hide" id="wk-go" onclick="app.flowNext()">Agora é jogo! 🎮</button></div>
+    </div>
+  </section>
+
+  <section id="screen-splash" class="screen center splash">
+    <div class="wrap"><button class="back" style="position:absolute;top:1rem;left:1rem" onclick="app.flowBack()">‹ Voltar</button>
+      <div class="emoji" id="sp-emoji"></div><h1 id="sp-title"></h1><p id="sp-sub"></p><button class="btn accent" onclick="app.flowNext()">Bora! ⚡</button></div>
+  </section>
+
+  <section id="screen-setup" class="screen center">
+    <div class="setup"><button class="back" style="position:absolute;top:1rem;left:1rem" onclick="app.flowBack()">‹ Voltar</button>
+      <h2>Montem as equipes 🙌</h2><p class="sub">De 2 a 6 equipes. Joga-se uma por rodada, revezando, para avançar na Trilha da Coesão.</p>
+      <div class="rows" id="rows"></div>
+      <div class="acts"><button class="btn ghost sm" onclick="app.addTeam()">+ Adicionar equipe</button><button class="btn" onclick="app.start()">Começar a trilha 🏁</button></div>
+    </div>
+  </section>
+
+  <section id="screen-game" class="screen">
+    <div class="wrap fill">
+      <div class="toprow"><button class="back" onclick="app.flowBack()">‹ Voltar</button><span class="phase-tag">🧩 A Trilha da Coesão</span></div>
+      <div class="trail-wrap">
+        <div class="board-panel">
+          <div class="board" id="board"></div>
+          <div class="board-legend"><span><i class="lg start"></i> Início</span><span><i class="lg bonus"></i> 🔗 avança</span><span><i class="lg back"></i> ⚠️ recua</span><span><i class="lg shortcut"></i> ➿ atalho</span><span><i class="lg trap"></i> 🌀 inverte</span><span><i class="lg end"></i> 🏁 Coeso</span></div>
+          <div class="board-cap" id="board-cap"></div>
+        </div>
+        <div class="game-side">
+          <div class="turn-banner" id="turn-banner"></div>
+          <div class="qprog"><div class="qprog-top"><span>Progresso da corrida</span><span id="qprog-label"></span></div><div class="qprog-bar"><i id="qprog-fill"></i></div></div>
+          <p class="side-rule">Acerte para avançar: Elementar <b>+1</b> · Básico <b>+2</b> · Desejável <b>+3</b> casas. Cuidado com as casas-surpresa! A primeira equipe a chegar ao <b>Texto Coeso</b> vence.</p>
+          <div class="rank" id="rank"></div>
+          <div class="game-btns">
+            <button class="btn accent" onclick="app.drawQuestion()">Sortear questão 🎲</button>
+            <button class="btn neutral sm" onclick="app.finish()">Encerrar 🏁</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-question" class="screen">
+    <div class="wrap fill">
+      <div class="toprow"><button class="back" onclick="app.toGame()">‹ Mural</button><span class="q-prog-mini" id="q-prog-mini"></span><span class="q-badge" id="q-badge"></span></div>
+      <div class="q-meta"><span class="q-full" id="q-full"></span><span class="q-turn" id="q-turn"></span></div>
+      <div class="q-grid">
+        <div class="stim"><span class="gtag" id="q-gtag"></span><div class="txt" id="q-text"></div><div class="src" id="q-src"></div></div>
+        <div class="inter">
+          <div class="timer" id="q-timer"><button class="tbtn" onclick="app.adjustTimer(-15)">−</button><span class="tv" id="tv">02:30</span><button class="tbtn" onclick="app.adjustTimer(15)">+</button><button class="tbtn" id="ttoggle" onclick="app.toggleTimer()">▶</button></div>
+          <div class="cmd" id="q-cmd"></div>
+          <div class="lar-hint">3C: Caça o elo · Classifica a relação · Confere trocando.</div>
+          <div class="opts" id="q-opts"></div>
+          <button class="btn" id="q-reveal" onclick="app.reveal()">Mostrar resposta</button>
+          <div class="cmt hide" id="q-cmt"><h4>Gabarito comentado</h4><p id="q-cmt-txt"></p></div>
+          <div class="judge hide" id="q-judge"><h4 id="q-judge-h"></h4><div class="jb"><button class="btn good sm" onclick="app.resolveQ(true)">✅ Acertou</button><button class="btn red sm" onclick="app.resolveQ(false)">❌ Não acertou</button></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-bank" class="screen">
+    <div class="wrap">
+      <div class="toprow"><button class="back" onclick="app.go('screen-intro')">‹ Voltar</button><span class="phase-tag">📋 Banco de questões (18)</span></div>
+      <div id="bank-list"></div>
+    </div>
+  </section>
+
+  <section id="screen-podium" class="screen" style="text-align:center;justify-content:flex-start;padding-top:1.3rem;padding-bottom:1.6rem">
+    <div class="wrap"><h1 style="font-family:var(--serif);font-weight:700;font-size:clamp(1.8rem,5vw,2.9rem);color:var(--c1-d)">🏁 Trilha concluída!</h1>
+      <div class="podium" id="podium"></div>
+      <div class="pod-list" id="pod-list"></div>
+      <div class="raiox" id="raiox"></div>
+      <div class="center" style="margin-top:1.2rem"><button class="btn sm" onclick="location.reload()">Reiniciar aulão ↻</button></div>
+    </div>
+  </section>
+</div>
+<footer>AULÕES PARA PROFESSORES</footer>
+
+<script>
+const FULL={
+ D02:"D02 — Estabelecer relações entre partes de um texto, identificando repetições ou substituições que garantem a continuidade (coesão referencial).",
+ D11:"D11 — Estabelecer relação de causa e consequência entre partes e elementos de um texto.",
+ D15:"D15 — Estabelecer relações lógico-discursivas marcadas por conjunções, advérbios e outras expressões conectivas."
+};
+const ART={
+ ref:`<div class="diag"><div class="refd"><span class="rb main">as abelhas</span><span class="ref-link">↩ retoma</span><span class="rb">elas</span></div><div class="diag-cap">O pronome <b>“elas”</b> retoma <b>“as abelhas”</b> — é isso que costura o texto (coesão referencial).</div></div>`,
+ causa:`<div class="diag"><div class="ccd"><span class="cc cause"><b>CAUSA</b><small>choveu muito</small></span><span class="cc-arrow">por isso ▶</span><span class="cc effect"><b>CONSEQUÊNCIA</b><small>a rua alagou</small></span></div><div class="diag-cap">A causa vem antes; a consequência é o resultado. O conector mostra a direção.</div></div>`,
+ conj:`<div class="diag"><div class="cjd"><span class="cj a">Estudou pouco</span><span class="cj op">… <b id="cjop">mas</b> …</span><span class="cj b">passou</span></div><div class="cj-note">Troque o conector e a <b>relação muda</b>: <b>mas</b> (oposição) · <b>porque</b> (causa) · <b>portanto</b> (conclusão).</div></div>`
+};
+
+/* ========= AULA ========= */
+const teach=[
+ {t:'triad',title:"Todo texto é uma teia de ligações",tri:[
+   {ic:"🔗",h:"Coesão referencial (D02)",p:"Em vez de repetir a mesma palavra, o texto usa pronomes e sinônimos para retomar o que já foi dito. Saber a quem cada 'ele', 'isso', 'esse processo' se refere é essencial."},
+   {ic:"⛓️",h:"Causa e consequência (D11)",p:"Uma ideia explica a outra: uma é o motivo (causa), a outra é o resultado (consequência). A prova adora inverter as duas."},
+   {ic:"🔀",h:"Conectivos lógicos (D15)",p:"Conjunções e advérbios (mas, porque, portanto, embora…) marcam a relação entre as ideias. Trocar o conector muda tudo."}]},
+ {t:'metodo',title:"Método 3C — para desatar o nó da coesão",steps:[
+   {L:"C1",tag:"Caça",h:"Caçar o elo",p:"Ache a 'palavra-ponte': o pronome/sinônimo que retoma algo (D02) ou o conectivo que liga as ideias (D11/D15)."},
+   {L:"C2",tag:"Classifica",h:"Classificar a relação",p:"Pergunte: isso é causa? consequência? oposição? conclusão? referência a quê? Dê um nome à relação."},
+   {L:"C3",tag:"Confere",h:"Conferir trocando",p:"Troque o conector (ou o referente) por outro e veja se o sentido muda. Se mudar, você achou a relação certa."}]},
+ /* D02 */
+ {t:'c',code:"D02",part:"1 de 2",full:FULL.D02,title:"Coesão referencial: a quem se refere?",art:"ref",
+  kv:[
+   {cls:'a',ic:"🔗",h:"O que a prova pede",p:"Descobrir o que uma palavra retoma: um pronome (ele, ela, isso, o qual), um sinônimo ou uma expressão que substitui algo já dito."},
+   {cls:'b',ic:"🗣️",h:"Como o comando aparece",p:"“O termo ‘elas’ refere-se a…”, “A expressão ‘esse processo’ retoma…”, “A palavra sublinhada substitui…”."}],
+  genres:["Notícia","Divulgação científica","Crônica","Artigo"]},
+ {t:'c',code:"D02",part:"2 de 2",full:FULL.D02,title:"Referência: a cilada e a técnica",art:"ref",
+  kv:[
+   {cls:'c',ic:"🎯",h:"A pegadinha: referente errado",p:"A banca oferece um termo que está PERTO do pronome, mas não é o que ele retoma de fato. Proximidade não é referência."},
+   {cls:'d',ic:"🔑",h:"No Método 3C (C3)",p:"Troque o pronome pelo candidato a referente e releia. Só o verdadeiro referente mantém a frase com sentido e concordância."}],
+  tip:"<b>Dica de ouro:</b> confira o gênero e o número. ‘Elas’ só pode retomar algo feminino e plural — isso já elimina vários distratores."},
+ {t:'ex',code:"D02",gt:"🔗 Exemplo — fragmento",
+  text:"Os professores prepararam uma feira de ciências. Eles passaram semanas organizando os experimentos com os alunos.",
+  src:"Exemplo didático.",
+  cmd:"No texto, o pronome “Eles” refere-se a:",
+  options:[{t:"os professores.",c:true},{t:"os experimentos.",c:false},{t:"os alunos.",c:false},{t:"os dias da semana.",c:false}],
+  expl:["✅ <b>A certa:</b> quem organizou a feira e passou semanas trabalhando foram os professores — é a eles que ‘Eles’ retoma.","Os outros termos aparecem perto no texto, mas não cabem no lugar de ‘Eles’ (proximidade não é referência)."]},
+ {t:'energ',e:"🔗",badge:"Dinâmica rápida · 1 min",title:"Caça ao referente",
+  desc:"Eu digo duas frases (ex.: ‘A Marina chamou a Júlia. Ela estava atrasada.’). Em dupla, vocês dizem a quem o ‘ela’ se refere — e expliquem por quê. Treinar esse olhar já resolve metade das questões de coesão."},
+ /* D11 */
+ {t:'c',code:"D11",part:"1 de 2",full:FULL.D11,title:"Causa e consequência",art:"causa",
+  kv:[
+   {cls:'a',ic:"⛓️",h:"O que a prova pede",p:"Reconhecer qual parte é a CAUSA (o motivo) e qual é a CONSEQUÊNCIA (o resultado) — e a relação entre elas."},
+   {cls:'b',ic:"🗣️",h:"Como o comando aparece",p:"“O fato X é causa ou consequência de…”, “A relação entre as duas ideias é de…”, “O que provocou…”."}],
+  genres:["Divulgação científica","Reportagem","Artigo de opinião"]},
+ {t:'c',code:"D11",part:"2 de 2",full:FULL.D11,title:"Causa × consequência: a cilada e a técnica",art:"causa",
+  kv:[
+   {cls:'c',ic:"🔄",h:"A pegadinha: inverter a ordem",p:"A banca troca causa por consequência. ‘Choveu, por isso alagou’: a chuva é a causa; o alagamento, a consequência. Inverter é o erro mais comum."},
+   {cls:'d',ic:"🔑",h:"No Método 3C (C2)",p:"Teste com ‘por causa de’ e ‘por isso’: a causa responde ‘por quê?’; a consequência responde ‘e o resultado?’."}],
+  tip:"<b>Dica de ouro:</b> a causa normalmente acontece ANTES no tempo; a consequência é o efeito que vem depois."},
+ {t:'ex',code:"D11",gt:"⛓️ Exemplo — fragmento",
+  text:"Com a greve dos motoristas, muitos ônibus não circularam. Por isso, milhares de pessoas se atrasaram para o trabalho.",
+  src:"Exemplo didático.",
+  cmd:"A relação entre as duas frases é de:",
+  options:[{t:"causa (a greve) e consequência (os atrasos).",c:true},{t:"comparação entre a greve e o trabalho.",c:false},{t:"oposição entre os motoristas e os passageiros.",c:false},{t:"finalidade da greve dos motoristas.",c:false}],
+  expl:["✅ <b>A certa:</b> a greve é o motivo (causa); o atraso das pessoas é o resultado (consequência). O ‘Por isso’ marca essa relação.","Não há comparação, oposição nem finalidade: o conector ‘por isso’ indica consequência."]},
+ {t:'energ',e:"⛓️",badge:"Dinâmica rápida · 1 min",title:"Causa ou consequência?",
+  desc:"Eu digo um fato (ex.: ‘A rua alagou’). A turma responde: isso é causa ou consequência? E qual seria o par? (‘Choveu muito’ → causa). Depois invertam a frase usando ‘porque’: ‘A rua alagou porque choveu’."},
+ /* D15 */
+ {t:'c',code:"D15",part:"1 de 2",full:FULL.D15,title:"Conectivos e a lógica do texto",art:"conj",
+  kv:[
+   {cls:'a',ic:"🔀",h:"O que a prova pede",p:"Identificar a relação que um conectivo estabelece: oposição, conclusão, adição, condição, concessão, finalidade… O conector é a placa de trânsito do texto."},
+   {cls:'b',ic:"🗣️",h:"Como o comando aparece",p:"“A conjunção ‘mas’ estabelece ideia de…”, “O conectivo ‘portanto’ indica…”, “Que relação o ‘embora’ expressa?”."}],
+  genres:["Artigo de opinião","Divulgação científica","Editorial"]},
+ {t:'c',code:"D15",part:"2 de 2",full:FULL.D15,title:"Conectivos: a cilada e a técnica",art:"conj",
+  kv:[
+   {cls:'c',ic:"⚠️",h:"A pegadinha: conectivo trocado",p:"Trocar ‘portanto’ (conclusão) por ‘porém’ (oposição) vira o sentido do avesso. A banca aposta que você não percebe a diferença."},
+   {cls:'d',ic:"🔑",h:"No Método 3C (C2 e C3)",p:"Decore os grupos: oposição (mas, porém, contudo), conclusão (logo, portanto), concessão (embora, ainda que), causa (porque, já que). Depois confira trocando."}],
+  tip:"<b>Dica de ouro:</b> ‘embora/ainda que’ = concessão (admite um obstáculo, mas segue): ‘Embora chovesse, saímos’. Não confunda com causa."},
+ {t:'ex',code:"D15",gt:"🔀 Exemplo — fragmento",
+  text:"Estudou muito a semana toda. Ainda assim, não se sentia preparado para a prova.",
+  src:"Exemplo didático.",
+  cmd:"A expressão “Ainda assim” estabelece uma relação de:",
+  options:[{t:"oposição ao que seria esperado.",c:true},{t:"causa do estudo da semana.",c:false},{t:"conclusão lógica do primeiro fato.",c:false},{t:"adição de uma nova informação semelhante.",c:false}],
+  expl:["✅ <b>A certa:</b> esperava-se que, estudando muito, ele se sentisse preparado; ‘ainda assim’ marca o contraste (oposição) com essa expectativa.","Não é causa, conclusão nem adição: ‘ainda assim’ sinaliza algo contrário ao esperado (valor concessivo/adversativo)."]},
+ {t:'energ',e:"🔀",badge:"Dinâmica rápida · 1 min",title:"Troca o conector",
+  desc:"Eu digo uma frase com um conector (ex.: ‘Ele é rico, MAS é infeliz’). A turma troca o conector por outro (‘porque’, ‘portanto’, ‘embora’) e diz como o sentido muda. Sentiram o poder dos conectivos?"},
+ /* Tabela de Bolso */
+ {t:'tabela',title:"🗂️ Tabela de Bolso dos Conectivos",rows:[
+   ["Adição","e, também, além disso, não só… mas também"],
+   ["Oposição / adversidade","mas, porém, contudo, todavia, entretanto, no entanto"],
+   ["Concessão","embora, ainda que, mesmo que, apesar de"],
+   ["Causa","porque, pois, já que, visto que, como"],
+   ["Consequência","por isso, de modo que, tão… que, logo"],
+   ["Conclusão","portanto, logo, assim, dessa forma, enfim"],
+   ["Condição","se, caso, desde que, a menos que"],
+   ["Finalidade","para que, a fim de que, para"],
+   ["Explicação","pois, porque, que"],
+   ["Tempo","quando, enquanto, assim que, logo que"]
+ ]},
+ /* Como a banca pensa */
+ {t:'triad',title:"Como a banca pensa",tri:[
+   {ic:"🔗",h:"Em D02 (referência)",p:"O examinador põe, perto do pronome, um termo 'chamariz' que não é o referente. Ele quer ver se você confere gênero, número e sentido — e não só a proximidade."},
+   {ic:"⛓️",h:"Em D11 (causa/consequência)",p:"A banca inverte causa e consequência numa alternativa. Ela testa se você sabe o que veio primeiro (motivo) e o que é resultado."},
+   {ic:"🔀",h:"Em D15 (conectivos)",p:"O examinador troca o conectivo por um de relação parecida (porém × portanto). Ele quer ver se você sente a diferença entre oposição e conclusão."}]},
+ /* Caça à Cilada */
+ {t:'ex',code:"🕵️",trap:true,gt:"Treino — qual é a cilada?",
+  text:"Leia: ‘A cidade investiu em ciclovias, portanto o número de acidentes caiu’. Um grupo disse que ‘portanto’ ali marca uma relação de OPOSIÇÃO.",
+  src:"Caça à Cilada · 1 de 2",
+  cmd:"Que erro o grupo cometeu?",
+  options:[{t:"Confundiu conclusão/consequência com oposição.",c:true},{t:"Trocou a causa pela consequência.",c:false},{t:"Ignorou o verdadeiro referente de um pronome usado no texto.",c:false}],
+  expl:["✅ <b>Conclusão × oposição:</b> ‘portanto’ introduz uma conclusão/consequência (investiu → por isso caíram os acidentes). Oposição seria ‘mas/porém’."]},
+ {t:'ex',code:"🕵️",trap:true,gt:"Treino — qual é a cilada?",
+  text:"Leia: ‘O rio secou porque a floresta foi derrubada’. Um grupo afirmou que a SECA DO RIO é a causa e o DESMATAMENTO é a consequência.",
+  src:"Caça à Cilada · 2 de 2",
+  cmd:"Qual é a cilada?",
+  options:[{t:"Inverteram causa e consequência.",c:true},{t:"Confundiram adição com oposição.",c:false},{t:"Erraram o referente de ‘que’.",c:false}],
+  expl:["✅ <b>Inversão:</b> o ‘porque’ introduz a causa — a floresta foi derrubada (causa) e, por isso, o rio secou (consequência). O grupo trocou as duas."]}
+];
+
+const worked={
+ gt:"🔀 Fragmento (didático)",
+ text:"As abelhas vêm desaparecendo por causa dos agrotóxicos. Por isso, muitos países já começaram a proibir certos produtos nas lavouras.",
+ src:"Exemplo didático.",
+ cmd:"Qual é a relação lógica entre as duas frases?",
+ steps:[
+  {t:"<b>C1 — Caça o elo.</b> Procure a palavra-ponte entre as frases: o conectivo ‘Por isso’, no começo da segunda frase."},
+  {t:"<b>C2 — Classifica a relação.</b> ‘Por isso’ liga um motivo a um resultado: as abelhas somem (causa) → países proíbem produtos (consequência)."},
+  {t:"<b>C3 — Confere trocando.</b> Troque ‘Por isso’ por ‘mas’: a frase perde o sentido. Troque por ‘como consequência’: continua certa. Logo, é consequência."}],
+ answer:"A relação é de <b>causa e consequência</b>: o desaparecimento das abelhas (causa) leva os países a proibir produtos (consequência). O ‘Por isso’ marca essa ligação."
+};
+
+/* ========= 18 QUESTÕES — textos reais ========= */
+/* ===== 4 textos expositivos novos (9º ano EF) — coesão, causa/consequência, conectivos ===== */
+const T_TAR="As tartarugas-marinhas vivem nos oceanos há mais de 100 milhões de anos. Elas se alimentam, entre outras coisas, de águas-vivas, que são moles e quase transparentes. O problema é que, boiando no mar, uma sacola plástica se parece muito com uma água-viva. Por isso, muitas tartarugas acabam engolindo plástico por engano.\n\nEsse plástico não é digerido e vai se acumulando no estômago do animal. Como consequência, a tartaruga se sente falsamente cheia, para de comer e pode até morrer de fome. Além disso, redes de pesca abandonadas prendem os animais e os impedem de subir para respirar.\n\nFelizmente, há saída. Se cada pessoa reduzir o uso de plástico e descartar o lixo no lugar certo, o mar fica mais limpo. Proteger as tartarugas depende, portanto, também das escolhas que fazemos em terra firme.";
+const S_TAR="Adaptado de materiais do Projeto Tamar e da National Geographic Brasil sobre plástico nos oceanos. Acesso em: out. 2026. Fragmento.";
+
+const T_FOR="As formigas são insetos pequenos, mas vivem de um jeito muito organizado. Numa mesma colônia, cada grupo tem a sua função: umas cuidam das crias, outras buscam comida e outras defendem o formigueiro. Graças a essa divisão de trabalho, a colônia inteira funciona quase como um só corpo.\n\nPara não se perderem, as formigas deixam pelo caminho um rastro de cheiro. Esse cheiro guia as companheiras: quando uma delas encontra alimento, as outras seguem a trilha até a mesma fonte. Embora sejam minúsculas, as formigas conseguem carregar pesos muito maiores que o próprio corpo. Por isso, viraram símbolo de força e de trabalho em equipe.";
+const S_FOR="Adaptado de materiais de divulgação científica sobre o comportamento das formigas (Super Interessante e outros). Acesso em: out. 2026. Fragmento.";
+
+const T_ARC="Você já reparou que o arco-íris quase sempre aparece depois da chuva? Ele nasce do encontro entre a luz do sol e as gotas de água que ficam no ar. Isso acontece porque, quando a luz branca do sol atravessa uma gota, ela se separa em várias cores.\n\nCada cor que vemos no céu é uma parte da luz do sol, “desmontada” pela água. Como as gotinhas funcionam como pequenos prismas, o arco-íris só aparece quando há sol e chuva ao mesmo tempo. Se o céu está totalmente limpo, portanto, não há arco-íris: faltam as gotas de água que separam a luz.";
+const S_ARC="Adaptado de materiais de divulgação científica sobre a luz e os fenômenos do céu (Brasil Escola e outros). Acesso em: out. 2026. Fragmento.";
+
+const T_REC="Reciclar é transformar aquilo que seria lixo em matéria-prima nova. Uma garrafa plástica, por exemplo, pode virar fio para tecido; o papel já usado pode se tornar papel novo. Graças à reciclagem, muitos materiais ganham uma segunda vida em vez de se acumular na natureza.\n\nReciclar também economiza recursos: fabricar uma lata com alumínio reciclado gasta bem menos energia do que produzi-la do zero. No entanto, para isso dar certo, é preciso separar o lixo corretamente em casa. Se cada família fizer a sua parte, o volume de lixo nos aterros diminui. A reciclagem, portanto, só funciona quando vira um hábito de todos.";
+const S_REC="Adaptado de materiais educativos sobre coleta seletiva e reciclagem (Instituto Akatu e outros). Acesso em: out. 2026. Fragmento.";
+
+const Q={
+ /* TEXTO 1 — TARTARUGAS */
+ q1:{id:1,code:"D02",lv:"e",conector:"Elas",title:"Tartarugas · referência",gen:"🐢 Divulgação científica (adaptado)",text:T_TAR,src:S_TAR,
+  cmd:"Em “As tartarugas-marinhas vivem nos oceanos… Elas se alimentam de águas-vivas”, o termo “Elas” refere-se a:",
+  options:[{t:"as tartarugas-marinhas.",c:true},{t:"as águas-vivas do oceano.",c:false},{t:"as sacolas plásticas que boiam no mar.",c:false},{t:"as redes de pesca abandonadas.",c:false}],
+  comment:"Quem se alimenta de águas-vivas são as tartarugas — “Elas” retoma “as tartarugas-marinhas”. As outras opções aparecem no texto, mas não cabem no lugar do pronome."},
+ q2:{id:2,code:"D11",lv:"b",conector:"porque",title:"Tartarugas · causa",gen:"🐢 Divulgação científica (adaptado)",text:T_TAR,src:S_TAR,
+  cmd:"Segundo o texto, muitas tartarugas engolem plástico por engano porque:",
+  options:[{t:"uma sacola que boia no mar se parece com uma água-viva.",c:true},{t:"o plástico tem um cheiro muito atraente para elas.",c:false},{t:"elas preferem o plástico a qualquer outro alimento.",c:false},{t:"as redes de pesca abandonadas empurram o lixo para dentro delas.",c:false}],
+  comment:"A causa está clara no texto: boiando, a sacola “se parece muito com uma água-viva”. As demais opções inventam motivos que o texto não traz."},
+ q3:{id:3,code:"D11",lv:"b",conector:"Como consequência",title:"Tartarugas · consequência",gen:"🐢 Divulgação científica (adaptado)",text:T_TAR,src:S_TAR,
+  cmd:"A expressão “Como consequência” introduz o resultado de o plástico se acumular no estômago. Esse resultado é:",
+  options:[{t:"a tartaruga para de comer e pode morrer de fome.",c:true},{t:"a tartaruga passa a nadar muito mais rápido.",c:false},{t:"o plástico vai sendo digerido aos poucos pelo próprio animal.",c:false},{t:"as águas-vivas desaparecem de todo o oceano.",c:false}],
+  comment:"O acúmulo de plástico faz a tartaruga se sentir “falsamente cheia”, parar de comer e poder morrer de fome: essa é a consequência. As outras contrariam o texto."},
+ q4:{id:4,code:"D15",lv:"b",conector:"Além disso",title:"Tartarugas · adição",gen:"🐢 Divulgação científica (adaptado)",text:T_TAR,src:S_TAR,
+  cmd:"O conectivo “Além disso” (“Além disso, redes de pesca abandonadas prendem os animais…”) serve para:",
+  options:[{t:"acrescentar mais um problema aos já citados.",c:true},{t:"opor-se ao que havia sido dito no parágrafo anterior.",c:false},{t:"apresentar a única causa da morte das tartarugas.",c:false},{t:"concluir, em definitivo, todo o texto.",c:false}],
+  comment:"“Além disso” soma mais um perigo (as redes) aos que já foram citados: é adição. Não marca oposição, causa única nem conclusão."},
+ q5:{id:5,code:"D15",lv:"d",conector:"Se",title:"Tartarugas · condição",gen:"🐢 Divulgação científica (adaptado)",text:T_TAR,src:S_TAR,
+  cmd:"Em “Se cada pessoa reduzir o uso de plástico…, o mar fica mais limpo”, a conjunção “Se” estabelece relação de:",
+  options:[{t:"condição para o resultado apresentado em seguida.",c:true},{t:"oposição entre as pessoas e o mar.",c:false},{t:"causa de um fato que já aconteceu.",c:false},{t:"tempo exato em que o mar dos oceanos ficou mais limpo.",c:false}],
+  comment:"“Se” introduz uma hipótese/condição: caso as pessoas reduzam o plástico, então o mar fica mais limpo. Não indica oposição, fato já ocorrido nem tempo definido."},
+ /* TEXTO 2 — FORMIGAS */
+ q6:{id:6,code:"D02",lv:"b",conector:"Esse cheiro",title:"Formigas · referência",gen:"🐜 Divulgação científica (adaptado)",text:T_FOR,src:S_FOR,
+  cmd:"A expressão “Esse cheiro” (“Esse cheiro guia as companheiras…”) retoma, no texto:",
+  options:[{t:"o rastro de cheiro deixado pelas formigas.",c:true},{t:"a comida encontrada por uma formiga trabalhadora.",c:false},{t:"a função de defender o formigueiro.",c:false},{t:"o próprio corpo das formigas.",c:false}],
+  comment:"“Esse cheiro” retoma o que acabou de ser citado: o “rastro de cheiro” deixado no caminho. As demais opções são outros elementos do texto, não o referente do termo."},
+ q7:{id:7,code:"D11",lv:"b",conector:"Por isso",title:"Formigas · causa",gen:"🐜 Divulgação científica (adaptado)",text:T_FOR,src:S_FOR,
+  cmd:"Segundo o texto, as formigas viraram símbolo de força porque:",
+  options:[{t:"carregam pesos muito maiores que o próprio corpo.",c:true},{t:"são insetos pequenos, mas muito bem organizados entre si.",c:false},{t:"deixam um rastro de cheiro pelo caminho.",c:false},{t:"vivem todas numa mesma colônia.",c:false}],
+  comment:"O “Por isso” liga a causa (carregam pesos enormes para o tamanho) ao efeito (viraram símbolo de força). As outras opções são verdadeiras no texto, mas não é esse o motivo apontado."},
+ q8:{id:8,code:"D11",lv:"d",conector:"Graças a",title:"Formigas · causa/efeito",gen:"🐜 Divulgação científica (adaptado)",text:T_FOR,src:S_FOR,
+  cmd:"Em “Graças a essa divisão de trabalho, a colônia inteira funciona quase como um só corpo”, a relação entre as partes é de:",
+  options:[{t:"causa e efeito: a divisão faz a colônia funcionar.",c:true},{t:"oposição entre os diferentes grupos de uma mesma colônia.",c:false},{t:"condição para que as formigas possam existir.",c:false},{t:"comparação entre uma colônia e outra.",c:false}],
+  comment:"“Graças a” aponta a causa do bom funcionamento: por causa da divisão de trabalho, a colônia funciona como um só corpo (efeito). Não é oposição, condição nem comparação."},
+ q9:{id:9,code:"D15",lv:"d",conector:"Embora",title:"Formigas · concessão",gen:"🐜 Divulgação científica (adaptado)",text:T_FOR,src:S_FOR,
+  cmd:"A conjunção “Embora” (“Embora sejam minúsculas, as formigas carregam pesos enormes”) estabelece relação de:",
+  options:[{t:"concessão: admite um obstáculo, mas mantém a ideia.",c:true},{t:"causa direta da força das formigas.",c:false},{t:"finalidade do trabalho feito em equipe pelas formigas.",c:false},{t:"conclusão final de todo o texto.",c:false}],
+  comment:"“Embora” admite uma objeção (são minúsculas) e segue afirmando o contrário do esperado (carregam muito peso): é concessão. Não indica causa, finalidade nem conclusão."},
+ q10:{id:10,code:"D02",lv:"e",conector:"delas",title:"Formigas · referência",gen:"🐜 Divulgação científica (adaptado)",text:T_FOR,src:S_FOR,
+  cmd:"Em “quando uma delas encontra alimento, as outras seguem a trilha”, a palavra “delas” refere-se a:",
+  options:[{t:"as formigas.",c:true},{t:"as crias da colônia.",c:false},{t:"as trilhas de cheiro.",c:false},{t:"as fontes de comida.",c:false}],
+  comment:"“Uma delas” é uma das formigas — “delas” retoma “as formigas”. As demais opções estão no texto, mas não cabem no lugar do pronome."},
+ /* TEXTO 3 — ARCO-ÍRIS */
+ q11:{id:11,code:"D11",lv:"b",conector:"porque",title:"Arco-íris · causa",gen:"🌈 Divulgação científica (adaptado)",text:T_ARC,src:S_ARC,
+  cmd:"A expressão “Isso acontece porque…” introduz, no texto:",
+  options:[{t:"a causa de o arco-íris surgir no céu.",c:true},{t:"a consequência de uma longa falta de chuva.",c:false},{t:"uma opinião do autor sobre o céu bonito.",c:false},{t:"uma comparação entre o sol e a chuva.",c:false}],
+  comment:"“Porque” introduz a causa: o arco-íris surge porque a luz do sol, ao atravessar as gotas, se separa em cores. Não é consequência, opinião nem comparação."},
+ q12:{id:12,code:"D02",lv:"e",conector:"Ele",title:"Arco-íris · referência",gen:"🌈 Divulgação científica (adaptado)",text:T_ARC,src:S_ARC,
+  cmd:"Em “Ele nasce do encontro entre a luz do sol e as gotas de água”, o termo “Ele” refere-se a:",
+  options:[{t:"o arco-íris.",c:true},{t:"o encontro do sol com a chuva.",c:false},{t:"o céu depois da chuva.",c:false},{t:"o sol da tarde.",c:false}],
+  comment:"O texto fala do arco-íris e diz que “Ele nasce do encontro…” — “Ele” retoma “o arco-íris”. As outras opções são elementos próximos, mas não o referente do pronome."},
+ q13:{id:13,code:"D15",lv:"b",conector:"Se",title:"Arco-íris · condição",gen:"🌈 Divulgação científica (adaptado)",text:T_ARC,src:S_ARC,
+  cmd:"Em “Se o céu está totalmente limpo…, não há arco-íris”, a conjunção “Se” marca relação de:",
+  options:[{t:"condição para o que se afirma em seguida.",c:true},{t:"oposição entre o céu e o sol.",c:false},{t:"causa de a chuva começar a cair.",c:false},{t:"tempo certo em que o fenômeno das cores ocorre.",c:false}],
+  comment:"“Se” apresenta uma condição: caso o céu esteja limpo (sem gotas), então não há arco-íris. Não marca oposição, causa da chuva nem tempo definido."},
+ q14:{id:14,code:"D02",lv:"b",conector:"ela",title:"Arco-íris · referência",gen:"🌈 Divulgação científica (adaptado)",text:T_ARC,src:S_ARC,
+  cmd:"Em “…quando a luz branca do sol atravessa uma gota, ela se separa em várias cores”, o termo “ela” refere-se a:",
+  options:[{t:"a luz branca do sol.",c:true},{t:"a gota de água atravessada pela luz.",c:false},{t:"a chuva que acabou de cair.",c:false},{t:"a cor que aparece no céu.",c:false}],
+  comment:"O que se separa em várias cores é a luz branca do sol — “ela” retoma “a luz branca do sol”. A gota está por perto, mas é apenas o que a luz atravessa."},
+ /* TEXTO 4 — RECICLAGEM */
+ q15:{id:15,code:"D15",lv:"b",conector:"No entanto",title:"Reciclagem · ressalva",gen:"♻️ Texto expositivo (adaptado)",text:T_REC,src:S_REC,
+  cmd:"O conectivo “No entanto” (“No entanto, para isso dar certo, é preciso separar o lixo…”) marca relação de:",
+  options:[{t:"oposição, ou ressalva, ao que foi dito antes.",c:true},{t:"causa do desperdício de energia nas grandes fábricas.",c:false},{t:"conclusão final a que o texto quer chegar.",c:false},{t:"adição de uma informação totalmente igual.",c:false}],
+  comment:"Depois de mostrar as vantagens da reciclagem, o texto faz uma ressalva (só funciona se separarmos o lixo): “No entanto” é adversativo (oposição). Não é causa, conclusão nem adição."},
+ q16:{id:16,code:"D11",lv:"b",conector:"portanto",title:"Reciclagem · conclusão",gen:"♻️ Texto expositivo (adaptado)",text:T_REC,src:S_REC,
+  cmd:"No trecho “A reciclagem, portanto, só funciona quando vira um hábito de todos”, o termo “portanto” introduz:",
+  options:[{t:"uma conclusão a que o texto chega.",c:true},{t:"uma oposição à ideia de reciclar.",c:false},{t:"uma condição para existir lixo.",c:false},{t:"uma comparação entre dois materiais.",c:false}],
+  comment:"“Portanto” fecha o raciocínio: como a reciclagem depende da separação do lixo, conclui-se que ela só funciona como hábito de todos. É conclusão/consequência."},
+ q17:{id:17,code:"D15",lv:"b",conector:"Se",title:"Reciclagem · condição",gen:"♻️ Texto expositivo (adaptado)",text:T_REC,src:S_REC,
+  cmd:"Em “Se cada família fizer a sua parte, o volume de lixo nos aterros diminui”, a conjunção “Se” estabelece:",
+  options:[{t:"uma condição para o resultado seguinte.",c:true},{t:"uma oposição entre as diferentes famílias da cidade.",c:false},{t:"a causa de um fato já ocorrido.",c:false},{t:"o tempo em que o lixo diminuiu.",c:false}],
+  comment:"“Se” introduz a condição: caso cada família separe o lixo, então o volume nos aterros diminui. Não marca oposição, fato já ocorrido nem tempo."},
+ q18:{id:18,code:"D02",lv:"d",conector:"-la",title:"Reciclagem · referência",gen:"♻️ Texto expositivo (adaptado)",text:T_REC,src:S_REC,
+  cmd:"Em “fabricar uma lata com alumínio reciclado gasta menos energia do que produzi-la do zero”, o “la” de “produzi-la” refere-se a:",
+  options:[{t:"a lata.",c:true},{t:"o alumínio reciclado.",c:false},{t:"a energia gasta.",c:false},{t:"a reciclagem do lixo.",c:false}],
+  comment:"“Produzi-la” é o mesmo que “produzir a lata” — o “la” retoma “a lata”, evitando repetir a palavra. É coesão referencial por pronome."}
+};
+
+/* ===== Efeitos sonoros — Web Audio API (sintetizado, sem arquivos; roda offline em qualquer navegador) ===== */
+const SFX=(function(){
+  var ctx=null,on=true;
+  function ac(){try{if(!ctx){var C=window.AudioContext||window.webkitAudioContext;if(!C)return null;ctx=new C();}if(ctx.state==='suspended')ctx.resume();return ctx;}catch(e){return null;}}
+  function tone(freq,start,dur,type,vol){var c=ac();if(!c||!on)return;var t0=c.currentTime+start;var o=c.createOscillator(),g=c.createGain();o.type=type||'sine';o.frequency.setValueAtTime(freq,t0);g.gain.setValueAtTime(0.0001,t0);g.gain.linearRampToValueAtTime(vol||0.2,t0+0.012);g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);o.connect(g);g.connect(c.destination);o.start(t0);o.stop(t0+dur+0.03);}
+  function slide(f1,f2,start,dur,type,vol){var c=ac();if(!c||!on)return;var t0=c.currentTime+start;var o=c.createOscillator(),g=c.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f1,t0);o.frequency.exponentialRampToValueAtTime(f2,t0+dur);g.gain.setValueAtTime(0.0001,t0);g.gain.linearRampToValueAtTime(vol||0.2,t0+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);o.connect(g);g.connect(c.destination);o.start(t0);o.stop(t0+dur+0.03);}
+  return {
+    unlock:function(){ac();},
+    toggle:function(){on=!on;if(on){ac();tone(880,0,0.08,'triangle',0.15);}return on;},
+    isOn:function(){return on;},
+    pop:function(){tone(660,0,0.06,'square',0.12);tone(990,0.05,0.06,'square',0.10);},
+    reveal:function(){tone(784,0,0.1,'triangle',0.16);tone(1175,0.09,0.16,'triangle',0.16);},
+    correct:function(){tone(659.25,0,0.12,'triangle',0.22);tone(830.6,0.1,0.12,'triangle',0.22);tone(1046.5,0.2,0.26,'triangle',0.22);},
+    wrong:function(){slide(320,200,0,0.32,'sine',0.16);},
+    win:function(){[523.25,659.25,783.99,1046.5].forEach(function(f,i){tone(f,i*0.13,0.26,'triangle',0.22);});tone(1318.5,0.58,0.55,'triangle',0.2);tone(1046.5,0.58,0.55,'triangle',0.14);}
+  };
+})();
+
+const COLORS=["#6A4C93","#7B9E1E","#C2267A","#2D6E9E","#E0922F","#2E9E5B"];
+const DEFAULT_TEAMS=["Conectores","Elos","Pontes"];
+const PTS={e:10,b:15,d:20};
+const LV={e:"Elementar",b:"Básico",d:"Desejável"};
+const END=14;
+const STEP={e:1,b:2,d:3};
+const SPECIALS={3:'bonus',5:'back',7:'trap',9:'shortcut',11:'bonus',12:'back'};
+const SPEC_IC={bonus:'🔗',back:'⚠️',shortcut:'➿',trap:'🌀'};
+const SPEC_DELTA={bonus:2,back:-2,shortcut:3,trap:-3};
+const SPEC_MSG={bonus:'Conectivo de ouro! Avança +2.',back:'Conectivo trocado! Recua 2.',shortcut:'Atalho da conclusão! Avança +3.',trap:'Causa e consequência invertidas! Recua 3.'};
+const app={
+ flowIdx:-1,teams:[],lessonIdx:0,lessonRevealed:false,workedIdx:0,
+ turn:0,played:[],current:null,winner:null,
+ stats:{D02:{t:0,g:0},D11:{t:0,g:0},D15:{t:0,g:0}},
+ timer:150,tInt:null,tRun:false,
+ go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));const el=document.getElementById(id);el.classList.add('active');el.scrollTop=0;document.body.classList.toggle('in-game',this.teams.length>0&&id!=='screen-intro');if(this.tInt){clearInterval(this.tInt);this.tRun=false;}},
+ fullscreen(){if(!document.fullscreenElement){document.documentElement.requestFullscreen?.();}else{document.exitFullscreen?.();}},
+ flowGo(i){this.flowIdx=i;const f=FLOW[i];if(!f)return;
+   if(f.s==='warmup')this.go('screen-warmup');
+   else if(f.s==='lesson'){this.lessonIdx=0;this.renderLesson();this.go('screen-lesson');}
+   else if(f.s==='worked'){this.workedIdx=0;this.renderWorked();this.go('screen-worked');}
+   else if(f.s==='setup'){this.renderTeams();this.go('screen-setup');}
+   else if(f.s==='game'){this.renderGame();this.go('screen-game');}
+   else if(f.s==='podium')this.finish();},
+ flowNext(){this.flowGo(this.flowIdx+1);},
+ flowBack(){this.flowIdx>0?this.flowGo(this.flowIdx-1):this.go('screen-intro');},
+ toGame(){if(this.teams.length){this.renderGame();this.go('screen-game');}},
+ openBank(){const names={D02:'D02 — Coesão referencial',D11:'D11 — Causa e consequência',D15:'D15 — Conectivos lógicos'};const byc={D02:[],D11:[],D15:[]};Object.values(Q).forEach(q=>byc[q.code].push(q));const L=['A','B','C','D','E'];let html='';['D02','D11','D15'].forEach(code=>{html+=`<div class="bank-group"><h3>${names[code]} <span style="font-size:.82rem;color:var(--muted);font-weight:400">· ${byc[code].length} questões</span></h3>`;byc[code].forEach(q=>{html+=`<div class="bank-q"><div class="qh"><span class="tag">${q.code}</span><span class="tag lv">${LV[q.lv]}</span><span style="font-size:.8rem;color:var(--muted)">${q.gen}</span></div><div class="bt">${q.text}</div><div class="bsrc">${q.src}</div><div class="bcmd">${q.cmd}</div>${q.options.map((o,i)=>`<div class="bopt ${o.c?'ok':''}">${L[i]}) ${o.t}${o.c?' ✔':''}</div>`).join('')}<div class="bcmt"><b>Gabarito comentado:</b> ${q.comment}</div></div>`;});html+='</div>';});document.getElementById('bank-list').innerHTML=html;this.go('screen-bank');},
+
+ renderLesson(){const l=teach[this.lessonIdx];this.lessonRevealed=false;
+   document.getElementById('l-step').textContent=`Aula · ${this.lessonIdx+1} de ${teach.length}`;
+   document.getElementById('l-dots').innerHTML=teach.map((_,i)=>`<i class="${i===this.lessonIdx?'on':''}"></i>`).join('');
+   let html='';
+   if(l.t==='triad'){html=`<div style="text-align:center;margin-bottom:1.1rem"><h2 style="font-family:var(--serif);font-size:clamp(1.5rem,3.4vw,2.1rem)">${l.title}</h2></div><div class="triad">${l.tri.map(t=>`<div class="tri"><div class="bigic">${t.ic}</div><h4>${t.h}</h4><p>${t.p}</p></div>`).join('')}</div>`;}
+   else if(l.t==='metodo'){html=`<div style="text-align:center;margin-bottom:1.1rem"><h2 style="font-family:var(--serif);font-size:clamp(1.5rem,3.4vw,2.1rem)">${l.title}</h2></div><div class="metodo">${l.steps.map(s=>`<div class="m-step"><div class="big">${s.L} <b>${s.tag}</b></div><h4>${s.h}</h4><p>${s.p}</p></div>`).join('')}</div>`;}
+   else if(l.t==='energ'){html=`<div class="energ"><span class="ebadge">${l.badge}</span><span class="emoji">${l.e}</span><h2>${l.title}</h2><p>${l.desc}</p></div>`;}
+   else if(l.t==='c'){html=`<div class="sec-banner"><div class="big">${l.code}</div><div><h2>${l.title} <span style="opacity:.8;font-size:.7em">· parte ${l.part}</span></h2><p>${l.full}</p></div></div><div class="concept"><div class="art">${ART[l.art]}</div><div class="info">${l.kv.map(k=>`<div class="kv ${k.cls}"><span class="ic">${k.ic}</span><div><h4>${k.h}</h4><p>${k.p}</p></div></div>`).join('')}${l.genres?`<div><div style="font-size:.82rem;color:var(--muted);font-weight:600;margin-bottom:.3rem">Gêneros em que costuma aparecer:</div><div class="genres">${l.genres.map(g=>`<span>${g}</span>`).join('')}</div></div>`:''}${l.tip?`<div class="goldtip">${l.tip}</div>`:''}</div></div>`;}
+   else if(l.t==='ex'){
+     const banner=l.trap?`<div class="sec-banner alt"><div class="big">🕵️</div><div><h2>Caça à Cilada</h2><p>Treine o olho: onde o grupo escorregou?</p></div></div>`:`<div class="sec-banner alt"><div class="big">${l.code}</div><div><h2>Exemplo na prática</h2><p>Veja o Método 3P resolvendo uma questão deste descritor.</p></div></div>`;
+     html=`${banner}<div class="ex-slide"><div class="ex-left"><span class="gt">${l.gt}</span><div class="mini">${l.text}</div><span class="src">${l.src}</span></div><div class="ex-right"><div class="ecmd">${l.cmd}</div><div class="ex-opts" id="ex-opts">${l.options.map((o,i)=>`<div class="eopt" data-correct="${o.c}"><span class="lt">${['A','B','C','D','E'][i]}</span><span>${o.t}</span></div>`).join('')}</div><button class="btn sm" id="ex-btn" onclick="app.lessonReveal()">Mostrar resposta</button><div class="eexpl hide" id="ex-expl">${l.expl.map(x=>`<div>${x}</div>`).join('')}</div></div></div>`;
+   }
+   else if(l.t==='tabela'){html=`<div style="text-align:center;margin-bottom:1rem"><h2 style="font-family:var(--serif);font-size:clamp(1.5rem,3.4vw,2.1rem)">${l.title}</h2><p style="color:var(--muted);font-size:.92rem">Guarde no bolso: a relação lógica e os conectivos que a marcam.</p></div><div class="tabela"><div class="trow th"><span>Relação</span><span>Conectivos típicos</span></div>${l.rows.map(rw=>`<div class="trow"><span class="tr-rel">${rw[0]}</span><span class="tr-con">${rw[1]}</span></div>`).join('')}</div>`;}
+   document.getElementById('l-card').innerHTML=html;
+   document.getElementById('l-next').textContent=this.lessonIdx===teach.length-1?'Resolver uma questão juntos ▸':'Próximo ▸';
+ },
+ lessonReveal(){if(this.lessonRevealed)return;this.lessonRevealed=true;document.querySelectorAll('#ex-opts .eopt').forEach(o=>o.classList.add(o.dataset.correct==='true'?'correct':'dim'));document.getElementById('ex-btn').classList.add('hide');document.getElementById('ex-expl').classList.remove('hide');},
+ lessonNext(){this.lessonIdx<teach.length-1?(this.lessonIdx++,this.renderLesson()):this.flowNext();},
+ lessonPrev(){this.lessonIdx>0?(this.lessonIdx--,this.renderLesson()):this.go('screen-warmup');},
+
+ renderWorked(){document.getElementById('wk-gt').textContent=worked.gt;document.getElementById('wk-text').textContent=worked.text;document.getElementById('wk-src').textContent=worked.src;document.getElementById('wk-cmd').textContent=worked.cmd;document.getElementById('wk-steps').innerHTML=worked.steps.map((s,i)=>`<div class="stp" id="wst-${i}"><span class="n">${['C1','C2','C3'][i]}</span><p>${s.t}</p></div>`).join('')+`<div class="ans" id="wk-ans">${worked.answer}</div>`;const b=document.getElementById('wk-step-btn');b.classList.remove('hide');b.textContent='Passo 1 — Caça';document.getElementById('wk-go').classList.add('hide');},
+ workedStep(){if(this.workedIdx<worked.steps.length){document.getElementById('wst-'+this.workedIdx).classList.add('show');this.workedIdx++;const b=document.getElementById('wk-step-btn');b.textContent=this.workedIdx<worked.steps.length?`Passo ${this.workedIdx+1} — ${['Caça','Classifica','Confere'][this.workedIdx]}`:'Revelar a resposta';}else{document.getElementById('wk-ans').classList.add('show');document.getElementById('wk-step-btn').classList.add('hide');document.getElementById('wk-go').classList.remove('hide');}},
+
+ renderTeams(){const box=document.getElementById('rows');if(box.dataset.init)return;box.dataset.init="1";DEFAULT_TEAMS.forEach(n=>this.addTeam(n));},
+ addTeam(name){const box=document.getElementById('rows');if(box.children.length>=6)return;const i=box.children.length;const r=document.createElement('div');r.className='row';r.innerHTML=`<span class="tag" style="background:${COLORS[i]}"></span><input type="text" value="${typeof name==='string'?name:''}" placeholder="Equipe ${i+1}"><button class="rm" onclick="this.parentElement.remove()">×</button>`;box.appendChild(r);},
+ start(){const inputs=document.querySelectorAll('#rows input');this.teams=[];inputs.forEach((inp,i)=>{const nm=inp.value.trim();if(nm)this.teams.push({id:i,name:nm,pos:0,color:COLORS[i%COLORS.length]});});if(this.teams.length<2){alert('Crie pelo menos 2 equipes.');return;}this.turn=0;this.played=[];this.winner=null;this.teams.forEach(t=>t.pos=0);this.maxQ=Math.max(this.teams.length,Math.floor(Object.keys(Q).length/this.teams.length)*this.teams.length);this.renderScore();this.flowNext();},
+ renderScore(){document.getElementById('scoreboard').innerHTML=this.teams.map((t,i)=>`<div class="chip ${i===this.turn?'turn':''}" id="chip-${t.id}"><span class="tag" style="background:${t.color}"></span><span class="nm">${t.name}</span><span class="pt" id="pt-${t.id}">${t.pos}</span></div>`).join('');},
+ curTeam(){return this.teams[this.turn];},
+ nextTurn(){this.turn=(this.turn+1)%this.teams.length;this.renderScore();},
+
+ renderGame(){this.renderScore();const t=this.curTeam();
+   document.getElementById('turn-banner').innerHTML=`<span class="dot" style="background:${t.color}"></span> Vez dos <span style="color:${t.color}">${t.name}</span>`;
+   let bd='';for(let i=0;i<=END;i++){const sp=SPECIALS[i];const toks=this.teams.filter(tm=>tm.pos===i).map(tm=>`<span class="tok" style="background:${tm.color}" title="${tm.name}">${tm.name[0]}</span>`).join('');const label=i===0?'🏳️':(i===END?'🏁':i);const cls=i===0?'start':(i===END?'end':(sp?('sp '+sp):''));const ic=sp?SPEC_IC[sp]:'';bd+=`<div class="space ${cls}"><span class="sn">${label}</span>${ic?`<span class="sic">${ic}</span>`:''}${toks?`<span class="toks">${toks}</span>`:''}</div>`;}
+   document.getElementById('board').innerHTML=bd;
+   document.getElementById('board-cap').innerHTML=`Do <b>Texto Embaralhado</b> 🏳️ até o <b>Texto Coeso</b> 🏁 — fique de olho nas casas-surpresa!`;
+   const rk=[...this.teams].sort((a,b)=>b.pos-a.pos);
+   document.getElementById('rank').innerHTML=rk.map(tm=>`<div class="rank-row"><span class="nm"><span class="dot" style="background:${tm.color}"></span>${tm.name}</span><div class="rank-track"><i style="width:${Math.round(tm.pos/END*100)}%;background:${tm.color}"></i></div><span class="sc">casa ${tm.pos}/${END}</span></div>`).join('');
+   const tot=this.maxQ;document.getElementById('qprog-label').textContent=`${this.played.length} de ${tot} questões`;document.getElementById('qprog-fill').style.width=Math.round(this.played.length/tot*100)+'%';
+ },
+  toast(msg){const d=document.createElement('div');d.className='toast';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>{d.classList.add('out');setTimeout(()=>d.remove(),400);},2800);},
+ toggleSfx(){const on=SFX.toggle();const b=document.getElementById('sfx-btn');if(b){b.textContent=on?'🔊':'🔇';b.title=on?'Som ligado (clique para desligar)':'Som desligado (clique para ligar)';}},
+ drawQuestion(){if(this.played.length>=this.maxQ){this.finish();return;}SFX.pop();const avail=Object.values(Q).filter(q=>!this.played.includes(q.id));if(avail.length===0){this.finish();return;}this.current=avail[Math.floor(Math.random()*avail.length)];this.played.push(this.current.id);this.openQuestion(this.current);},
+ openQuestion(q){const t=this.curTeam();document.getElementById('q-badge').textContent=q.code;document.getElementById('q-full').textContent=FULL[q.code]||'';document.getElementById('q-turn').innerHTML=`<span class="dot" style="background:${t.color}"></span> ${t.name} · ${LV[q.lv]} · avança ${STEP[q.lv]} casa(s)`;
+   document.getElementById('q-prog-mini').textContent=`Questão ${this.played.length} de ${this.maxQ}`;
+   document.getElementById('q-gtag').textContent=q.gen||'';document.getElementById('q-text').textContent=q.text||'';document.getElementById('q-src').textContent=q.src||'';document.getElementById('q-cmd').textContent=q.cmd;
+   const opts=[...q.options].sort(()=>Math.random()-0.5);const L=['A','B','C','D','E','F'];
+   document.getElementById('q-opts').innerHTML=opts.map((o,i)=>`<div class="opt" data-correct="${o.c}"><span class="lt">${L[i]}</span><span>${o.t}</span></div>`).join('');
+   document.getElementById('q-cmt').classList.add('hide');document.getElementById('q-judge').classList.add('hide');document.getElementById('q-reveal').classList.remove('hide');
+   document.getElementById('q-judge-h').textContent=`Os ${t.name} acertaram?`;
+   this.timer=150;this.tRun=false;this.updateTimer();document.getElementById('ttoggle').textContent='▶';this.go('screen-question');},
+ adjustTimer(n){if(this.timer+n>0){this.timer+=n;this.updateTimer();}},
+ toggleTimer(){const b=document.getElementById('ttoggle');if(this.tRun){clearInterval(this.tInt);this.tRun=false;b.textContent='▶';}else{this.tRun=true;b.textContent='⏸';this.tInt=setInterval(()=>{this.timer--;this.updateTimer();if(this.timer<=0){clearInterval(this.tInt);this.tRun=false;b.textContent='⏱';document.getElementById('tv').style.color='var(--red)';}},1000);}},
+ updateTimer(){const m=String(Math.floor(this.timer/60)).padStart(2,'0');const s=String(this.timer%60).padStart(2,'0');const el=document.getElementById('tv');el.textContent=`${m}:${s}`;if(this.timer>5)el.style.color='';},
+ reveal(){SFX.reveal();if(this.tInt)clearInterval(this.tInt);this.tRun=false;document.getElementById('ttoggle').textContent='▶';document.getElementById('q-reveal').classList.add('hide');document.querySelectorAll('#q-opts .opt').forEach(o=>o.classList.add(o.dataset.correct==='true'?'correct':'dim'));document.getElementById('q-cmt-txt').textContent=this.current.comment;document.getElementById('q-cmt').classList.remove('hide');document.getElementById('q-judge').classList.remove('hide');},
+ resolveQ(correct){const q=this.current;const t=this.curTeam();correct?SFX.correct():SFX.wrong();this.stats[q.code].t++;
+   if(correct){this.stats[q.code].g++;t.pos=Math.min(END,t.pos+STEP[q.lv]);SFX.reveal();
+     const sp=SPECIALS[t.pos];
+     if(sp){t.pos=Math.max(0,Math.min(END,t.pos+SPEC_DELTA[sp]));this.toast(`${SPEC_IC[sp]} ${SPEC_MSG[sp]}`);}
+     if(t.pos>=END){this.winner=t;this.renderScore();this.finish();return;}
+   }else{this.toast('😬 Escorregou no conectivo! A equipe não saiu do lugar.');}
+   this.nextTurn();
+   if(this.played.length>=this.maxQ){this.finish();return;}
+   this.renderGame();this.go('screen-game');},
+  finish(){SFX.win();const r=[...this.teams].sort((a,b)=>b.pos-a.pos);
+   const slots=[{t:r[1],cls:'p2',rk:2},{t:r[0],cls:'p1',rk:1},{t:r[2],cls:'p3',rk:3}];
+   document.getElementById('podium').innerHTML=slots.map(o=>o.t?`<div class="pstep ${o.cls}" style="background:${o.t.color}">${o.rk===1?'<div class="crown">👑</div>':''}<div class="medal">${o.rk}</div><div class="nm">${o.t.name}</div><div class="sc">casa ${o.t.pos}/${END}</div><div class="rk">${o.rk}º</div></div>`:'').join('');
+   const champ=this.winner||r[0];const head=this.winner?`🏁 ${champ.name} chegou ao Texto Coeso!`:`🏁 ${champ.name} ficou mais perto do Texto Coeso!`;
+   document.getElementById('pod-list').innerHTML=`<div class="r first" style="justify-content:center"><span class="pos">${head}</span></div>`+r.map((t,i)=>`<div class="r ${i===0?'first':''}"><span class="pos">${i+1}º</span><span style="flex:1;text-align:left;padding-left:.6rem">${t.name}</span><span>casa ${t.pos}/${END}</span></div>`).join('');
+   this.renderRaioX();this.go('screen-podium');this.confetti();},
+  renderRaioX(){const codes=['D02','D11','D15'];const names={D02:'Coesão referencial',D11:'Causa/consequência',D15:'Conectivos lógicos'};let rows='',worst=null,worstPct=101;codes.forEach(c=>{const s=this.stats[c]||{t:0,g:0};const pct=s.t?Math.round(s.g/s.t*100):null;const col=pct===null?'#c9cfdb':(pct>=70?'var(--good)':pct>=40?'var(--gold)':'var(--red)');rows+=`<div class="rx-row"><span class="lab">${c} · ${names[c]}</span><div class="rx-bar"><i style="width:${pct===null?0:pct}%;background:${col}"></i></div><span class="pct">${pct===null?'—':pct+'%'}</span></div>`;if(pct!==null&&pct<worstPct){worstPct=pct;worst=c;}});let tip='Marque “acertou / não acertou” em cada questão para o Raio-X refletir o desempenho real da turma.';if(worst!==null)tip=`A turma teve mais dificuldade em <b>${worst} — ${names[worst]}</b>. Vale reforçar esse descritor com o Método 3C no próximo encontro.`;document.getElementById('raiox').innerHTML=`<h3>🔎 Raio-X da turma</h3><div class="sb">Acertos por descritor ao longo do jogo</div>${rows}<div class="rx-tip">${tip}</div>`;},
+ confetti(){for(let i=0;i<70;i++){const c=document.createElement('div');c.className='cf';c.style.left=Math.random()*100+'vw';c.style.background=COLORS[i%COLORS.length];c.style.animationDuration=(2.5+Math.random()*2)+'s';c.style.animationDelay=(Math.random()*.6)+'s';c.style.transform=`rotate(${Math.random()*360}deg)`;document.body.appendChild(c);setTimeout(()=>c.remove(),5300);}}
+};
+const FLOW=[{s:'warmup'},{s:'lesson'},{s:'worked'},{s:'setup'},{s:'game'},{s:'podium'}];
+document.addEventListener('keydown',e=>{const a=document.querySelector('.screen.active')?.id;if(a==='screen-question'&&(e.key==='Enter'||e.key===' ')&&!document.getElementById('q-reveal').classList.contains('hide')){e.preventDefault();app.reveal();}if(a==='screen-lesson'){if(e.key==='ArrowRight')app.lessonNext();if(e.key==='ArrowLeft')app.lessonPrev();}if(a==='screen-worked'&&(e.key==='Enter'||e.key===' ')){e.preventDefault();if(!document.getElementById('wk-step-btn').classList.contains('hide'))app.workedStep();}});
+</script>
+</body>
+</html>
