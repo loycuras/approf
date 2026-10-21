@@ -1,6 +1,33 @@
 /* APProf — catálogo de aulões.
    status: "ready" (arquivo existe e já foi testado) | "soon" (ainda não construído)
    path: caminho relativo ao index.html, só usado quando status === "ready" */
+
+/* Texto oficial de cada descritor (Matriz de Referência SAEPE/PE, Língua Portuguesa),
+   igual ao que aparece na tela de abertura de cada aulão. */
+const DESCRITORES = {
+  D01: "Localizar informações explícitas em um texto",
+  D02: "Coesão referencial",
+  D03: "Inferir o sentido de uma palavra ou expressão",
+  D04: "Inferir informação implícita",
+  D05: "Interpretar texto com auxílio de material gráfico diverso",
+  D06: "Identificar o tema de um texto",
+  D07: "Identificar a tese de um texto",
+  D08: "Relação entre tese e argumentos",
+  D09: "Partes principais e secundárias",
+  D10: "Conflito e elementos da narrativa",
+  D11: "Causa e consequência",
+  D12: "Identificar a finalidade de textos de diferentes gêneros",
+  D13: "Marcas do locutor/interlocutor",
+  D14: "Fato × opinião",
+  D15: "Conectivos lógicos",
+  D16: "Efeito de humor ou ironia",
+  D17: "Pontuação expressiva",
+  D18: "Efeito da escolha da palavra",
+  D19: "Recursos ortográficos/morfossintáticos",
+  D20: "Tratamento comparativo",
+  D21: "Posições distintas"
+};
+
 const AULOES = [
   // ---------- SAEPE · 9º ano EF ----------
   {

@@ -46,8 +46,10 @@
 
   function cardHTML(a){
     var tags = a.descritores.length
-      ? a.descritores.map(function(d){ return '<span class="tag">' + d + '</span>'; }).join("")
-      : '<span class="tag">em preparação</span>';
+      ? '<ul class="card-desc-list">' + a.descritores.map(function(d){
+          return '<li><b>' + d + '</b><span>' + (DESCRITORES[d] || "") + '</span></li>';
+        }).join("") + '</ul>'
+      : '<p class="card-desc-pending">Descritores em preparação.</p>';
 
     var footAction = a.status === "ready"
       ? '<button class="play" data-abrir="' + a.id + '">Jogar</button>'
@@ -61,7 +63,7 @@
         '</div>' +
         '<h3>' + a.titulo + '</h3>' +
         '<p class="card-desc">' + a.resumo + '</p>' +
-        '<div class="card-tags">' + tags + '</div>' +
+        tags +
         '<div class="card-foot">' + footAction + '</div>' +
       '</article>'
     );
