@@ -68,7 +68,7 @@ const AULOES = [
     jogo: "Batalha Naval", icone: "🚢", corJogo: "batalha",
     descritores: ["D14", "D20", "D21"],
     resumo: "Opinião, defesa de ponto de vista e efeitos de sentido na argumentação.",
-    status: "soon"
+    status: "ready", path: "auloes/saepe/9ano/aulao-5.html"
   },
   {
     prova: "saepe", serie: "9", id: "saepe-9-6", numero: 6,
@@ -76,7 +76,7 @@ const AULOES = [
     jogo: "Memória", icone: "🧠", corJogo: "narrativa",
     descritores: ["D10", "D13", "D17", "D19"],
     resumo: "Recursos de estilo, variação linguística e elementos da narrativa.",
-    status: "soon"
+    status: "ready", path: "auloes/saepe/9ano/aulao-6.html"
   },
 
   // ---------- SAEPE · 3º ano EM ----------
@@ -147,3 +147,6 @@ const AULOES = [
 ];
 
 const WHATSAPP_URL = "https://wa.me/5588996563798?text=" + encodeURIComponent("Olá! Vi o site do APProf e queria saber mais 🙂");
+
+/* Pix copia-e-cola (BR Code estático) — não alterar: o CRC16 no final só vale para esta string exata. */
+const PIX_PAYLOAD = "00020126580014BR.GOV.BCB.PIX0136352327bb-6d66-4464-9398-b503b4f282a65204000053039865802BR5924Loyana Jacinto Rodrigues6009SAO PAULO621405101Jy8wpch1r6304A234";

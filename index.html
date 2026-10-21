@@ -106,8 +106,11 @@
         <p>O APProf nasceu da vontade de tornar o estudo para o SAEPE e o SPAECE menos cansativo — tanto pra quem ensina quanto pra quem aprende. A ideia é simples: transformar a revisão de conteúdo em aulões gamificados, com desafios e competição em equipe, pra engajar a turma de um jeito que a apostila tradicional não consegue. Todo o material aqui é gratuito e pensado por professores, pra professores.</p>
       </div>
       <div class="footer-support">
-        <p><b>Quer apoiar o projeto pra que ele continue existindo?</b> Esse site é mantido de forma independente. Se ele te ajudou em sala, ou se você quiser contratar um material sob medida, é só chamar.</p>
-        <a class="btn btn-primary" href="#" id="whatsapp-footer" target="_blank" rel="noopener" style="width:100%;justify-content:center;">Chamar no WhatsApp</a>
+        <p><b>Quer apoiar o projeto pra que ele continue existindo?</b> Esse site é mantido de forma independente. Se ele te ajudou em sala, tirou uma dúvida ou se você quiser contratar um material sob medida, é só chamar.</p>
+        <div class="support-actions">
+          <a class="btn btn-primary" href="#" id="whatsapp-footer" target="_blank" rel="noopener">Chamar no WhatsApp</a>
+          <button class="btn btn-ghost" id="apoiar-btn" type="button">Apoiar via Pix</button>
+        </div>
       </div>
     </div>
     <div class="footer-bottom">
@@ -119,6 +122,22 @@
     </div>
   </div>
 </footer>
+
+<!-- ===================== APOIAR VIA PIX (overlay) ===================== -->
+<div class="pix-overlay" id="pix-overlay" role="dialog" aria-modal="true" aria-label="Apoiar via Pix">
+  <div class="pix-panel">
+    <div class="pix-bar">
+      <strong>Apoiar via Pix</strong>
+      <button id="pix-close" aria-label="Fechar">✕</button>
+    </div>
+    <div class="pix-body">
+      <img class="pix-qr" src="assets/img/pix-qr.svg" alt="QR code Pix para apoiar o APProf" width="220" height="220">
+      <p class="pix-note">Qualquer valor ajuda a manter o site no ar. Escaneie o QR code no app do seu banco ou copie a chave abaixo.</p>
+      <button class="btn btn-primary" id="pix-copy" type="button" style="width:100%;justify-content:center;">Copiar chave Pix</button>
+      <p class="pix-receiver">Chave registrada em nome de Loyana Jacinto Rodrigues.</p>
+    </div>
+  </div>
+</div>
 
 <!-- ===================== PAINEL DO AULÃO (overlay) ===================== -->
 <div class="player-overlay" id="player-overlay" role="dialog" aria-modal="true" aria-label="Aulão em execução">

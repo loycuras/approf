@@ -105,6 +105,55 @@
   overlay.addEventListener("click", function(e){ if (e.target === overlay) fecharAulao(); });
   document.addEventListener("keydown", function(e){ if (e.key === "Escape" && overlay.classList.contains("open")) fecharAulao(); });
 
+  // ---------- Apoiar via Pix ----------
+  var pixOverlay = document.getElementById("pix-overlay");
+  var pixOpenBtn = document.getElementById("apoiar-btn");
+  var pixCloseBtn = document.getElementById("pix-close");
+  var pixCopyBtn = document.getElementById("pix-copy");
+
+  if (pixOpenBtn) {
+    pixOpenBtn.addEventListener("click", function(){
+      pixOverlay.classList.add("open");
+      document.body.style.overflow = "hidden";
+    });
+  }
+  function fecharPix(){
+    pixOverlay.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+  if (pixCloseBtn) pixCloseBtn.addEventListener("click", fecharPix);
+  pixOverlay.addEventListener("click", function(e){ if (e.target === pixOverlay) fecharPix(); });
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape" && pixOverlay.classList.contains("open")) fecharPix(); });
+
+  if (pixCopyBtn) {
+    pixCopyBtn.addEventListener("click", function(){
+      function marcarCopiado(){
+        var original = "Copiar chave Pix";
+        pixCopyBtn.textContent = "Chave copiada!";
+        pixCopyBtn.classList.add("copied");
+        setTimeout(function(){ pixCopyBtn.textContent = original; pixCopyBtn.classList.remove("copied"); }, 2200);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(PIX_PAYLOAD).then(marcarCopiado).catch(function(){
+          // fallback abaixo
+          copiarComFallback();
+        });
+      } else {
+        copiarComFallback();
+      }
+      function copiarComFallback(){
+        var ta = document.createElement("textarea");
+        ta.value = PIX_PAYLOAD;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand("copy"); marcarCopiado(); } catch(e) {}
+        document.body.removeChild(ta);
+      }
+    });
+  }
+
   // ---------- Estatística do hero ----------
   document.getElementById("stat-prontos").textContent = AULOES.filter(function(a){ return a.status === "ready"; }).length;
 
