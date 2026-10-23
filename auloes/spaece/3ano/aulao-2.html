@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aulão SPAECE 2 — A Arquitetura do Texto</title>
+<style>
+:root{
+  --bg:#F4F7FC;--bg-tint:#E9EEF9;--surface:#FFFFFF;
+  --ink:#1E293B;--muted:#56607A;--line:rgba(30,41,59,.08);--line-2:rgba(30,41,59,.18);
+  --c1:#3457D5;--c1-d:#273F9F;--c1-soft:#E6ECFB;--c2:#F3A712;--c2-soft:#FDEFD2;
+  --good:#2E9E5B;--good-soft:#E4F5EB;--red:#E24A4A;--gold:#F3A712;--gold-soft:#FDEFD2;
+  --serif:'Fraunces',Georgia,serif;--body:'Inter',system-ui,sans-serif;
+  --r:16px;--r-sm:12px;
+  --sh:0 6px 16px rgba(30,41,59,.05);
+  --sh-lg:0 12px 32px rgba(52,87,213,.1);
+  --sh-hover:0 10px 24px rgba(52,87,213,.15);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--body);
+  background-color:var(--bg);
+  background-image: radial-gradient(var(--line-2) 1px, transparent 1px);
+  background-size: 24px 24px;
+  color:var(--ink);
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important}}
+img{max-width:100%}
+
+#fsBtn{position:fixed;top:10px;right:12px;z-index:400;background:rgba(255,255,255,0.9);backdrop-filter:blur(8px);border:1px solid var(--line);color:var(--ink);width:38px;height:38px;border-radius:10px;cursor:pointer;font-size:1.1rem;display:grid;place-items:center;box-shadow:var(--sh);transition:all .2s ease}
+#fsBtn:hover{background:var(--c1-soft);border-color:var(--c1);transform:scale(1.05)}
+
+#topbar{display:none;align-items:center;gap:1rem;padding:.4rem 60px .4rem 1rem;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line);flex-shrink:0;box-shadow:0 2px 10px rgba(0,0,0,0.02)}
+body.in-game #topbar{display:flex}
+.brand{font-family:var(--serif);font-weight:700;font-size:1rem;display:flex;align-items:center;gap:.5rem;white-space:nowrap;color:var(--c1-d)}
+.brand .mk{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--c1),var(--c2));display:grid;place-items:center;font-size:.7rem;color:#fff;font-weight:700;font-family:var(--body);box-shadow:0 4px 8px rgba(52,87,213,.25)}
+#scoreboard{display:flex;gap:.5rem;flex:1;justify-content:center;flex-wrap:wrap}
+
+.chip{display:flex;align-items:center;gap:.4rem;background:var(--surface);border:1px solid var(--line);padding:.3rem .8rem;border-radius:999px;box-shadow:var(--sh);transition:all .3s cubic-bezier(0.2,0.8,0.2,1)}
+.chip .tag{width:10px;height:10px;border-radius:50%;box-shadow:inset 0 2px 4px rgba(0,0,0,.15)}
+.chip .nm{font-size:.8rem;color:var(--muted);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.chip .pt{font-family:var(--serif);font-weight:700;font-size:1rem;color:var(--ink)}
+.chip.bump{transform:scale(1.1);box-shadow:0 0 0 2px var(--c2)}
+.chip.turn{box-shadow:0 0 0 2px var(--c2);background:var(--c2-soft);border-color:transparent}
+
+.ibtn{background:rgba(255,255,255,0.9);border:1px solid var(--line);color:var(--ink);width:36px;height:36px;border-radius:9px;cursor:pointer;font-size:1rem;display:grid;place-items:center;transition:all .2s ease}
+.ibtn:hover{background:var(--c1-soft);color:var(--c1-d);transform:translateY(-2px);box-shadow:var(--sh)}
+
+#stage{position:relative;flex:1;min-height:0}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;padding:clamp(.8rem,2vw,1.5rem);overflow:auto}
+.screen.active{display:flex;animation:pop .4s cubic-bezier(0.16, 1, 0.3, 1) both}
+@keyframes pop{from{opacity:0;transform:translateY(8px) scale(0.99)}to{opacity:1;transform:none}}
+.screen.center{align-items:center;justify-content:center;text-align:center}
+.wrap{width:100%;max-width:1180px;margin:0 auto}
+.fill{flex:1;min-height:0;display:flex;flex-direction:column}
+
+.toprow{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;flex-shrink:0}
+.back{display:inline-flex;align-items:center;gap:.3rem;background:var(--surface);border:1px solid var(--line);color:var(--muted);padding:.45rem .8rem;border-radius:999px;cursor:pointer;font-weight:600;font-size:.85rem;box-shadow:var(--sh);transition:all .2s ease}
+.back:hover{color:var(--c1-d);border-color:var(--c1);transform:translateX(-2px)}
+.phase-tag{font-family:var(--serif);font-weight:700;font-size:.95rem;color:var(--c1-d);background:var(--c1-soft);padding:.4rem .9rem;border-radius:999px;box-shadow:inset 0 1px 2px rgba(255,255,255,.5)}
+
+.btn{font-family:var(--serif);font-weight:700;font-size:1rem;border:none;border-radius:12px;padding:.8rem 1.6rem;cursor:pointer;color:#fff;background:linear-gradient(135deg,var(--c1),var(--c1-d));transition:all .2s ease;box-shadow:0 6px 16px rgba(52,87,213,.2)}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(52,87,213,.3)}
+.btn:active{transform:translateY(0)}
+.btn.accent{background:linear-gradient(135deg,var(--c2),#e0960b);color:#4a3200;box-shadow:0 6px 16px rgba(243,167,18,.25)}
+.btn.accent:hover{box-shadow:0 8px 20px rgba(243,167,18,.35)}
+.btn.good{background:linear-gradient(135deg,#34b366,var(--good));box-shadow:0 6px 16px rgba(46,158,91,.2)}
+.btn.red{background:linear-gradient(135deg,#f05d5d,var(--red));box-shadow:0 6px 16px rgba(226,74,74,.2)}
+.btn.ghost{background:var(--surface);color:var(--c1-d);border:2px solid var(--line-2);box-shadow:var(--sh)}
+.btn.ghost:hover{background:var(--c1-soft);border-color:var(--c1);transform:translateY(-2px)}
+.btn.neutral{background:var(--bg-tint);color:var(--muted);box-shadow:none;border:1.5px solid var(--line)}
+.btn.neutral:hover{background:#d9e2f7;color:var(--ink)}
+.btn.sm{font-size:.9rem;padding:.55rem 1.1rem;border-radius:10px}
+
+/* INTRO */
+#screen-intro{background:radial-gradient(800px 600px at 15% 10%,var(--c1-soft),transparent 70%),radial-gradient(800px 600px at 85% 15%,var(--c2-soft),transparent 70%),var(--bg)}
+.hero{display:grid;grid-template-columns:auto 1fr;gap:clamp(1.5rem,4vw,3rem);align-items:center;max-width:1040px;margin:auto;width:100%;padding:1.5rem 0}
+@media(max-width:820px){.hero{grid-template-columns:1fr;text-align:center}}
+.index{font-family:var(--serif);font-weight:700;letter-spacing:-3px;line-height:.78;font-size:clamp(5.5rem,16vw,12rem);background:linear-gradient(135deg,var(--c1),var(--c2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;position:relative;text-align:center}
+.index .ring{position:absolute;inset:-6%;border:3px dashed rgba(243,167,18,.5);border-radius:50%;animation:spin 24s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.index small{display:block;color:var(--muted);font-size:.12em;letter-spacing:4px;font-weight:700;margin-top:.6rem;-webkit-text-fill-color:initial;text-transform:uppercase}
+.hero-right{text-align:left}@media(max-width:820px){.hero-right{text-align:center}}
+.eyebrow{display:inline-flex;align-items:center;gap:.5rem;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:.4rem 1rem;font-weight:600;font-size:.85rem;color:var(--c1-d);box-shadow:var(--sh);margin-bottom:1rem}
+.hero h1{font-family:var(--serif);font-weight:700;font-size:clamp(2rem,4.5vw,3.4rem);line-height:1.05;margin-bottom:.6rem;color:var(--ink)}
+.hero h1 .amp{color:var(--c2)}
+.hero .sub{font-size:clamp(1rem,1.9vw,1.15rem);color:var(--muted);line-height:1.5;max-width:46ch;margin-bottom:1.4rem}
+@media(max-width:820px){.hero .sub{margin-inline:auto}}
+.d-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1.5rem}
+@media(max-width:520px){.d-grid{grid-template-columns:1fr}}
+.d-card{display:flex;align-items:center;gap:.7rem;background:rgba(255,255,255,.85);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:12px;padding:.7rem .9rem;box-shadow:var(--sh);text-align:left;transition:all .2s ease}
+.d-card:hover{transform:translateY(-2px);box-shadow:var(--sh-hover);border-color:var(--line-2)}
+.d-card .ic{width:34px;height:34px;border-radius:9px;background:var(--c1-soft);display:grid;place-items:center;flex-shrink:0;font-size:1.1rem;color:var(--c1-d)}
+.d-card b{font-family:var(--serif);color:var(--c1-d);font-size:.95rem;display:block;margin-bottom:2px}
+.d-card span{display:block;font-size:.8rem;color:var(--muted);line-height:1.25}
+.hero-cta{display:flex;gap:1rem;align-items:center;flex-wrap:wrap}@media(max-width:820px){.hero-cta{justify-content:center}}
+
+/* WARMUP */
+.hook{display:grid;grid-template-columns:1fr 1fr;gap:clamp(1.5rem,3vw,2.5rem);align-items:start;max-width:1100px;margin:auto}
+@media(max-width:900px){.hook{grid-template-columns:1fr}}
+.hook h2{font-family:var(--serif);font-weight:700;font-size:clamp(1.6rem,3.2vw,2.4rem);line-height:1.15;margin-bottom:.8rem}
+.hook h2 .pc{color:var(--c2)}
+.hook .lead{color:var(--muted);font-size:clamp(1rem,1.7vw,1.1rem);line-height:1.5;max-width:44ch;margin-bottom:1.2rem}
+.trapb{display:flex;gap:.8rem;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--c2);border-radius:var(--r-sm);padding:.8rem;box-shadow:var(--sh);transition:transform .2s;margin-bottom:.6rem}
+.trapb:hover{transform:translateY(-2px);box-shadow:var(--sh-hover)}
+.trapb .e{width:36px;height:36px;border-radius:10px;background:var(--c2-soft);display:grid;place-items:center;font-size:1.1rem;flex-shrink:0}
+.trapb b{display:block;font-size:.95rem;color:var(--ink);margin-bottom:2px}.trapb span{color:var(--muted);font-size:.85rem;line-height:1.4}
+.hook .cap{color:var(--muted);font-size:.85rem;margin-top:.8rem;text-align:center;font-style:italic}
+
+/* SPLASH */
+.splash{background:radial-gradient(circle at center,var(--c1-soft),transparent 65%),var(--bg)}
+.splash .emoji{font-size:clamp(3.5rem,10vw,6.5rem);line-height:1;animation:bob 2.5s ease-in-out infinite;text-shadow:0 10px 25px rgba(0,0,0,0.1)}
+@keyframes bob{50%{transform:translateY(-12px)}}
+.splash h1{font-family:var(--serif);font-weight:700;font-size:clamp(2rem,5vw,3.4rem);margin:.5rem 0;color:var(--ink)}
+.splash p{color:var(--muted);font-size:clamp(1.05rem,2vw,1.3rem);max-width:46ch;margin:0 auto 1.8rem;line-height:1.5}
+
+/* LESSON */
+.lesson{max-width:1100px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:.8rem;flex:1;min-height:0}
+.l-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;background:var(--surface);padding:.8rem 1.2rem;border-radius:var(--r-sm);box-shadow:var(--sh);flex-shrink:0}
+.l-head .step{font-family:var(--serif);color:var(--ink);font-weight:700;font-size:.95rem}
+.dots{display:flex;gap:.3rem;flex-wrap:wrap;max-width:50%}.dots i{width:8px;height:8px;border-radius:50%;background:var(--line-2);transition:all .3s}
+.dots i.on{background:var(--c1);transform:scale(1.4);box-shadow:0 0 6px rgba(52,87,213,.4)}
+
+.l-card{background-color:#F8FAFF; background-image:radial-gradient(rgba(52,87,213,0.08) 1.5px, transparent 1.5px); background-size:20px 20px; border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh-lg);padding:clamp(1rem,2vw,1.6rem);flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column}
+.l-card-inner { margin: auto 0; width: 100%; }
+
+.sec-banner{display:flex;align-items:center;gap:1rem;background:linear-gradient(135deg,var(--c1),var(--c1-d));color:#fff;border-radius:14px;padding:.8rem 1.2rem;margin-bottom:1.5rem;box-shadow:0 6px 16px rgba(52,87,213,.15);flex-shrink:0}
+.sec-banner.alt{background:linear-gradient(135deg,var(--c2),#db950e);color:#3b2600;box-shadow:0 6px 16px rgba(243,167,18,.15)}
+.sec-banner .big{font-family:var(--serif);font-weight:700;font-size:1.8rem;line-height:1;background:rgba(255,255,255,.2);border-radius:10px;padding:.3rem .7rem;white-space:nowrap;backdrop-filter:blur(5px)}
+.sec-banner h2{font-family:var(--serif);font-weight:700;font-size:clamp(1.1rem,2.4vw,1.4rem);line-height:1.2;margin-bottom:.1rem}
+.sec-banner p{font-size:.85rem;opacity:.95;line-height:1.3}
+
+.concept{display:grid;grid-template-columns:1.2fr 1.5fr;gap:2rem;align-items:center;flex:1;min-height:0}
+@media(max-width:860px){.concept{grid-template-columns:1fr}}
+.concept .art{background: linear-gradient(135deg, #ffffff, #f0f4ff); border:1px solid var(--line);border-radius:var(--r-sm);min-height:180px;display:grid;place-items:center;padding:1.5rem;align-self:stretch;box-shadow:inset 0 2px 10px rgba(0,0,0,.03);position:relative;overflow:hidden}
+.concept .art::before {content:'';position:absolute;width:150%;height:150%;background:radial-gradient(circle at 50% 50%, rgba(52,87,213,0.04) 0%, transparent 60%);top:-25%;left:-25%;pointer-events:none}
+.concept .info{display:flex;flex-direction:column;gap:1.2rem}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:.6rem .8rem;align-items:start}
+.kv .ic{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:1.2rem;flex-shrink:0;box-shadow:0 3px 8px rgba(0,0,0,.05)}
+.kv.a .ic{background:var(--c1-soft);color:var(--c1-d)}.kv.b .ic{background:var(--c2-soft);color:#9a6508}.kv.c .ic{background:var(--red);color:#fff}.kv.d .ic{background:var(--good-soft);color:var(--good)}
+.kv h4{font-family:var(--serif);font-size:1.05rem;margin-bottom:.2rem;color:var(--ink)}
+.kv p{color:var(--muted);font-size:clamp(.95rem,1.5vw,1.05rem);line-height:1.5}
+.genres{display:flex;gap:.4rem;flex-wrap:wrap;}
+.genres span{font-size:.85rem;font-weight:600;background:var(--bg-tint);color:var(--ink);padding:.3rem .8rem;border-radius:999px;border:1px solid var(--line)}
+.goldtip{background:linear-gradient(135deg,var(--gold-soft),#fce7b8);border:1px solid rgba(243,167,18,.3);border-radius:12px;padding:.8rem 1.2rem;font-size:1rem;line-height:1.45;color:#5a3d00;box-shadow:0 3px 10px rgba(243,167,18,.1)}
+
+.l-nav{display:flex;justify-content:space-between;gap:1rem;padding-top:.4rem;flex-shrink:0}
+
+/* TRIAD E METODO */
+.metodo{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem}
+.m-step{border:1px solid var(--line);border-radius:var(--r);padding:1.4rem;box-shadow:var(--sh)}
+.m-step.c-0, .tri.c-0 { background: linear-gradient(135deg, #F0F4FF, #E6ECFB); border-color: #CDD8F6; }
+.m-step.c-1, .tri.c-1 { background: linear-gradient(135deg, #FFF9F0, #FDEFD2); border-color: #F7E3B5; }
+.m-step.c-2, .tri.c-2 { background: linear-gradient(135deg, #F0FDF4, #E4F5EB); border-color: #BBF7D0; }
+.m-step .big{font-family:var(--serif);font-weight:700;font-size:1.8rem;color:var(--c1);display:flex;align-items:baseline;gap:.4rem}
+.m-step .big b{font-size:1.05rem;color:var(--c2)}
+.m-step h4{font-family:var(--serif);font-size:1.1rem;margin:.4rem 0 .3rem}.m-step p{color:var(--muted);font-size:1rem;line-height:1.45}
+
+.triad{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem}
+.tri{border:1px solid var(--line);border-radius:var(--r);padding:1.4rem;box-shadow:var(--sh)}
+.tri .bigic{width:50px;height:50px;border-radius:12px;display:grid;place-items:center;font-size:1.5rem;background:rgba(255,255,255,0.7);margin-bottom:.8rem;box-shadow:var(--sh)}
+.tri h4{font-family:var(--serif);font-size:1.1rem;margin-bottom:.3rem}.tri p{color:var(--muted);font-size:.95rem;line-height:1.45}
+
+.energ{max-width:680px;margin:auto;text-align:center;padding:1.5rem}
+.energ .ebadge{display:inline-block;font-family:var(--serif);font-weight:700;font-size:.8rem;letter-spacing:1px;color:#9a6508;background:var(--gold-soft);padding:.3rem .9rem;border-radius:999px;margin-bottom:.8rem}
+.energ .emoji{font-size:clamp(3rem,8vw,4.5rem);line-height:1;display:block;margin-bottom:.6rem}
+.energ h2{font-family:var(--serif);font-weight:700;font-size:clamp(1.5rem,3.5vw,2.2rem);margin-bottom:.5rem}
+.energ p{color:var(--muted);font-size:1.05rem;line-height:1.55}
+
+.ex-slide{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:center;flex:1;min-height:0}
+.ex-left{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);padding:1.4rem;box-shadow:var(--sh)}
+.ex-left .gt{font-size:.85rem;color:var(--muted);font-weight:600}
+.ex-left .mini{font-size:1.05rem;line-height:1.55;white-space:pre-line;margin-top:.6rem;margin-bottom:.8rem}
+.ex-left .src{font-size:.8rem;color:var(--muted);font-style:italic}
+.ex-right .ecmd{background:var(--c1-soft);border-left:3px solid var(--c1);border-radius:8px;padding:.8rem 1rem;font-weight:600;margin-bottom:.8rem;font-size:1rem}
+.eopt{display:flex;gap:.8rem;align-items:center;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:.7rem .9rem;font-size:.95rem;margin-bottom:.5rem}
+.eopt .lt{font-family:var(--serif);font-weight:700;width:28px;height:28px;display:grid;place-items:center;border-radius:7px;background:var(--bg-tint);flex-shrink:0}
+.eopt.correct{background:var(--good-soft);border-color:var(--good)}.eopt.correct .lt{background:var(--good);color:#fff}
+.eopt.dim{opacity:.55}
+.eexpl{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--c2);border-radius:10px;padding:.8rem 1rem;font-size:.95rem;line-height:1.45;margin-top:.8rem}
+.eexpl b{color:var(--c1-d)}.eexpl .wr{color:var(--red);font-weight:600}
+
+/* WORKED */
+.worked{max-width:1120px;margin:0 auto;width:100%;flex:1;min-height:0;display:flex;flex-direction:column;gap:.8rem}
+.worked .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:clamp(1rem,2vw,1.6rem);flex:1;min-height:0;display:grid;grid-template-columns:1.1fr 1fr;gap:1.5rem;overflow:auto}
+@media(max-width:860px){.worked .panel{grid-template-columns:1fr}}
+.w-text{background:var(--bg-tint);border:1px solid var(--line);border-radius:var(--r-sm);padding:1.2rem 1.4rem;display:flex;flex-direction:column}
+.w-text .gt{font-size:.85rem;color:var(--muted);font-weight:600}
+.w-text .mini{font-size:clamp(1rem,1.6vw,1.1rem);line-height:1.6}
+.w-text .src{font-size:.8rem;color:var(--muted);font-style:italic}
+.w-text .cmd{margin-top:auto;background:var(--c1-soft);border-left:3px solid var(--c1);border-radius:8px;padding:.8rem 1rem;font-weight:700;font-size:1.05rem;color:var(--c1-d)}
+.w-steps{display:flex;flex-direction:column;gap:.8rem;justify-content:center}
+.stp{display:grid;grid-template-columns:auto 1fr;gap:.8rem;align-items:start;opacity:.32;transition:.3s}
+.stp.show{opacity:1}
+.stp .n{width:42px;height:38px;border-radius:9px;background:var(--bg-tint);display:grid;place-items:center;font-family:var(--serif);font-weight:700;font-size:1rem;flex-shrink:0}
+.stp.show .n{background:var(--c1);color:#fff}
+.stp p{color:var(--muted);font-size:.98rem;line-height:1.45}.stp.show p{color:var(--ink)}.stp p b{color:var(--c1-d)}
+.ans{background:var(--good-soft);border:1px solid rgba(46,158,91,.35);border-radius:var(--r-sm);padding:1rem 1.2rem;font-size:1.05rem;line-height:1.45;opacity:0;transition:.3s;margin-top:.6rem}
+.ans.show{opacity:1}.ans b{color:var(--good)}
+
+/* SETUP */
+.setup{max-width:540px;margin:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh-lg);padding:clamp(1.5rem,3vw,2.5rem);text-align:center;width:100%;position:relative}
+.setup h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.5vw,2rem);margin-bottom:.3rem}
+.setup .sub{color:var(--muted);margin-bottom:1.2rem;font-size:.95rem}
+.row{display:flex;align-items:center;gap:.6rem}
+.row .tag{width:14px;height:14px;border-radius:4px;flex-shrink:0}
+.row input{flex:1;padding:.8rem 1rem;background:var(--bg);border:1.5px solid var(--line);border-radius:10px;font-size:1rem;color:var(--ink);font-family:var(--body)}
+.row input:focus{outline:none;border-color:var(--c1)}
+.row .rm{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem;padding:0 .3rem}.row .rm:hover{color:var(--red)}
+
+/* PIRÂMIDE DO JOGO */
+.pyr-wrap{display:grid;grid-template-columns:1fr 1.1fr;gap:2rem;align-items:center;flex:1;min-height:0;max-width:1000px;margin:auto}
+@media(max-width:860px){.pyr-wrap{grid-template-columns:1fr}}
+.css-pyr-container{position:relative;width:100%;max-width:360px;aspect-ratio:1.15;margin:0 auto;filter:drop-shadow(0 12px 24px rgba(52,87,213,.15));}
+.css-pyr-shape{position:absolute;inset:0;background:#B0BACD;clip-path:polygon(50% 0%, 100% 100%, 0% 100%);border-bottom:6px solid #9aa6bc;}
+.css-pyr-fill{position:absolute;bottom:0;left:0;right:0;height:0%;background:linear-gradient(to top, var(--c1-d), var(--c1));transition:height 0.8s cubic-bezier(0.2,0.8,0.2,1), background 0.5s ease;}
+.css-pyr-lines{position:absolute;inset:0;z-index:2;pointer-events:none;}
+.css-pyr-line{position:absolute;left:0;right:0;height:3px;background:rgba(255,255,255,0.6);box-shadow:0 1px 2px rgba(0,0,0,0.1);}
+.css-pyr-line.l1{top:33.33%;}
+.css-pyr-line.l2{top:66.66%;}
+.css-pyr-text{position:absolute;width:100%;text-align:center;z-index:3;color:#FFFFFF;text-shadow:0 1px 6px rgba(0,0,0,0.7);font-weight:700;}
+.css-pyr-text.t1{top:12%;font-family:var(--serif);font-size:1.2rem;}
+.css-pyr-text.t2{top:45%;font-family:var(--body);font-size:.95rem;letter-spacing:1px}
+.css-pyr-text.t3{top:78%;font-family:var(--body);font-size:.95rem;letter-spacing:1px}
+.css-pyr-crown{position:absolute;top:-26px;left:50%;transform:translateX(-50%);font-size:2rem;z-index:10;opacity:0;transition:opacity 0.4s;animation:bob 2s infinite;}
+
+.turn-banner{display:flex;align-items:center;justify-content:center;gap:.6rem;font-family:var(--serif);font-weight:700;font-size:clamp(1.2rem,2.4vw,1.5rem);background:var(--surface);padding:1rem;border-radius:12px;box-shadow:var(--sh)}
+.turn-banner .dot{width:18px;height:18px;border-radius:50%}
+.climb{display:flex;flex-direction:column;gap:.6rem}
+.climb-row{display:grid;grid-template-columns:120px 1fr auto;gap:.6rem;align-items:center;background:var(--surface);padding:.6rem 1rem;border-radius:10px;box-shadow:var(--sh);border:1px solid var(--line)}
+@media(max-width:560px){.climb-row{grid-template-columns:84px 1fr auto}}
+.climb-row .nm{font-weight:700;font-size:.9rem;display:flex;align-items:center;gap:.4rem}
+.climb-row .nm .dot{width:11px;height:11px;border-radius:50%}
+.climb-track{height:14px;border-radius:999px;background:var(--bg-tint);overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.05)}
+.climb-track>i{display:block;height:100%;border-radius:999px;transition:width .8s cubic-bezier(0.2,0.8,0.2,1)}
+.climb-row .st{font-family:var(--serif);font-weight:700;font-size:1rem;min-width:60px;text-align:right}
+
+/* RULE BOX MELHORADO PARA PIRÂMIDE */
+.rule-box{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:0.9rem; margin:1rem 0; text-align:center; box-shadow:var(--sh); line-height:1.45;}
+.rule-box .r-title{font-size:0.85rem; color:var(--muted); font-weight:600; margin-bottom:0.4rem;}
+.rule-box .r-pts{font-size:0.9rem; color:var(--muted);}
+.rule-box .r-pts b{color:var(--ink); font-family:var(--serif); font-size:1.05rem;}
+.rule-box .r-win{font-size:0.85rem; font-weight:700; color:var(--c2); text-transform:uppercase; letter-spacing:0.5px; margin-top:0.5rem;}
+
+/* QUESTION */
+.q-badge{font-family:var(--serif);font-weight:700;background:var(--c2-soft);color:#9a6508;padding:.3rem .8rem;border-radius:8px;font-size:.85rem}
+.q-meta{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin:-.4rem 0 .8rem}
+.q-full{color:var(--muted);font-size:.9rem;font-style:italic}
+.q-turn{font-weight:700;font-size:.9rem;display:inline-flex;align-items:center;gap:.4rem}.q-turn .dot{width:14px;height:14px;border-radius:50%}
+.q-grid{display:grid;grid-template-columns:1.15fr 1fr;gap:1.5rem;flex:1;min-height:0}
+@media(max-width:980px){.q-grid{grid-template-columns:1fr}}
+.stim{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:1.2rem 1.4rem;overflow-y:auto;display:flex;flex-direction:column;gap:1rem}
+.stim .txt{font-size:clamp(.98rem,1.5vw,1.1rem);line-height:1.65;white-space:pre-line}
+.stim .src{font-size:.8rem;color:var(--muted);font-style:italic;text-align:right;margin-top:auto}
+.inter{display:flex;flex-direction:column;gap:.8rem;overflow-y:auto;position:relative}
+.timer{display:flex;align-items:center;justify-content:center;gap:.8rem;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:.5rem;box-shadow:var(--sh);flex-shrink:0}
+.timer .tv{font-family:var(--serif);font-weight:700;font-size:1.8rem;min-width:100px;text-align:center;color:var(--c1-d)}
+.tbtn{background:var(--bg-tint);border:none;color:var(--ink);width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:1rem;transition:all .2s}.tbtn:hover{background:var(--c1-soft)}
+.cmd{font-size:clamp(1rem,1.7vw,1.15rem);font-weight:700;background:var(--c1-soft);border-left:4px solid var(--c1);padding:.8rem 1.2rem;border-radius:10px;line-height:1.35;color:var(--c1-d);flex-shrink:0}
+.opts{display:flex;flex-direction:column;gap:.5rem}
+.opt{display:flex;align-items:center;gap:.8rem;text-align:left;background:var(--surface);border:1.5px solid var(--line);color:var(--ink);padding:.75rem 1.1rem;border-radius:10px;font-size:clamp(.95rem,1.4vw,1.05rem);box-shadow:var(--sh);transition:all .2s;cursor:pointer}
+.opt:hover{border-color:var(--line-2);transform:translateY(-1px)}
+.opt .lt{font-family:var(--serif);font-weight:700;width:30px;height:30px;flex-shrink:0;display:grid;place-items:center;border-radius:8px;background:var(--bg-tint)}
+.opt.correct{background:var(--good-soft);border-color:var(--good)}.opt.correct .lt{background:var(--good);color:#fff}
+.opt.dim{opacity:.45}
+.cmt{background:var(--c1-soft);border:1px solid rgba(52,87,213,.22);border-radius:10px;padding:.8rem 1rem}
+.cmt h4{font-family:var(--serif);color:var(--c1-d);margin-bottom:.3rem;font-size:1rem}.cmt p{color:var(--ink);line-height:1.5;font-size:.95rem}
+.judge{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:1rem;box-shadow:var(--sh);text-align:center}
+.judge h4{font-family:var(--serif);color:var(--ink);margin-bottom:.6rem;font-size:.95rem}
+.judge .jb{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap}
+
+/* PRENDA FULL SCREEN */
+.prenda-box-full{background:linear-gradient(135deg,var(--c2-soft),#fce7b8);border:3px dashed var(--c2);border-radius:16px;padding:2.5rem 2rem;text-align:center;box-shadow:var(--sh-lg);width:100%;max-width:640px;animation:pop .4s cubic-bezier(0.16,1,0.3,1) both}
+.prenda-box-full h4{font-family:var(--serif);color:#b37300;font-size:2rem;margin-bottom:.5rem}
+.prenda-box-full p{color:#5a3d00;font-size:1.1rem;margin-bottom:1.5rem}
+.prenda-box-full .p-card{background:#fff;border-radius:12px;padding:1.5rem;font-weight:700;color:var(--ink);margin-bottom:1.5rem;box-shadow:0 6px 16px rgba(243,167,18,.2);font-size:1.2rem;line-height:1.45}
+
+.hide{display:none!important}
+
+/* PODIUM */
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:1.2rem;height:min(34vh,280px);margin:1.5rem auto 1.5rem;padding-top:40px;max-width:600px}
+.pstep{position:relative;flex:1;max-width:140px;border-radius:14px 14px 0 0;display:flex;flex-direction:column;align-items:center;padding-top:1.2rem;color:#fff;box-shadow:0 -8px 24px rgba(0,0,0,.1);animation:rise .8s cubic-bezier(0.16, 1, 0.3, 1) both; border-top:2px solid rgba(255,255,255,.3)}
+@keyframes rise{from{height:0!important;opacity:0}}
+.pstep.p1{height:100%;z-index:3}
+.pstep.p2{height:75%;z-index:2}
+.pstep.p3{height:60%;z-index:1}
+.pstep .medal{position:absolute;top:-22px;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-family:var(--serif);font-weight:700;font-size:1.2rem;color:#3b2600;background:#fff;border:3px solid var(--surface);box-shadow:0 6px 16px rgba(0,0,0,.15)}
+.pstep .nm{font-family:var(--serif);font-weight:700;font-size:clamp(.85rem,1.8vw,1.05rem);text-align:center;padding:0 .4rem;margin-top:.6rem;text-shadow:0 1px 3px rgba(0,0,0,.3)}
+.pstep .sc{font-weight:700;font-size:1rem;opacity:.9;margin-top:4px}
+.pstep .rk{position:absolute;bottom:.8rem;font-family:var(--serif);font-weight:700;font-size:clamp(1.8rem,6vw,3rem);color:rgba(255,255,255,.2)}
+.pstep .crown{position:absolute;top:-40px;font-size:2rem;animation:floaty 2.5s ease-in-out infinite}
+
+.post-card{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh-lg);padding:1.1rem 1.2rem;max-width:380px;margin:0 auto}
+.post-head{display:flex;align-items:center;gap:.7rem;margin-bottom:.8rem}
+.post-av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--c1),var(--c2));display:grid;place-items:center;color:#fff;font-family:var(--serif);font-weight:700;font-size:1rem;flex-shrink:0}
+.post-name{font-weight:700;font-size:.95rem}.post-handle{font-size:.85rem;color:var(--muted)}
+.post-dots{margin-left:auto;color:var(--muted);letter-spacing:1px}
+.post-body p{font-size:.95rem;line-height:1.5;margin-bottom:.7rem}
+.post-quote{background:var(--c2-soft);border-left:4px solid var(--c2);border-radius:8px;padding:.8rem 1rem;font-family:var(--serif);font-weight:600;font-size:1.05rem;line-height:1.4;color:#5a3d00;margin:0}
+.post-actions{display:flex;gap:1.2rem;margin-top:.8rem;padding-top:.7rem;border-top:1px solid var(--line);color:var(--muted);font-size:.85rem;font-weight:600}
+
+.pod-list .r{display:flex;justify-content:space-between;align-items:center;gap:.6rem;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:.7rem 1.2rem;box-shadow:var(--sh);font-weight:600;font-size:.95rem}
+.pod-list .r .pos{font-family:var(--serif);font-weight:700;color:var(--c1-d)}
+.pod-list .r.first{border-color:var(--c2);background:var(--gold-soft)}
+.raiox{max-width:700px;margin:1.5rem auto 0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:1.4rem 1.8rem}
+.raiox h3{font-family:var(--serif);font-size:1.2rem;margin-bottom:.1rem;display:flex;align-items:center;gap:.4rem}
+.raiox .sb{color:var(--muted);font-size:.9rem;margin-bottom:1rem}
+.rx-row{display:grid;grid-template-columns:170px 1fr auto;gap:.6rem;align-items:center;margin-bottom:.6rem}
+@media(max-width:560px){.rx-row{grid-template-columns:92px 1fr auto}}
+.rx-row .lab{font-weight:600;font-size:.85rem;line-height:1.1}
+.rx-bar{height:14px;border-radius:999px;background:var(--bg-tint);overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.05)}
+.rx-bar>i{display:block;height:100%;border-radius:999px;transition:width .8s ease}
+.rx-row .pct{font-family:var(--serif);font-weight:700;font-size:.9rem;min-width:48px;text-align:right}
+.rx-tip{margin-top:.8rem;font-size:.9rem;color:var(--muted);line-height:1.4;background:var(--bg-tint);border-radius:8px;padding:.8rem 1rem}.rx-tip b{color:var(--c1-d)}
+.cf{position:fixed;top:-12px;width:10px;height:16px;z-index:900;animation:fall linear forwards;border-radius:3px}
+@keyframes fall{to{transform:translateY(106vh) rotate(720deg)}}
+
+/* DIAGRAMAS ANIMADOS */
+.diag{width:100%;display:flex;flex-direction:column;align-items:center;gap:.8rem}
+.diag-cap{font-size:.85rem;color:var(--muted);text-align:center;max-width:28ch}
+.diag-tema{position:relative;width:100%;max-width:320px;aspect-ratio:1;display:grid;place-items:center}
+.dt-core{width:130px;height:130px;border-radius:50%;background:radial-gradient(circle at 50% 35%,var(--c1),var(--c1-d));color:#fff;display:grid;place-items:center;font-family:var(--serif);font-weight:700;font-size:1.25rem;box-shadow:0 12px 28px rgba(52,87,213,.3);z-index:2}
+.dt-ring{position:absolute;inset:10%;border:2px dashed var(--c1);border-radius:50%;opacity:.35;animation:spin 24s linear infinite}
+.dt-sat{position:absolute;background:#fff;border:1px solid var(--line);box-shadow:var(--sh);border-radius:999px;padding:.4rem .9rem;font-size:.85rem;font-weight:600;color:var(--ink);white-space:nowrap;animation:floaty 4s ease-in-out infinite}
+.dt-sat.s1{top:-2%;left:50%;--tx:-50%;transform:translateX(-50%)}
+.dt-sat.s2{top:50%;left:-4%;transform:translateY(-50%);animation-delay:.7s}
+.dt-sat.s3{top:50%;right:-4%;transform:translateY(-50%);animation-delay:1.3s}
+.dt-sat.s4{bottom:-2%;left:50%;--tx:-50%;transform:translateX(-50%);animation-delay:1.9s}
+@keyframes floaty{50%{transform:translate(var(--tx,0),-8px)}}
+
+.diag-tese{width:100%;max-width:320px;display:flex;flex-direction:column;gap:.8rem;align-items:center}
+.dts-top{width:100%;background:linear-gradient(120deg,var(--c1),var(--c1-d));color:#fff;border-radius:12px;padding:.9rem;text-align:center;font-family:var(--serif);font-weight:700;font-size:1.1rem;animation:pulseGlow 2.6s ease-in-out infinite}
+@keyframes pulseGlow{0%,100%{box-shadow:0 6px 16px rgba(52,87,213,.25)}50%{box-shadow:0 8px 24px rgba(243,167,18,.45)}}
+.dts-row{display:flex;gap:.8rem;width:100%}
+.dts-chip{flex:1;background:var(--bg-tint);border:1px dashed var(--line-2);border-radius:10px;padding:.7rem;text-align:center;font-size:.9rem;color:var(--ink);font-weight:600;opacity:0;animation:fadeUp .6s ease .2s forwards}
+.dts-chip.c2{animation-delay:.5s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.dts-note{font-size:.85rem;color:#b07a00;font-weight:700}
+
+.diag-arg{width:100%;max-width:320px;display:flex;flex-direction:column;align-items:center;gap:.1rem}
+.da-top{background:linear-gradient(120deg,var(--c1),var(--c1-d));color:#fff;border-radius:10px;padding:.7rem 1.6rem;font-family:var(--serif);font-weight:700;box-shadow:var(--sh);font-size:1.05rem}
+.da-lines{width:160px;height:36px}
+.da-lines path{stroke:var(--c2);stroke-width:3;fill:none;stroke-linecap:round;stroke-dasharray:80;stroke-dashoffset:80;animation:draw 1.3s ease .2s forwards}
+.da-lines path:nth-child(2){animation-delay:.5s}
+@keyframes draw{to{stroke-dashoffset:0}}
+.da-row{display:flex;gap:1rem}
+.da-arg{background:#fff;border:1px solid var(--line);box-shadow:var(--sh);border-radius:8px;padding:.6rem 1rem;font-size:.9rem;font-weight:600;color:var(--ink)}
+
+.diag-hier{width:100%;max-width:300px;display:flex;flex-direction:column;align-items:center;gap:.4rem}
+.dh-layer{color:#fff;font-weight:700;font-size:.9rem;text-align:center;padding:.5rem;border-radius:8px;opacity:0;transform:translateY(10px);animation:fadeUp .6s ease forwards}
+.dh-1{width:44%;background:linear-gradient(120deg,var(--c1),var(--c1-d))}
+.dh-2{width:72%;background:#6C86E6;animation-delay:.3s}
+.dh-3{width:100%;background:var(--c2);color:#3b2600;animation-delay:.6s}
+
+footer{text-align:center;padding:.6rem;font-family:var(--serif);letter-spacing:3px;font-size:.65rem;color:var(--muted);border-top:1px solid var(--line);background:rgba(255,255,255,.8);flex-shrink:0}
+</style>
+</head>
+<body>
+<button id="fsBtn" title="Tela cheia" onclick="app.fullscreen()">⛶</button>
+<header id="topbar">
+  <div class="brand"><span class="mk">S2</span> Aulão SPAECE</div>
+  <div id="scoreboard"></div>
+  <button class="ibtn" title="Pirâmide" onclick="app.toPyr()" style="position:absolute;right:60px">▲</button>
+  <button class="ibtn" title="Ver pódio" onclick="app.finish()" style="position:absolute;right:12px">🏁</button>
+</header>
+<div id="stage">
+  <section id="screen-intro" class="screen center active">
+    <div class="hero">
+      <div><div class="index"><span class="ring"></span>02<small>AULÃO 02 / 06</small></div></div>
+      <div class="hero-right">
+        <span class="eyebrow">📐 Língua Portuguesa · 3º ano · SPAECE</span>
+        <h1>A Arquitetura <span class="amp">do</span> Texto</h1>
+        <p class="sub">Tema, tese e hierarquia: aprenda a achar a opinião real do autor e a separar o que é central do que é detalhe — com o <b>Método 3M</b>.</p>
+        <div class="d-grid">
+          <div class="d-card"><span class="ic"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polygon points="15.5 8.5 10.5 10.5 8.5 15.5 13.5 13.5" fill="currentColor" stroke="none"/></svg></span><div><b>D05</b><span>Identificar o tema ou assunto de um texto</span></div></div>
+          <div class="d-card"><span class="ic"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/></svg></span><div><b>D15</b><span>Identificar a tese de um texto</span></div></div>
+          <div class="d-card"><span class="ic"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 15l6-6"/><path d="M10.5 6.5l1-1a3.5 3.5 0 015 5l-1 1"/><path d="M13.5 17.5l-1 1a3.5 3.5 0 01-5-5l1-1"/></svg></span><div><b>D16</b><span>Estabelecer relação entre tese e os argumentos oferecidos para sustentá-la</span></div></div>
+          <div class="d-card"><span class="ic"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M7 20V10"/><path d="M12 20V5"/><path d="M17 20v-7"/></svg></span><div><b>D07</b><span>Diferenciar a informação principal das secundárias em um texto</span></div></div>
+        </div>
+        <div class="hero-cta"><button class="btn" onclick="app.flowGo(0)">Bora começar 🚀</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-warmup" class="screen">
+    <div class="wrap fill">
+      <div class="toprow"><button class="back" onclick="app.go('screen-intro')">‹ Voltar</button><span class="phase-tag">Aquecimento</span></div>
+      <div class="hook">
+        <div>
+          <h2>Resuma um editorial inteiro em <span class="pc">um post só</span>.</h2>
+          <p class="lead">Se você tivesse que postar UMA frase que representasse a opinião REAL do autor, qual seria? Achar essa frase é achar a TESE. E é aí que mora a pegadinha do SPAECE:</p>
+          <div style="display:flex;flex-direction:column;gap:.6rem">
+            <div class="trapb"><span class="e">✂️</span><div><b>Distrator de redução</b><span>A prova pega o assunto de UM parágrafo (um exemplo, um dado) e apresenta como se fosse o tema ou a tese do texto todo.</span></div></div>
+            <div class="trapb"><span class="e">📊</span><div><b>Fato disfarçado de tese</b><span>Um dado verdadeiro (“75% dos jovens…”) parece a opinião do autor — mas dado é argumento, não tese.</span></div></div>
+            <div class="trapb"><span class="e">🏛️</span><div><b>Base no lugar do topo</b><span>Confundir um detalhe da base com a ideia que está no topo da pirâmide do texto.</span></div></div>
+          </div>
+        </div>
+        <div>
+          <div class="post-card">
+            <div class="post-head"><div class="post-av">PC</div><div><div class="post-name">Prof. Visão Crítica</div><div class="post-handle">@leitura.critica · 2 h</div></div><div class="post-dots">•••</div></div>
+            <div class="post-body">
+              <p>Li um editorial inteiro sobre tempo de tela: cheio de dados, exemplos e uma pesquisa. Mas, no meio de tudo, há <b>uma frase</b> que é a opinião do autor 👇</p>
+              <blockquote class="post-quote">“Não basta proibir o celular: é preciso ensinar os jovens a usar as telas com equilíbrio.”</blockquote>
+            </div>
+            <div class="post-actions"><span>♥ 2,4 mil</span><span>💬 318</span><span>↗ 1,2 mil</span></div>
+          </div>
+          <p class="cap">👆 Qual frase desse “post” seria a opinião do autor? É isso que vamos treinar a enxergar.</p>
+          <div style="display:flex; justify-content:center; margin-top: 1.2rem;">
+            <button class="btn" onclick="app.flowNext()">Conhecer o Método 3M ▸</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-lesson" class="screen">
+    <div class="lesson">
+      <div class="l-head"><span class="step" id="l-step"></span><div class="dots" id="l-dots"></div></div>
+      <div class="l-card" id="l-card"></div>
+      <div class="l-nav"><button class="btn ghost sm" onclick="app.lessonPrev()">‹ Voltar</button><button class="btn sm" id="l-next" onclick="app.lessonNext()">Próximo ▸</button></div>
+    </div>
+  </section>
+
+  <section id="screen-worked" class="screen">
+    <div class="worked">
+      <div class="l-head"><span class="step">🤝 Resolva comigo · Método 3M em ação</span><button class="back" onclick="app.flowBack()">‹ Voltar à aula</button></div>
+      <div class="panel">
+        <div class="w-text">
+          <div style="display:flex; align-items:center; gap:.8rem; margin-bottom:.5rem">
+             <div style="font-size:1.8rem; background:var(--c1-soft); width:42px; height:42px; border-radius:10px; display:grid; place-items:center; box-shadow:inset 0 2px 4px rgba(0,0,0,.05)">🕵️</div>
+             <span class="gt" id="wk-gt"></span>
+          </div>
+          <div class="mini" id="wk-text" style="margin-bottom:.5rem"></div><div class="src" id="wk-src"></div><div class="cmd" id="wk-cmd"></div>
+        </div>
+        <div class="w-steps" id="wk-steps"></div>
+      </div>
+      <div class="l-nav" style="justify-content:center"><button class="btn ghost sm" id="wk-step-btn" onclick="app.workedStep()">Passo 1 — Mapear</button><button class="btn accent hide" id="wk-go" onclick="app.flowNext()">Agora é jogo! 🎮</button></div>
+    </div>
+  </section>
+
+  <section id="screen-splash" class="screen center splash">
+    <div class="wrap"><button class="back" style="position:absolute;top:1rem;left:1rem" onclick="app.flowBack()">‹ Voltar</button>
+      <div class="emoji" id="sp-emoji"></div><h1 id="sp-title"></h1><p id="sp-sub"></p><button class="btn accent" style="margin-top:1rem" onclick="app.flowNext()">Bora! ⚡</button></div>
+  </section>
+
+  <section id="screen-setup" class="screen center">
+    <div class="setup"><button class="back" style="position:absolute;top:1rem;left:1rem" onclick="app.flowBack()">‹ Voltar</button>
+      <h2>Montem os times 🙌</h2><p class="sub">De 2 a 6 equipes. As rodadas serão divididas igualmente para que ninguém jogue a mais ou a menos.</p>
+      <div class="rows" id="rows" style="display:flex; flex-direction:column; gap:0.6rem; margin-bottom:1.2rem"></div>
+      <div class="acts" style="display:flex; flex-direction:column; gap:0.6rem"><button class="btn ghost sm" onclick="app.addTeam()">+ Adicionar equipe</button><button class="btn" onclick="app.start()">Escalar a Pirâmide ▲</button></div>
+    </div>
+  </section>
+
+  <section id="screen-pyr" class="screen">
+    <div class="wrap fill">
+      <div class="toprow"><button class="back" onclick="app.flowBack()">‹ Voltar</button><span class="phase-tag">▲ A Pirâmide da Tese</span></div>
+      <div class="pyr-wrap">
+        <div id="game-pyr-box" style="display:grid;place-items:center;width:100%"></div>
+        <div class="pyr-side">
+          <div class="turn-banner" id="turn-banner"></div>
+          
+          <div class="rule-box">
+             <div class="r-title">Tabela de Subida:</div>
+             <div class="r-pts">Elementar <b>+1</b> &nbsp;·&nbsp; Básico <b>+2</b> &nbsp;·&nbsp; Desejável <b>+3</b></div>
+             <div class="r-win">Ao fim de todas as rodadas, quem estiver mais alto vence!</div>
+          </div>
+          
+          <div class="climb" id="climb"></div>
+          
+          <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:.8rem">
+            <button class="btn accent" onclick="app.drawQuestion()">Próxima Rodada 🎲</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-prenda-full" class="screen center">
+    <div class="wrap" style="display:flex; justify-content:center">
+      <div class="prenda-box-full">
+        <div style="font-size:3.5rem; margin-bottom:.5rem; animation:bob 2s infinite">🔥</div>
+        <h4>CARTA SURPRESA!</h4>
+        <p>Vez do <b id="pr-team"></b>. Cumpra o desafio para subir a Pirâmide.</p>
+        <div class="p-card" id="pr-text"></div>
+        <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin-top: 1.5rem;">
+          <button class="btn good" onclick="app.resolvePrenda(true)">✅ Mandou bem! (+2 degraus)</button>
+          <button class="btn red" onclick="app.resolvePrenda(false)">❌ Falhou (0 degraus)</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-question" class="screen">
+    <div class="wrap fill">
+      <div class="toprow" style="margin-bottom:.8rem"><button class="back" onclick="app.toPyr()">‹ Pirâmide</button><span class="q-badge" id="q-badge"></span></div>
+      <div class="q-meta"><span class="q-full" id="q-full"></span><span class="q-turn" id="q-turn"></span></div>
+      <div class="q-grid">
+        <div class="stim"><span class="gtag" id="q-gtag" style="background:var(--bg-tint); padding:0.3rem .8rem; border-radius:999px; font-weight:600; font-size:0.8rem"></span><div class="txt" id="q-text"></div><div class="src" id="q-src"></div></div>
+        <div class="inter">
+          <div class="timer" id="q-timer"><button class="tbtn" onclick="app.adjustTimer(-15)">−</button><span class="tv" id="tv">02:30</span><button class="tbtn" onclick="app.adjustTimer(15)">+</button><button class="tbtn" id="ttoggle" onclick="app.toggleTimer()">▶</button></div>
+          <div class="cmd" id="q-cmd"></div>
+          <div class="lar-hint" style="font-size:0.75rem; color:var(--c1-d); font-weight:600; text-align:center; margin-top:-.3rem">💡 3M: Mapear o tema · Mirar a tese · Montar a hierarquia.</div>
+          <div class="opts" id="q-opts"></div>
+          <button class="btn" id="q-reveal" onclick="app.reveal()">Mostrar resposta</button>
+          
+          <div class="cmt hide" id="q-cmt"><h4>Gabarito comentado</h4><p id="q-cmt-txt"></p></div>
+          <div class="judge hide" id="q-judge"><h4 id="q-judge-h"></h4><div class="jb"><button class="btn good sm" onclick="app.resolveQ(true)">✅ Acertou</button><button class="btn red sm" onclick="app.resolveQ(false)">❌ Não acertou</button></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-podium" class="screen center">
+    <div class="wrap"><h1 style="font-family:var(--serif);font-weight:700;font-size:clamp(1.8rem,4vw,2.8rem);color:var(--c1-d)">🏆 Fim de Jogo!</h1>
+      <div class="podium" id="podium"></div>
+      <div class="pod-list" id="pod-list"></div>
+      <div class="raiox" id="raiox"></div>
+      <div class="center" style="margin-top:1.5rem"><button class="btn sm" onclick="location.reload()">Reiniciar aulão ↻</button></div>
+    </div>
+  </section>
+</div>
+<footer>AULÕES PARA PROFESSORES</footer>
+
+<script>
+const sfx = {
+  ctx: null,
+  init() {
+    if (!this.ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) {
+        try { this.ctx = new AC(); } catch (e) {}
+      }
+    }
+    if (this.ctx && this.ctx.state === 'suspended') {
+      try { this.ctx.resume().catch(function(){}); } catch (e) {}
+    }
+  },
+  play(freq, type, dur, vol, delay) {
+    if (!this.ctx) return;
+    try {
+      const t = this.ctx.currentTime + delay;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, t);
+      gain.gain.setValueAtTime(vol, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + dur);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(t);
+      osc.stop(t + dur);
+    } catch(e){}
+  },
+  win() {
+    this.init();
+    this.play(523.25, 'sine', 0.15, 0.4, 0);   
+    this.play(659.25, 'sine', 0.15, 0.4, 0.1); 
+    this.play(783.99, 'sine', 0.15, 0.4, 0.2); 
+    this.play(1046.50, 'sine', 0.3, 0.4, 0.3); 
+  },
+  lose() {
+    this.init();
+    this.play(300, 'sawtooth', 0.25, 0.2, 0);
+    this.play(250, 'sawtooth', 0.4, 0.2, 0.2);
+  },
+  tada() {
+    this.init();
+    this.play(523.25, 'square', 0.15, 0.15, 0);
+    this.play(659.25, 'square', 0.15, 0.15, 0.15);
+    this.play(783.99, 'square', 0.15, 0.15, 0.3);
+    this.play(1046.50, 'square', 0.6, 0.15, 0.45);
+  }
+};
+
+const FULL={
+ D05:"D05 — Identificar o tema ou assunto de um texto.",
+ D15:"D15 — Identificar a tese de um texto.",
+ D16:"D16 — Estabelecer relação entre tese e os argumentos oferecidos para sustentá-la.",
+ D07:"D07 — Diferenciar a informação principal das secundárias em um texto."
+};
+const ART={
+ tema:"<div class=\"diag\"><div class=\"diag-tema\"><div class=\"dt-ring\"></div><div class=\"dt-core\">TEMA</div><span class=\"dt-sat s1\">dados</span><span class=\"dt-sat s2\">exemplo</span><span class=\"dt-sat s3\">citação</span><span class=\"dt-sat s4\">argumento</span></div><div class=\"diag-cap\">O tema é o centro; tudo em volta são partes que o apoiam.</div></div>",
+ tese:"<div class=\"diag\"><div class=\"diag-tese\"><div class=\"dts-top\">TESE = a opinião do autor</div><div class=\"dts-row\"><div class=\"dts-chip\">dado (fato)</div><div class=\"dts-chip c2\">exemplo</div></div><div class=\"dts-note\">★ a tese tem JULGAMENTO</div></div></div>",
+ arg:"<div class=\"diag\"><div class=\"diag-arg\"><div class=\"da-top\">TESE</div><svg class=\"da-lines\" viewBox=\"0 0 160 36\"><path d=\"M80 2 L20 34\"/><path d=\"M80 2 L140 34\"/></svg><div class=\"da-row\"><div class=\"da-arg\">argumento 1</div><div class=\"da-arg\">argumento 2</div></div></div><div class=\"diag-cap\">A tese se apoia nos argumentos.</div></div>",
+ hier:"<div class=\"diag\"><div class=\"diag-hier\"><div class=\"dh-layer dh-1\">tese</div><div class=\"dh-layer dh-2\">argumentos</div><div class=\"dh-layer dh-3\">detalhes / exemplos</div></div><div class=\"diag-cap\">No topo, o principal; na base, o secundário.</div></div>"
+};
+
+const PRENDAS=[
+  "Diga um FATO incontestável sobre a sua escola. Depois, transforme esse fato em uma OPINIÃO.",
+  "Transforme este FATO em OPINIÃO: 'A prova do SPAECE tem muitas questões'.",
+  "Crie uma OPINIÃO forte usando este FATO: 'Está chovendo agora'.",
+  "Qual a diferença entre a frase 'O filme dura 3 horas' e a frase 'O filme é longo demais'? Explique para a turma.",
+  "Diga um FATO sobre o recreio e uma OPINIÃO sobre o recreio.",
+  "Como você provaria que a seguinte OPINIÃO é verdadeira, usando um FATO? 'A internet da escola é ruim'.",
+  "Onde está a OPINIÃO nesta frase? 'O celular é útil, mas os alunos exageram no uso e perdem o foco'.",
+  "Crie um FATO (um dado, um exemplo) para sustentar esta OPINIÃO: 'O trânsito da nossa cidade está insuportável'."
+];
+
+const teach=[
+ {t:'triad',title:"Todo texto é uma construção",tri:[
+   {ic:"🧱",h:"Tema × Tese",p:"O TEMA é o assunto (sobre o quê). A TESE é a opinião do autor sobre esse assunto (o que ele defende). Não confunda os dois."},
+   {ic:"🔗",h:"Tese × Argumentos",p:"A tese não vem sozinha: o autor a sustenta com argumentos (dados, exemplos, causas). Argumento serve à tese, não é a tese."},
+   {ic:"🏛️",h:"Principal × Secundário",p:"Num texto, nem tudo tem o mesmo peso. Há a ideia central (topo) e os detalhes que a apoiam (base). Saber separar é tudo."}]},
+ {t:'metodo',title:"Método 3M — para montar a arquitetura do texto",steps:[
+   {L:"M1",tag:"Mapear",h:"Mapear o tema",p:"Passe o olho e diga, em uma frase curta, DO QUE o texto trata. Isso é o tema — o assunto, sem opinião."},
+   {L:"M2",tag:"Mirar",h:"Mirar a tese",p:"Procure a frase que carrega a OPINIÃO do autor (um julgamento, um 'deve', um 'é preciso'). Separe-a dos dados e exemplos."},
+   {L:"M3",tag:"Montar",h:"Montar a hierarquia",p:"Organize a pirâmide: tese no topo, argumentos sustentando, detalhes na base. Assim você vê o que é principal e o que é secundário."}]},
+ {t:'c',code:"D05",part:"1 de 2",full:FULL.D05,title:"Identificar o tema",art:"tema",
+  kv:[
+   {cls:'a',ic:"🧭",h:"O que a prova pede",p:"Dizer o ASSUNTO que unifica o texto inteiro — aquilo de que ele trata do começo ao fim. O tema não tem opinião: é só o 'sobre o quê'."},
+   {cls:'b',ic:"🗣️",h:"Como o comando aparece",p:"“O tema central do texto é…”, “Esse texto trata de…”, “O assunto abordado é…”."}],
+  genres:["Artigo de opinião","Editorial","Reportagem","Texto de divulgação"]},
+ {t:'c',code:"D05",part:"2 de 2",full:FULL.D05,title:"Tema: a cilada e a técnica",art:"tema",
+  kv:[
+   {cls:'c',ic:"✂️",h:"A pegadinha: redução",p:"A banca pega o assunto de UM parágrafo (um exemplo, um dado) e apresenta como se fosse o tema do texto TODO. É verdadeiro, mas é pequeno demais."},
+   {cls:'d',ic:"🔑",h:"No Método 3M (M1)",p:"Observe o que se repete do primeiro ao último parágrafo. O tema é o fio que costura o texto inteiro, não um detalhe isolado."}],
+  tip:"<b>Dica de ouro:</b> o tema cabe numa frase sem verbo de opinião. Se a alternativa já tem um julgamento ('deve', 'é melhor'), ela está indo além do tema."},
+ {t:'ex',code:"D05",gt:"✍️ Exemplo — fragmento",
+  text:"A cada ano, mais espécies de animais entram na lista de ameaçadas de extinção. O desmatamento destrói florestas inteiras, a caça ilegal avança e a poluição contamina rios e mares. Proteger a biodiversidade virou uma urgência.",
+  src:"Exemplo didático.",
+  cmd:"O tema central do fragmento é:",
+  options:[{t:"a ameaça à biodiversidade e suas causas.",c:true},{t:"a poluição dos rios e mares.",c:false},{t:"o avanço da caça ilegal de animais.",c:false},{t:"a destruição das florestas pelo desmatamento.",c:false}],
+  expl:["✅ <b>A certa:</b> o fio que costura o texto é a ameaça à biodiversidade; o resto são causas.","<span class='wr'>B</span>, <span class='wr'>C</span> e <span class='wr'>D</span> são <b>distratores de redução</b>: cada um pega só uma das causas citadas."]},
+ {t:'energ',e:"🧭",badge:"Dinâmica rápida · 1 min",title:"Resumo-relâmpago",
+  desc:"Agora que vocês já sabem o que é tema: em uma frase de até 6 palavras, digam o TEMA do texto que acabamos de ver. Identificar o tema é dizer o assunto em poucas palavras — sem opinião, só o 'sobre o quê'."},
+ {t:'c',code:"D15",part:"1 de 2",full:FULL.D15,title:"Identificar a tese",art:"tese",
+  kv:[
+   {cls:'a',ic:"🎯",h:"O que a prova pede",p:"Encontrar a OPINIÃO central do autor: o ponto de vista que ele defende sobre o tema. A tese é o que o autor quer que você aceite."},
+   {cls:'b',ic:"🗣️",h:"Como o comando aparece",p:"“A tese defendida pelo autor é…”, “O autor defende que…”, “O posicionamento do autor é…”."}],
+  genres:["Artigo de opinião","Editorial","Carta argumentativa","Resenha crítica"]},
+ {t:'c',code:"D15",part:"2 de 2",full:FULL.D15,title:"Tese: a cilada e a técnica",art:"tese",
+  kv:[
+   {cls:'c',ic:"📊",h:"A pegadinha: fato × tese",p:"A banca coloca um DADO verdadeiro na alternativa ('75% dos jovens…'). Como está no texto, parece a resposta. Mas dado é argumento — não é a opinião do autor."},
+   {cls:'d',ic:"🔑",h:"No Método 3M (M2)",p:"Procure marcas de OPINIÃO: adjetivos de valor, verbos como 'deve', 'é preciso', 'é fundamental'. A tese tem julgamento; o dado, não."}],
+  tip:"<b>Dica de ouro:</b> pergunte 'o autor está AFIRMANDO um fato ou DEFENDENDO uma ideia?'. A tese é sempre uma defesa."},
+ {t:'ex',code:"D15",gt:"✍️ Exemplo — fragmento",
+  text:"Uma pesquisa mostra que 7 em cada 10 jovens dormem menos de 7 horas por noite. Muitos trocam o sono por telas. É urgente que escolas e famílias ensinem os adolescentes a cuidar do próprio descanso: sem sono, não há saúde nem aprendizado.",
+  src:"Exemplo didático.",
+  cmd:"A tese defendida nesse fragmento é a de que:",
+  options:[{t:"escolas e famílias precisam ensinar os jovens a cuidar do sono.",c:true},{t:"7 em cada 10 jovens dormem menos de 7 horas.",c:false},{t:"muitos jovens trocam o sono pelas telas.",c:false},{t:"a falta de sono prejudica a saúde, o humor e o aprendizado dos estudantes.",c:false}],
+  expl:["✅ <b>A certa:</b> tem a MARCA de opinião ('é urgente que…'): é o que o autor defende.","<span class='wr'>B</span> é um <b>dado</b> (fato), não a tese. <span class='wr'>C</span> é um exemplo. <span class='wr'>D</span> é um argumento que sustenta a tese, mas não é a defesa central."]},
+ {t:'energ',e:"🗣️",badge:"Dinâmica rápida · 1 min",title:"Fato vira opinião",
+  desc:"Alguém diz um FATO sobre a escola (ex.: 'o recreio dura 15 minutos'). A turma transforma em OPINIÃO (ex.: 'o recreio é curto demais'). Sentiram a diferença? Fato é argumento; opinião com julgamento é tese."},
+ {t:'c',code:"D16",part:"1 de 2",full:FULL.D16,title:"Relação entre tese e argumentos",art:"arg",
+  kv:[
+   {cls:'a',ic:"🔗",h:"O que a prova pede",p:"Entender que a tese se APOIA em argumentos. A questão pede para reconhecer QUAL frase sustenta a opinião — e qual é a opinião sustentada."},
+   {cls:'b',ic:"🗣️",h:"Como o comando aparece",p:"“Para sustentar sua tese, o autor usa como argumento…”, “A frase X funciona no texto como…”."}],
+  genres:["Artigo de opinião","Editorial","Texto dissertativo"]},
+ {t:'c',code:"D16",part:"2 de 2",full:FULL.D16,title:"Tese e argumento: a cilada e a técnica",art:"arg",
+  kv:[
+   {cls:'c',ic:"🔄",h:"A pegadinha: trocar os papéis",p:"A banca oferece a TESE quando pede o argumento (ou o contrário). Quem não vê a hierarquia troca um pelo outro."},
+   {cls:'d',ic:"🔑",h:"No Método 3M (M3)",p:"Pergunte 'por quê?' à tese. A resposta é o argumento. O argumento sempre JUSTIFICA a opinião — ele vem para convencer."}],
+  tip:"<b>Dica de ouro:</b> argumento responde ao 'por quê' da tese. Se a frase explica ou prova a opinião, é argumento; se é a própria opinião, é tese."},
+ {t:'ex',code:"D16",gt:"✍️ Exemplo — fragmento",
+  text:"As cidades precisam de mais árvores. Ruas arborizadas chegam a ser vários graus mais frescas que as de concreto, o que reduz o uso de ar-condicionado e melhora a saúde de quem vive ali.",
+  src:"Exemplo didático.",
+  cmd:"A informação de que ruas arborizadas são mais frescas funciona no texto como:",
+  options:[{t:"um argumento que sustenta a tese.",c:true},{t:"a tese central do autor.",c:false},{t:"o tema geral do texto.",c:false},{t:"uma conclusão sem relação com a tese.",c:false}],
+  expl:["✅ <b>A certa:</b> a tese é 'as cidades precisam de mais árvores'; o dado sobre o frescor JUSTIFICA essa defesa — logo, é argumento.","<span class='wr'>B</span> troca argumento por tese. <span class='wr'>C</span> confunde com tema. <span class='wr'>D</span> ignora que o dado apoia a tese."]},
+ {t:'energ',e:"🏛️",badge:"Dinâmica rápida · 1 min",title:"Pirâmide de ideias",
+  desc:"Juntos e em voz alta: o que vai no TOPO de um texto e o que fica na BASE? Tese no topo, detalhes e exemplos na base. Montar essa hierarquia é separar o principal do secundário — e é exatamente o que o jogo vai pedir."},
+ {t:'c',code:"D07",part:"1 de 2",full:FULL.D07,title:"Partes principais e secundárias",art:"hier",
+  kv:[
+   {cls:'a',ic:"🏛️",h:"O que a prova pede",p:"Separar a ideia PRINCIPAL (o que sustenta o texto) das partes SECUNDÁRIAS (exemplos, dados, detalhes que só apoiam)."},
+   {cls:'b',ic:"🗣️",h:"Como o comando aparece",p:"“A informação X é, no texto…”, “Qual é a ideia principal?”, “Qual é um detalhe secundário?”."}],
+  genres:["Artigo de opinião","Reportagem","Texto expositivo"]},
+ {t:'c',code:"D07",part:"2 de 2",full:FULL.D07,title:"Hierarquia: a cilada e a técnica",art:"hier",
+  kv:[
+   {cls:'c',ic:"🔍",h:"A pegadinha: detalhe brilhante",p:"Um exemplo marcante ou um número impressionante chama a atenção e parece o mais importante. Mas detalhe que ilustra é parte secundária."},
+   {cls:'d',ic:"🔑",h:"No Método 3M (M3)",p:"Teste: se eu tirar esta parte, o texto perde a ideia central? Se não perde, ela é secundária (serve só para apoiar/ilustrar)."}],
+  tip:"<b>Dica de ouro:</b> dados e exemplos quase sempre são secundários — eles existem para SUSTENTAR a ideia principal, não para substituí-la."},
+ {t:'ex',code:"D07",gt:"✍️ Exemplo — fragmento",
+  text:"Praticar esportes faz bem ao corpo e à mente. Estudos indicam, por exemplo, que 30 minutos de caminhada por dia já reduzem o estresse. Por isso, a atividade física deveria fazer parte da rotina de todos.",
+  src:"Exemplo didático.",
+  cmd:"No fragmento, a menção aos “30 minutos de caminhada por dia” é:",
+  options:[{t:"um detalhe que exemplifica o benefício citado.",c:true},{t:"a ideia principal que organiza todo o texto.",c:false},{t:"a tese central que o autor defende ao longo do texto.",c:false},{t:"a conclusão do raciocínio.",c:false}],
+  expl:["✅ <b>A certa:</b> o número é um EXEMPLO que apoia a ideia de que o esporte faz bem — parte secundária.","<span class='wr'>B</span> e <span class='wr'>C</span> confundem o detalhe com a ideia central/tese. <span class='wr'>D</span>: a conclusão é 'deveria fazer parte da rotina'."]},
+ {t:'ex',code:"🕵️",trap:true,gt:"Treino — qual é a cilada?",
+  text:"Um editorial defende que o Brasil precisa investir mais em educação. Entre vários argumentos, cita que 'escolas com bibliotecas têm melhor desempenho'. Um grupo marcou essa frase como sendo a TESE do texto.",
+  src:"Caça à Cilada · 1 de 2",
+  cmd:"Que erro o grupo cometeu?",
+  options:[{t:"Trocou um argumento pela tese.",c:true},{t:"Confundiu o tema com o título.",c:false},{t:"Ignorou a imagem do texto.",c:false}],
+  expl:["✅ <b>Trocou argumento por tese:</b> a tese é 'o Brasil precisa investir mais em educação'. A frase sobre bibliotecas é um ARGUMENTO que sustenta essa defesa."]},
+ {t:'ex',code:"🕵️",trap:true,gt:"Treino — qual é a cilada?",
+  text:"Um texto trata, do começo ao fim, da importância de preservar as nascentes de água. Num dos parágrafos, dá o exemplo de uma cidade que ficou sem abastecimento. Um grupo disse que o TEMA do texto é 'a falta de água em uma cidade'.",
+  src:"Caça à Cilada · 2 de 2",
+  cmd:"Que cilada é essa?",
+  options:[{t:"Distrator de redução.",c:true},{t:"Fato disfarçado de tese.",c:false},{t:"Cegueira visual.",c:false}],
+  expl:["✅ <b>Distrator de redução:</b> o grupo pegou o assunto de UM parágrafo (o exemplo da cidade) e o tomou pelo tema do texto todo, que é a preservação das nascentes."]}
+];
+
+const worked={
+ gt:"✍️ Fragmento (didático)",
+ text:"Muita gente acha que reciclar o lixo já basta para salvar o planeta. Mas reciclar é apenas o último passo. O verdadeiro problema vem antes: consumimos demais. Enquanto a lógica for comprar, usar e descartar, nenhuma reciclagem dará conta. Reduzir o consumo, e não apenas reciclar, é o que realmente faz diferença.",
+ src:"Exemplo didático.",
+ cmd:"Qual é a tese defendida nesse texto?",
+ steps:[
+  {t:"<b>M1 — Mapear o tema.</b> Do que o texto trata? Do consumo e da reciclagem. Esse é o assunto (sem opinião ainda)."},
+  {t:"<b>M2 — Mirar a tese.</b> Onde está a OPINIÃO do autor? Na frase com julgamento: 'reduzir o consumo, e não apenas reciclar, é o que realmente faz diferença'."},
+  {t:"<b>M3 — Montar a hierarquia.</b> No topo, a tese (reduzir o consumo > reciclar). 'Reciclar é o último passo' é argumento; 'muita gente acha…' é só a introdução."}],
+ answer:"Tese: <b>reduzir o consumo é mais eficaz do que apenas reciclar.</b> É a frase que carrega o julgamento do autor."
+};
+
+const T_AMB="Vivemos um momento em que a ciência já havia previsto o agravamento do aquecimento global, mas não na velocidade com que ele vem acontecendo. Queimadas e secas extremas, sobretudo na Amazônia, mostram que a ameaça não é um problema distante do futuro: é o presente. Diante disso, nenhuma política pública será suficiente se a sociedade não assumir um papel ativo no enfrentamento da crise climática.\n\nO alerta não é novo. Os primeiros estudos sérios sobre os gases do efeito estufa têm mais de um século, mas foram ignorados por décadas; só a partir do fim dos anos 1960 o tema ganhou atenção mundial. Ainda hoje, a ação enfrenta a resistência de setores ligados aos combustíveis fósseis, interessados em manter tudo como está.\n\nHá, porém, sinais de mudança: uma enquete indica que mais de 80% dos brasileiros já reconhecem a importância das mudanças climáticas. Instituições como as universidades — que concentram a produção científica do país — precisam participar mais da formulação de políticas públicas. Sem o engajamento de toda a sociedade, será muito difícil garantir resiliência climática e energia sustentável para as próximas gerações.";
+const S_AMB="Adaptado de Jornal da USP (entrevista com o pesquisador Ricardo Galvão). Disponível em: jornal.usp.br. Acesso em: 18 out. 2026. Fragmento.";
+const T_LEI="O Brasil lê cada vez menos, e os números confirmam o alerta. Segundo a pesquisa Retratos da Leitura no Brasil, 53% da população não leu nenhum livro nos últimos três meses — e, pela primeira vez na série histórica, os não leitores superam os leitores. Desde 2019, o país perdeu quase 7 milhões de leitores.\n\nNa escola, o quadro se repete: no último Pisa, exame internacional, metade dos estudantes brasileiros de 15 anos não alcançou o nível básico de leitura. Para os especialistas, porém, o problema não se explica por um único motivo. De um lado, pesam fatores culturais: num mundo de telas e aplicativos, cresce o hábito da leitura rápida e superficial, e falta o costume de ler por prazer. De outro, pesa a ineficiência das políticas educacionais — faltam bibliotecas, falta incentivo e a própria Literatura perde espaço no Ensino Médio.\n\nA conclusão é que recuperar o gosto pela leitura não depende só do esforço de cada aluno. Depende de uma ação conjunta: da escola, que pode aproximar os jovens dos livros, e do poder público, que precisa garantir bibliotecas e valorizar a leitura desde cedo.";
+const S_LEI="Adaptado de Blog Imaginie. Disponível em: blog.imaginie.com.br. Acesso em: 18 out. 2026. Fragmento.";
+const T_IA="Poucos assuntos despertaram tanto interesse nos últimos anos quanto a inteligência artificial. Reunindo reportagens e debates produzidos ao longo de um ano, um veículo universitário mostra as duas faces dessa tecnologia: de um lado, as oportunidades; de outro, os riscos.\n\nEntre os avanços, está uma IA desenvolvida em uma universidade brasileira, capaz de reconhecer texturas melhor do que qualquer outra no mundo, e o uso da tecnologia como aliada no combate às mudanças climáticas. Entre os cuidados, especialistas apontam a necessidade de as escolas ensinarem a usar a IA com responsabilidade e de se criarem salvaguardas para proteger os empregos.\n\nO retrato que se forma é equilibrado: a inteligência artificial não é, por si só, boa nem má. Seus efeitos — para a ciência, a educação e o trabalho — vão depender das escolhas que a sociedade fizer sobre como utilizá-la.";
+const S_IA="Adaptado de Jornal da USP. Disponível em: jornal.usp.br. Acesso em: 18 out. 2026. Fragmento.";
+
+const Q={
+ q1:{id:1,code:"D05",lv:"b",title:"Crise climática · tema",gen:"📰 Artigo de opinião",text:T_AMB,src:S_AMB,cmd:"O tema central do texto é:",
+  options:[{t:"a participação da sociedade no enfrentamento da crise climática.",c:true},{t:"as queimadas e as secas extremas na Amazônia.",c:false},{t:"a história dos estudos sobre o efeito estufa.",c:false},{t:"a resistência das indústrias de combustíveis fósseis.",c:false},{t:"a produção científica feita pelas universidades.",c:false}],
+  comment:"O fio que costura o texto inteiro é a necessidade de a sociedade participar do enfrentamento da crise climática. As demais opções são distratores de redução."},
+ q2:{id:2,code:"D15",lv:"d",title:"Crise climática · tese",gen:"📰 Artigo de opinião",text:T_AMB,src:S_AMB,cmd:"A tese defendida no texto é a de que:",
+  options:[{t:"sem a participação ativa da sociedade, nenhuma política bastará.",c:true},{t:"os estudos sobre o efeito estufa têm mais de um século.",c:false},{t:"mais de 80% dos brasileiros reconhecem o problema climático.",c:false},{t:"as queimadas aumentaram muito na região amazônica.",c:false},{t:"as universidades concentram a maior parte da produção científica.",c:false}],
+  comment:"A tese é o posicionamento defendido: sem o engajamento da sociedade, as políticas não serão suficientes. As outras alternativas são dados ou exemplos verdadeiros que servem de argumento."},
+ q3:{id:3,code:"D16",lv:"d",title:"Crise climática · argumento",gen:"📰 Artigo de opinião",text:T_AMB,src:S_AMB,cmd:"A afirmação de que a ação “enfrenta a resistência de setores ligados aos combustíveis fósseis” funciona no texto como:",
+  options:[{t:"um argumento que ajuda a sustentar a tese.",c:true},{t:"a tese central defendida pelo autor.",c:false},{t:"o tema geral de todo o texto.",c:false},{t:"uma conclusão final, sem ligação com a tese.",c:false},{t:"uma proposta de política pública.",c:false}],
+  comment:"Essa frase explica POR QUE a ação climática é difícil e, assim, reforça a necessidade de engajamento da sociedade (a tese). Logo, é um argumento."},
+ q4:{id:4,code:"D07",lv:"b",title:"Crise climática · hierarquia",gen:"📰 Artigo de opinião",text:T_AMB,src:S_AMB,cmd:"A informação de que “os primeiros estudos sobre o efeito estufa têm mais de um século” é, no texto:",
+  options:[{t:"uma informação secundária, que contextualiza o problema.",c:true},{t:"a ideia principal do texto.",c:false},{t:"a tese defendida pelo autor.",c:false},{t:"a conclusion do raciocínio.",c:false},{t:"a principal proposta de solução apresentada.",c:false}],
+  comment:"Esse dado histórico serve para mostrar que o alerta é antigo — é um detalhe que apoia o raciocínio, parte secundária."},
+ q5:{id:5,code:"D05",lv:"e",title:"Leitura no Brasil · tema",gen:"📰 Texto argumentativo",text:T_LEI,src:S_LEI,cmd:"O tema central do texto é:",
+  options:[{t:"a queda da leitura no Brasil e suas causas.",c:true},{t:"os resultados dos estudantes brasileiros no Pisa.",c:false},{t:"o uso de telas e aplicativos pelos jovens.",c:false},{t:"a falta de bibliotecas nas escolas do país.",c:false},{t:"o esforço individual de cada aluno para ler mais.",c:false}],
+  comment:"O texto trata, do início ao fim, da diminuição da leitura no Brasil e de por que isso acontece. Os outros itens são distratores de redução (recortam um dado isolado)."},
+ q6:{id:6,code:"D15",lv:"d",title:"Leitura no Brasil · tese",gen:"📰 Texto argumentativo",text:T_LEI,src:S_LEI,cmd:"A tese defendida no texto é a de que:",
+  options:[{t:"recuperar a leitura exige ação conjunta, não só esforço do aluno.",c:true},{t:"53% da população não leu nos últimos três meses.",c:false},{t:"metade dos estudantes não atingiu o nível básico no Pisa.",c:false},{t:"o mundo das telas favorece a leitura rápida.",c:false},{t:"o Brasil perdeu quase 7 milhões de leitores desde 2019.",c:false}],
+  comment:"A tese está na conclusão, com marca de opinião: recuperar a leitura depende de uma ação conjunta (escola + poder público). As demais são dados ou argumentos de sustentação."},
+ q7:{id:7,code:"D16",lv:"b",title:"Leitura no Brasil · argumento",gen:"📰 Texto argumentativo",text:T_LEI,src:S_LEI,cmd:"O dado de que “metade dos estudantes não alcançou o nível básico de leitura” é usado no texto para:",
+  options:[{t:"comprovar a gravidade do problema da leitura.",c:true},{t:"apresentar a tese defendida pelo autor.",c:false},{t:"definir o tema geral do texto.",c:false},{t:"propor uma solução para a escola.",c:false},{t:"contrariar a ideia principal defendida no texto.",c:false}],
+  comment:"O dado do Pisa é uma prova: mostra o tamanho do problema e, com isso, sustenta a tese. Ele não é a tese nem o tema."},
+ q8:{id:8,code:"D07",lv:"b",title:"Leitura no Brasil · hierarquia",gen:"📰 Texto argumentativo",text:T_LEI,src:S_LEI,cmd:"A informação de que “a Literatura perde espaço no Ensino Médio” é, no texto:",
+  options:[{t:"um detalhe que ilustra a falha das políticas educacionais.",c:true},{t:"a ideia principal que é defendida ao longo de todo o texto.",c:false},{t:"a tese central do autor.",c:false},{t:"a conclusão do texto.",c:false},{t:"o tema geral do texto.",c:false}],
+  comment:"Essa informação é um exemplo que apoia o argumento sobre a ineficiência das políticas educacionais — logo, é uma parte secundária (D07)."},
+ q9:{id:9,code:"D05",lv:"e",title:"Inteligência artificial · tema",gen:"🔬 Texto de divulgação",text:T_IA,src:S_IA,cmd:"O tema central do texto é:",
+  options:[{t:"a inteligência artificial, com suas oportunidades e riscos.",c:true},{t:"uma IA brasileira que reconhece texturas.",c:false},{t:"o uso da tecnologia contra as mudanças climáticas.",c:false},{t:"a proteção dos empregos ameaçados pela IA.",c:false},{t:"o papel que as escolas devem ter no ensino da tecnologia.",c:false}],
+  comment:"O texto trata da IA de forma ampla, mostrando seus dois lados. As outras opções são exemplos ou detalhes de um trecho (distratores de redução)."},
+ q10:{id:10,code:"D15",lv:"d",title:"Inteligência artificial · ideia central",gen:"🔬 Texto de divulgação",text:T_IA,src:S_IA,cmd:"A ideia central que o texto defende sobre a inteligência artificial é a de que ela:",
+  options:[{t:"não é boa nem má: depende do uso que a sociedade fizer.",c:true},{t:"é a melhor do mundo em reconhecer texturas.",c:false},{t:"vai inevitavelmente acabar com muitos empregos.",c:false},{t:"deveria ser proibida dentro das escolas.",c:false},{t:"será sempre uma grande aliada na defesa do meio ambiente.",c:false}],
+  comment:"A ideia central está na conclusão: a IA é ambivalente e seus efeitos dependem das escolhas da sociedade. As demais são exemplos ou extrapolações do texto."},
+ q11:{id:11,code:"D16",lv:"b",title:"Inteligência artificial · argumento",gen:"🔬 Texto de divulgação",text:T_IA,src:S_IA,cmd:"A menção à IA que “reconhece texturas melhor do que qualquer outra no mundo” serve, no texto, para:",
+  options:[{t:"ilustrar uma das oportunidades da tecnologia.",c:true},{t:"apresentar a ideia central do texto.",c:false},{t:"mostrar um risco da inteligência artificial.",c:false},{t:"propor uma nova regra para o uso responsável da IA.",c:false},{t:"criticar o avanço da tecnologia.",c:false}],
+  comment:"Esse exemplo aparece no parágrafo dos 'avanços': serve para ILUSTRAR uma oportunidade da IA, sustentando a visão equilibrada do texto (D16)."},
+ q12:{id:12,code:"D07",lv:"b",title:"Inteligência artificial · hierarquia",gen:"🔬 Texto de divulgação",text:T_IA,src:S_IA,cmd:"Qual das informações abaixo é uma parte SECUNDÁRIA (um exemplo), e não a ideia principal do texto?",
+  options:[{t:"A existência de uma IA brasileira que reconhece texturas.",c:true},{t:"A inteligência artificial tem oportunidades e riscos.",c:false},{t:"Os efeitos da IA dependem do uso que a sociedade faz dela.",c:false},{t:"A IA não é, em si mesma, boa nem má.",c:false},{t:"A sociedade decide como a tecnologia será usada.",c:false}],
+  comment:"A IA que reconhece texturas é um exemplo concreto — parte secundária que ilustra uma oportunidade. As outras alternativas são formulações da ideia principal do texto."}
+};
+
+const COLORS=["#3457D5","#F3A712","#2E9E5B","#9C27B0","#E24A4A","#0E7C86"];
+const DEFAULT_TEAMS=["Time Índigo","Time Mostarda","Time Verde"];
+const CLIMB={e:1,b:2,d:3}; 
+const LV={e:"Elementar",b:"Básico",d:"Desejável"};
+
+const app={
+ flowIdx:-1,teams:[],lessonIdx:0,lessonRevealed:false,workedIdx:0,
+ turn:0,played:[],current:null,
+ stats:{D05:{t:0,g:0},D15:{t:0,g:0},D16:{t:0,g:0},D07:{t:0,g:0}},
+ timer:150,tInt:null,tRun:false,
+ TOP: 15, maxRounds: 0, currentRound: 0, teamPrendaRound: [],
+ 
+ go: function(id){
+   const screens = document.querySelectorAll('.screen');
+   for(let i=0; i<screens.length; i++) {
+     screens[i].classList.remove('active');
+   }
+   const el = document.getElementById(id);
+   if(el) {
+     el.classList.add('active');
+     el.scrollTop=0;
+   }
+   if(this.teams.length>0 && id!=='screen-intro') {
+     document.body.classList.add('in-game');
+   } else {
+     document.body.classList.remove('in-game');
+   }
+   if(this.tInt){clearInterval(this.tInt);this.tRun=false;}
+ },
+ fullscreen: function(){
+   const doc = document.documentElement;
+   if(!document.fullscreenElement && !document.webkitFullscreenElement) {
+     if(doc.requestFullscreen) { doc.requestFullscreen(); }
+     else if(doc.webkitRequestFullscreen) { doc.webkitRequestFullscreen(); }
+   } else {
+     if(document.exitFullscreen) { document.exitFullscreen(); }
+     else if(document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+   }
+ },
+ flowGo: function(i){
+   sfx.init(); 
+   this.flowIdx=i;
+   const f=FLOW[i];
+   if(!f) return;
+   if(f.s==='warmup') this.go('screen-warmup');
+   else if(f.s==='lesson'){this.lessonIdx=0;this.renderLesson();this.go('screen-lesson');}
+   else if(f.s==='worked'){this.workedIdx=0;this.renderWorked();this.go('screen-worked');}
+   else if(f.s==='setup'){this.renderTeams();this.go('screen-setup');}
+   else if(f.s==='splash'){
+     document.getElementById('sp-emoji').textContent=f.e;
+     document.getElementById('sp-title').textContent=f.t;
+     document.getElementById('sp-sub').textContent=f.d;
+     this.go('screen-splash');
+   }
+   else if(f.s==='pyr'){this.renderPyr();this.go('screen-pyr');}
+   else if(f.s==='podium') this.finish();
+ },
+ flowNext: function(){this.flowGo(this.flowIdx+1);},
+ flowBack: function(){this.flowIdx>0?this.flowGo(this.flowIdx-1):this.go('screen-intro');},
+ toPyr: function(){if(this.teams.length){this.renderPyr();this.go('screen-pyr');}},
+
+ renderLesson: function(){
+   const l=teach[this.lessonIdx];
+   this.lessonRevealed=false;
+   document.getElementById('l-step').textContent="Aula · "+(this.lessonIdx+1)+" de "+teach.length;
+   
+   let dotsHtml = "";
+   for(let i=0; i<teach.length; i++){
+     dotsHtml += "<i class=\""+(i===this.lessonIdx?'on':'')+"\"></i>";
+   }
+   document.getElementById('l-dots').innerHTML = dotsHtml;
+   
+   let html='';
+   if(l.t==='triad'){
+     let cards = "";
+     for(let i=0; i<l.tri.length; i++) cards += "<div class=\"tri c-"+i+"\"><div class=\"bigic\">"+l.tri[i].ic+"</div><h4>"+l.tri[i].h+"</h4><p>"+l.tri[i].p+"</p></div>";
+     html="<div style=\"text-align:center;margin-bottom:1rem\"><h2 style=\"font-family:var(--serif);font-size:clamp(1.4rem,3.4vw,2rem)\">"+l.title+"</h2></div><div class=\"triad\">"+cards+"</div>";
+   }
+   else if(l.t==='metodo'){
+     let steps = "";
+     for(let i=0; i<l.steps.length; i++) steps += "<div class=\"m-step c-"+i+"\"><div class=\"big\">"+l.steps[i].L+" <b>"+l.steps[i].tag+"</b></div><h4>"+l.steps[i].h+"</h4><p>"+l.steps[i].p+"</p></div>";
+     html="<div style=\"text-align:center;margin-bottom:1rem\"><h2 style=\"font-family:var(--serif);font-size:clamp(1.4rem,3.4vw,2rem)\">"+l.title+"</h2></div><div class=\"metodo\">"+steps+"</div>";
+   }
+   else if(l.t==='energ'){
+     html="<div class=\"energ\"><span class=\"ebadge\">"+l.badge+"</span><span class=\"emoji\">"+l.e+"</span><h2>"+l.title+"</h2><p>"+l.desc+"</p></div>";
+   }
+   else if(l.t==='c'){
+     let kvs = "";
+     for(let i=0; i<l.kv.length; i++) kvs += "<div class=\"kv "+l.kv[i].cls+"\"><span class=\"ic\">"+l.kv[i].ic+"</span><div><h4>"+l.kv[i].h+"</h4><p>"+l.kv[i].p+"</p></div></div>";
+     let gHtml = "";
+     if(l.genres) {
+       let spans = "";
+       for(let i=0; i<l.genres.length; i++) spans += "<span>"+l.genres[i]+"</span>";
+       gHtml = "<div><div style=\"font-size:.82rem;color:var(--muted);font-weight:600;margin-bottom:.2rem\">Gêneros em que costuma aparecer:</div><div class=\"genres\">"+spans+"</div></div>";
+     }
+     let tipHtml = l.tip ? "<div class=\"goldtip\">"+l.tip+"</div>" : "";
+     html="<div class=\"sec-banner\"><div class=\"big\">"+l.code+"</div><div><h2>"+l.title+" <span style=\"opacity:.8;font-size:.7em\">· parte "+l.part+"</span></h2><p>"+l.full+"</p></div></div><div class=\"concept\"><div class=\"art\">"+ART[l.art]+"</div><div class=\"info\">"+kvs+gHtml+tipHtml+"</div></div>";
+   }
+   else if(l.t==='ex'){
+     const banner = l.trap ? "<div class=\"sec-banner alt\"><div class=\"big\">🕵️</div><div><h2>Caça à Cilada</h2><p>Treine o olho: onde o grupo escorregou?</p></div></div>" : "<div class=\"sec-banner alt\"><div class=\"big\">"+l.code+"</div><div><h2>Exemplo na prática</h2><p>Veja o Método 3M resolvendo uma questão deste descritor.</p></div></div>";
+     const L = ['A','B','C','D','E'];
+     let optsHtml = "";
+     for(let i=0; i<l.options.length; i++) optsHtml += "<div class=\"eopt\" data-correct=\""+l.options[i].c+"\"><span class=\"lt\">"+L[i]+"</span><span>"+l.options[i].t+"</span></div>";
+     let expls = "";
+     for(let i=0; i<l.expl.length; i++) expls += "<div>"+l.expl[i]+"</div>";
+     html=banner+"<div class=\"ex-slide\"><div class=\"ex-left\"><span class=\"gt\">"+l.gt+"</span><div class=\"mini\">"+l.text+"</div><span class=\"src\">"+l.src+"</span></div><div class=\"ex-right\"><div class=\"ecmd\">"+l.cmd+"</div><div class=\"ex-opts\" id=\"ex-opts\">"+optsHtml+"</div><button class=\"btn sm\" id=\"ex-btn\" onclick=\"app.lessonReveal()\" style=\"margin-top:0.6rem\">Mostrar resposta</button><div class=\"eexpl hide\" id=\"ex-expl\">"+expls+"</div></div></div>";
+   }
+   document.getElementById('l-card').innerHTML="<div class=\"l-card-inner\">"+html+"</div>";
+   document.getElementById('l-next').textContent=this.lessonIdx===teach.length-1?'Resolver uma questão juntos ▸':'Próximo ▸';
+ },
+ lessonReveal: function(){
+   if(this.lessonRevealed) return;
+   this.lessonRevealed=true;
+   const opts = document.querySelectorAll('#ex-opts .eopt');
+   for(let i=0; i<opts.length; i++) {
+     opts[i].classList.add(opts[i].getAttribute('data-correct')==='true'?'correct':'dim');
+   }
+   document.getElementById('ex-btn').classList.add('hide');
+   document.getElementById('ex-expl').classList.remove('hide');
+ },
+ lessonNext: function(){this.lessonIdx<teach.length-1?(this.lessonIdx++,this.renderLesson()):this.flowNext();},
+ lessonPrev: function(){this.lessonIdx>0?(this.lessonIdx--,this.renderLesson()):this.go('screen-warmup');},
+
+ renderWorked: function(){
+   document.getElementById('wk-gt').textContent=worked.gt;
+   document.getElementById('wk-text').textContent=worked.text;
+   document.getElementById('wk-src').textContent=worked.src;
+   document.getElementById('wk-cmd').textContent=worked.cmd;
+   const labels = ['M1','M2','M3'];
+   let stepsHtml = "";
+   for(let i=0; i<worked.steps.length; i++) stepsHtml += "<div class=\"stp\" id=\"wst-"+i+"\"><span class=\"n\">"+labels[i]+"</span><p>"+worked.steps[i].t+"</p></div>";
+   document.getElementById('wk-steps').innerHTML = stepsHtml + "<div class=\"ans\" id=\"wk-ans\">"+worked.answer+"</div>";
+   const b=document.getElementById('wk-step-btn');
+   b.classList.remove('hide');
+   b.textContent='Passo 1 — Mapear';
+   document.getElementById('wk-go').classList.add('hide');
+ },
+ workedStep: function(){
+   if(this.workedIdx<worked.steps.length){
+     document.getElementById('wst-'+this.workedIdx).classList.add('show');
+     this.workedIdx++;
+     const b=document.getElementById('wk-step-btn');
+     const verb = ['Mapear','Mirar','Montar'];
+     b.textContent=this.workedIdx<worked.steps.length?"Passo "+(this.workedIdx+1)+" — "+verb[this.workedIdx]:'Revelar a tese';
+   } else {
+     document.getElementById('wk-ans').classList.add('show');
+     document.getElementById('wk-step-btn').classList.add('hide');
+     document.getElementById('wk-go').classList.remove('hide');
+   }
+ },
+
+ renderTeams: function(){
+   const box=document.getElementById('rows');
+   if(box.getAttribute('data-init')) return;
+   box.setAttribute('data-init', "1");
+   for(let i=0; i<DEFAULT_TEAMS.length; i++){ this.addTeam(DEFAULT_TEAMS[i]); }
+ },
+ addTeam: function(name){
+   const box=document.getElementById('rows');
+   if(box.children.length>=6) return;
+   const i=box.children.length;
+   const r=document.createElement('div');
+   r.className='row';
+   r.innerHTML="<span class=\"tag\" style=\"background:"+COLORS[i]+"\"></span><input type=\"text\" value=\""+(typeof name==='string'?name:'')+"\" placeholder=\"Equipe "+(i+1)+"\" maxlength=\"20\"><button class=\"rm\" onclick=\"this.parentElement.remove()\">×</button>";
+   box.appendChild(r);
+ },
+ start: function(){
+   const inputs=document.querySelectorAll('#rows input');
+   this.teams=[];
+   for(let i=0; i<inputs.length; i++) {
+     const nm = inputs[i].value.trim();
+     if(nm) this.teams.push({id:i, name:nm, step:0, color:COLORS[i%COLORS.length]});
+   }
+   if(this.teams.length<2){alert('Crie pelo menos 2 equipes.');return;}
+   
+   this.turn=0;
+   this.played=[];
+   
+   /* LÓGICA MATEMÁTICA PERFEITA PARA RODADAS IGUAIS */
+   const totalQ = Object.keys(Q).length;
+   const n = this.teams.length;
+   // O número máximo de rodadas de PERGUNTAS que cabe igualmente para os times
+   this.maxRounds = Math.floor(totalQ / n); 
+   // Ajusta o visual do TOP baseado em quantas rodadas vão jogar (média 2pts por round + 2pts de prenda)
+   this.TOP = this.maxRounds * 2 + 2; 
+   this.currentRound = 0;
+
+   // Agenda em qual rodada SECRETA cada time vai receber exatamente UMA Prenda (0 até maxRounds)
+   this.teamPrendaRound = [];
+   for(let i=0; i<n; i++){
+       this.teamPrendaRound.push(Math.floor(Math.random() * (this.maxRounds + 1)));
+   }
+   
+   this.renderScore();
+   this.flowNext();
+ },
+ renderScore: function(){
+   let html = "";
+   for(let i=0; i<this.teams.length; i++) {
+     const t = this.teams[i];
+     html += "<div class=\"chip "+(i===this.turn?'turn':'')+"\" id=\"chip-"+t.id+"\"><span class=\"tag\" style=\"background:"+t.color+"\"></span><span class=\"nm\">"+t.name+"</span><span class=\"pt\" id=\"pt-"+t.id+"\">"+t.step+"/"+this.TOP+"</span></div>";
+   }
+   document.getElementById('scoreboard').innerHTML = html;
+ },
+ curTeam: function(){return this.teams[this.turn];},
+ 
+ nextTurn: function(){
+   this.turn++;
+   // Se todos os times jogaram, avança para a próxima rodada
+   if(this.turn >= this.teams.length){
+       this.turn = 0;
+       this.currentRound++;
+   }
+   this.renderScore();
+ },
+
+ renderPyr: function(){
+   this.renderScore();
+   const t=this.curTeam();
+   document.getElementById('turn-banner').innerHTML="<span class=\"dot\" style=\"background:"+t.color+"\"></span> Vez do <span style=\"color:"+t.color+"\">"+t.name+"</span>";
+   let climbHtml = "";
+   for(let i=0; i<this.teams.length; i++) {
+     const tm = this.teams[i];
+     const pct = Math.min(100, (tm.step/this.TOP)*100);
+     climbHtml += "<div class=\"climb-row\"><span class=\"nm\"><span class=\"dot\" style=\"background:"+tm.color+"\"></span>"+tm.name+"</span><div class=\"climb-track\"><i style=\"width:"+pct+"%;background:"+tm.color+"\"></i></div><span class=\"st\">"+tm.step+"/"+this.TOP+"</span></div>";
+   }
+   document.getElementById('climb').innerHTML = climbHtml;
+   this.drawPyramid();
+ },
+ drawPyramid: function(){
+   let lead = this.teams[0];
+   for(let i=1; i<this.teams.length; i++) { if(this.teams[i].step > lead.step) lead = this.teams[i]; }
+   
+   let any = false;
+   for(let i=0; i<this.teams.length; i++) { if(this.teams[i].step > 0) any = true; }
+   
+   const col = any ? lead.color : '#9aa6c7';
+   const level = any ? Math.min(1, lead.step/this.TOP) : 0;
+   
+   let box = document.getElementById('game-pyr-box');
+   if(box.innerHTML.indexOf('css-pyr-container') === -1) {
+      box.innerHTML = "<div class=\"css-pyr-container\"><div class=\"css-pyr-shape\"><div id=\"gp-fill\" class=\"css-pyr-fill\"></div><div class=\"css-pyr-lines\"><div class=\"css-pyr-line l1\"></div><div class=\"css-pyr-line l2\"></div></div><div class=\"css-pyr-text t1\">TESE</div><div class=\"css-pyr-text t2\">ARGUMENTOS</div><div class=\"css-pyr-text t3\">DETALHES</div></div><div id=\"gp-crown\" class=\"css-pyr-crown\">👑</div></div>";
+   }
+   const fill = document.getElementById('gp-fill');
+   fill.style.height = (level * 100) + "%";
+   fill.style.background = col;
+   
+   const crown = document.getElementById('gp-crown');
+   crown.style.opacity = level >= 1 ? '1' : '0';
+ },
+
+ drawQuestion: function(){
+   // Verifica se todas as rodadas já se esgotaram e todos jogaram igual
+   if(this.currentRound > this.maxRounds) { 
+       this.finish(); 
+       return; 
+   }
+   
+   // Verifica se nesta rodada específica é a vez deste time pagar a prenda pre-agendada
+   if(this.teamPrendaRound[this.turn] === this.currentRound) {
+     this.openPrenda();
+     return;
+   }
+
+   const allQ = [];
+   for (const k in Q) allQ.push(Q[k]);
+   const avail = [];
+   for(let i=0; i<allQ.length; i++) {
+     if(this.played.indexOf(allQ[i].id) === -1) avail.push(allQ[i]);
+   }
+   
+   if(avail.length===0){ this.finish(); return; } // Segurança extra
+
+   this.current = avail[Math.floor(Math.random()*avail.length)];
+   this.played.push(this.current.id);
+   this.openQuestion(this.current);
+ },
+ 
+ openQuestion: function(q){
+   const t=this.curTeam();
+   document.getElementById('q-badge').textContent=q.code;
+   document.getElementById('q-full').textContent=FULL[q.code]||'';
+   document.getElementById('q-turn').innerHTML="<span class=\"dot\" style=\"background:"+t.color+"\"></span> "+t.name+" · "+LV[q.lv]+" · sobe "+CLIMB[q.lv]+" degrau(s)";
+   document.getElementById('q-gtag').textContent=q.gen||'';
+   document.getElementById('q-text').textContent=q.text||'';
+   document.getElementById('q-src').textContent=q.src||'';
+   document.getElementById('q-cmd').textContent=q.cmd;
+   
+   const opts = [];
+   for(let i=0; i<q.options.length; i++) opts.push(q.options[i]);
+   opts.sort(function() { return Math.random() - 0.5; });
+   const L=['A','B','C','D','E','F'];
+   let optsHtml = "";
+   for(let i=0; i<opts.length; i++) {
+     optsHtml += "<div class=\"opt\" data-correct=\""+opts[i].c+"\"><span class=\"lt\">"+L[i]+"</span><span>"+opts[i].t+"</span></div>";
+   }
+   document.getElementById('q-opts').innerHTML = optsHtml;
+   
+   document.getElementById('q-cmt').classList.add('hide');
+   document.getElementById('q-judge').classList.add('hide');
+   document.getElementById('q-reveal').classList.remove('hide');
+   
+   document.getElementById('q-judge-h').textContent="O "+t.name+" acertou?";
+   this.timer=150;this.tRun=false;this.updateTimer();
+   document.getElementById('ttoggle').textContent='▶';
+   this.go('screen-question');
+ },
+   
+ adjustTimer: function(n){if(this.timer+n>0){this.timer+=n;this.updateTimer();}},
+ toggleTimer: function(){
+   const b=document.getElementById('ttoggle');
+   if(this.tRun){
+     clearInterval(this.tInt);this.tRun=false;b.textContent='▶';
+   } else {
+     this.tRun=true;b.textContent='⏸';
+     const self = this;
+     this.tInt=setInterval(function(){
+       self.timer--;self.updateTimer();
+       if(self.timer<=0){clearInterval(self.tInt);self.tRun=false;b.textContent='⏱';document.getElementById('tv').style.color='var(--red)';}
+     },1000);
+   }
+ },
+ updateTimer: function(){
+   let m=String(Math.floor(this.timer/60)); if(m.length<2) m="0"+m;
+   let s=String(this.timer%60); if(s.length<2) s="0"+s;
+   const el=document.getElementById('tv');
+   el.textContent = m + ":" + s;
+   if(this.timer>5) el.style.color='';
+ },
+ reveal: function(){
+   if(this.tInt) clearInterval(this.tInt);
+   this.tRun=false;
+   document.getElementById('ttoggle').textContent='▶';
+   document.getElementById('q-reveal').classList.add('hide');
+   const opts = document.querySelectorAll('#q-opts .opt');
+   for(let i=0; i<opts.length; i++) {
+     opts[i].classList.add(opts[i].getAttribute('data-correct')==='true'?'correct':'dim');
+   }
+   document.getElementById('q-cmt-txt').textContent=this.current.comment;
+   document.getElementById('q-cmt').classList.remove('hide');
+   document.getElementById('q-judge').classList.remove('hide');
+ },
+ 
+ resolveQ: function(correct){
+   const q=this.current; const t=this.curTeam(); 
+   this.stats[q.code].t++;
+   if(correct){
+      sfx.win();
+      this.stats[q.code].g++;
+      t.step=Math.min(this.TOP, t.step+CLIMB[q.lv]);
+   } else {
+      sfx.lose();
+   }
+   
+   this.nextTurn();
+   if(this.currentRound > this.maxRounds) { this.finish(); return; }
+   
+   this.renderPyr();this.go('screen-pyr');
+ },
+ 
+ openPrenda: function() {
+   const t = this.curTeam();
+   const p = PRENDAS[Math.floor(Math.random()*PRENDAS.length)];
+   document.getElementById('pr-team').textContent = t.name;
+   document.getElementById('pr-team').style.color = t.color;
+   document.getElementById('pr-text').textContent = p;
+   this.go('screen-prenda-full');
+ },
+ 
+ resolvePrenda: function(success) {
+   const t = this.curTeam();
+   if(success) {
+     sfx.win();
+     t.step = Math.min(this.TOP, t.step + 2);
+   } else {
+     sfx.lose();
+   }
+   
+   this.nextTurn();
+   if(this.currentRound > this.maxRounds) { this.finish(); return; }
+   
+   this.renderPyr();
+   this.go('screen-pyr');
+ },
+
+ finish: function(){
+   sfx.tada(); 
+   const r = [];
+   for(let i=0; i<this.teams.length; i++) r.push(this.teams[i]);
+   r.sort(function(a,b){return b.step-a.step;});
+   if(!r.length) return;
+   
+   const slots=[{t:r[1],cls:'p2',rk:2},{t:r[0],cls:'p1',rk:1},{t:r[2],cls:'p3',rk:3}];
+   let podHtml = "";
+   for(let i=0; i<slots.length; i++) {
+     const o = slots[i];
+     if(o.t) {
+       podHtml += "<div class=\"pstep "+o.cls+"\" style=\"background-color: "+o.t.color+"; background-image: linear-gradient(to top, rgba(0,0,0,0.3), rgba(255,255,255,0.1));\"><div class=\"medal\" style=\"border-color:"+o.t.color+"\">"+(o.rk===1?'👑':o.rk)+"</div><div class=\"nm\">"+o.t.name+"</div><div class=\"sc\">"+o.t.step+"/"+this.TOP+" pts</div><div class=\"rk\">"+o.rk+"º</div></div>";
+     }
+   }
+   document.getElementById('podium').innerHTML = podHtml;
+   
+   let listHtml = "";
+   for(let i=0; i<r.length; i++) {
+     listHtml += "<div class=\"r "+(i===0?'first':'')+"\"><span class=\"pos\">"+(i+1)+"º</span><span style=\"flex:1;text-align:left;padding-left:.6rem\">"+r[i].name+"</span><span>"+r[i].step+"/"+this.TOP+" degraus</span></div>";
+   }
+   document.getElementById('pod-list').innerHTML = listHtml;
+   
+   this.renderRaioX();this.go('screen-podium');this.confetti();
+ },
+ renderRaioX: function(){
+   const codes=['D05','D15','D16','D07'];
+   const names={D05:'Tema',D15:'Tese',D16:'Tese × argumento',D07:'Principal × secundário'};
+   let rows='', worst=null, worstPct=101;
+   for(let i=0; i<codes.length; i++){
+     const c = codes[i];
+     const s=this.stats[c]||{t:0,g:0};
+     const pct=s.t?Math.round(s.g/s.t*100):null;
+     const col=pct===null?'#c9cfdb':(pct>=70?'var(--good)':pct>=40?'var(--gold)':'var(--red)');
+     rows+="<div class=\"rx-row\"><span class=\"lab\">"+c+" · "+names[c]+"</span><div class=\"rx-bar\"><i style=\"width:"+(pct===null?0:pct)+"%;background:"+col+"\"></i></div><span class=\"pct\">"+(pct===null?'—':pct+'%')+"</span></div>";
+     if(pct!==null&&pct<worstPct){worstPct=pct;worst=c;}
+   }
+   let tip='Marque “acertou / não acertou” em cada questão para o Raio-X refletir o desempenho real da turma.';
+   if(worst!==null) tip="A turma teve mais dificuldade em <b>"+worst+" — "+names[worst]+"</b>. Vale reforçar esse descritor no próximo encontro.";
+   document.getElementById('raiox').innerHTML="<h3>🔎 Raio-X da turma</h3><div class=\"sb\">Acertos por descritor ao longo do jogo</div>"+rows+"<div class=\"rx-tip\">"+tip+"</div>";
+ },
+ confetti: function(){
+   for(let i=0; i<60; i++){
+     const c=document.createElement('div');
+     c.className='cf';
+     c.style.left=(Math.random()*100)+'vw';
+     c.style.background=COLORS[i%COLORS.length];
+     c.style.animationDuration=(2.5+Math.random()*2)+'s';
+     c.style.animationDelay=(Math.random()*.6)+'s';
+     c.style.transform="rotate("+(Math.random()*360)+"deg)";
+     document.body.appendChild(c);
+     setTimeout(function(){ if(c.parentNode) c.parentNode.removeChild(c); }, 5300);
+   }
+ }
+};
+const FLOW=[{s:'warmup'},{s:'lesson'},{s:'worked'},{s:'setup'},{s:'pyr'},{s:'podium'}];
+
+document.addEventListener('keydown', function(e) {
+  const activeEl = document.querySelector('.screen.active');
+  const a = activeEl ? activeEl.id : null;
+  
+  if(a==='screen-question' && (e.key==='Enter'||e.key===' ') && !document.getElementById('q-reveal').classList.contains('hide')){
+    e.preventDefault();
+    app.reveal();
+  }
+  if(a==='screen-lesson'){
+    if(e.key==='ArrowRight') app.lessonNext();
+    if(e.key==='ArrowLeft') app.lessonPrev();
+  }
+  if(a==='screen-worked' && (e.key==='Enter'||e.key===' ')){
+    e.preventDefault();
+    if(!document.getElementById('wk-step-btn').classList.contains('hide')) app.workedStep();
+  }
+});
+</script>
+</body>
+</html>

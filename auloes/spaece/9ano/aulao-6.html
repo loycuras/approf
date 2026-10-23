@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aulão SPAECE · 9º ano EF · 06 — Estilo e Narrativa</title>
+<style>
+/* Tipografia do sistema (serif/sans) — sem CDN externo, 100% offline */
+:root{
+  --bg:#F6F1E6;--bg-tint:#EBE0CF;--surface:#FFFFFF;
+  --ink:#3A2A22;--muted:#7A6657;--line:rgba(58,42,34,.14);--line-2:rgba(58,42,34,.24);
+  --c1:#8A2E43;--c1-d:#5E1E2E;--c1-soft:#F3E1E5;--c2:#C8912A;--c2-soft:#F7ECD2;
+  --good:#2E9E5B;--good-soft:#E4F5EB;--red:#E24A4A;--gold:#C8912A;--gold-soft:#F7ECD2;
+  --serif:'Fraunces',Georgia,serif;--body:'Inter',system-ui,sans-serif;
+  --r:20px;--r-sm:13px;--sh:0 10px 30px rgba(58,42,34,.1);--sh-lg:0 18px 46px rgba(94,30,46,.16);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--body);background:var(--bg);color:var(--ink);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important}}
+img{max-width:100%}
+#fsBtn{position:fixed;top:10px;right:12px;z-index:400;background:var(--surface);border:1px solid var(--line);color:var(--ink);width:40px;height:40px;border-radius:12px;cursor:pointer;font-size:1.1rem;display:grid;place-items:center;box-shadow:var(--sh)}
+#fsBtn:hover{background:var(--c1-soft);border-color:var(--c1)}
+#topbar{display:none;align-items:center;gap:1rem;padding:.6rem 60px .6rem 1.2rem;background:rgba(255,255,255,.92);border-bottom:1px solid var(--line);flex-shrink:0}
+body.in-game #topbar{display:flex}
+.brand{font-family:var(--serif);font-weight:700;font-size:1rem;display:flex;align-items:center;gap:.5rem;white-space:nowrap;color:var(--c1-d)}
+.brand .mk{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,var(--c1),var(--c2));display:grid;place-items:center;font-size:.7rem;color:#fff;font-weight:700;font-family:var(--body)}
+#scoreboard{display:flex;gap:.5rem;flex:1;justify-content:center;flex-wrap:wrap}
+.chip{display:flex;align-items:center;gap:.5rem;background:var(--surface);border:1px solid var(--line);padding:.32rem .8rem;border-radius:999px;box-shadow:var(--sh);transition:transform .25s,box-shadow .25s}
+.chip .tag{width:10px;height:10px;border-radius:50%}
+.chip .nm{font-size:.8rem;color:var(--muted);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip .pt{font-family:var(--serif);font-weight:700;font-size:1.05rem}
+.chip.bump{transform:scale(1.15);box-shadow:0 0 0 2px var(--c2)}
+.chip.turn{box-shadow:0 0 0 3px var(--c2)}
+.ibtn{background:var(--surface);border:1px solid var(--line);color:var(--ink);width:38px;height:38px;border-radius:11px;cursor:pointer;font-size:1.02rem;display:grid;place-items:center}
+.ibtn:hover{background:var(--c1-soft)}
+#stage{position:relative;flex:1;min-height:0}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;padding:clamp(1rem,3vw,2.4rem);overflow:auto}
+.screen.active{display:flex;animation:pop .4s ease both}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.screen.center{align-items:center;justify-content:center;text-align:center}
+.wrap{width:100%;max-width:1280px;margin:0 auto}
+.fill{flex:1;min-height:0;display:flex;flex-direction:column}
+.toprow{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem;flex-wrap:wrap}
+.back{display:inline-flex;align-items:center;gap:.35rem;background:var(--surface);border:1px solid var(--line);color:var(--muted);padding:.5rem .95rem;border-radius:999px;cursor:pointer;font-weight:600;font-size:.88rem;box-shadow:var(--sh)}
+.back:hover{color:var(--c1-d);border-color:var(--c1)}
+.phase-tag{font-family:var(--serif);font-weight:700;font-size:.95rem;color:var(--c1-d);background:var(--c1-soft);padding:.4rem .9rem;border-radius:999px}
+.btn{font-family:var(--serif);font-weight:700;font-size:1.05rem;border:none;border-radius:14px;padding:.9rem 1.8rem;cursor:pointer;color:#fff;background:var(--c1);transition:transform .16s,box-shadow .16s,background .16s;box-shadow:0 10px 24px rgba(46,125,119,.25)}
+.btn:hover{transform:translateY(-2px);background:var(--c1-d)}
+.btn:active{transform:translateY(0)}
+.btn.accent{background:var(--c2);color:#06323a;box-shadow:0 10px 24px rgba(31,167,189,.3)}.btn.accent:hover{background:#1a8ea1}
+.btn.good{background:var(--good)}.btn.good:hover{background:#25814a}
+.btn.red{background:var(--red)}.btn.red:hover{background:#c93c3c}
+.btn.ghost{background:var(--surface);color:var(--c1-d);border:1.5px solid var(--line-2);box-shadow:var(--sh)}.btn.ghost:hover{background:var(--c1-soft)}
+.btn.neutral{background:var(--bg-tint);color:var(--muted);box-shadow:none;border:1.5px solid var(--line)}.btn.neutral:hover{background:#d6e2df;color:var(--ink)}
+.btn.sm{font-size:.92rem;padding:.6rem 1.15rem;border-radius:11px}
+/* INTRO */
+#screen-intro{background:radial-gradient(680px 420px at 12% 8%,var(--c1-soft),transparent 60%),radial-gradient(680px 420px at 88% 14%,var(--c2-soft),transparent 60%),var(--bg)}
+.hero{display:grid;grid-template-columns:auto 1fr;gap:clamp(1.5rem,4vw,3.5rem);align-items:center;max-width:1180px;margin:auto;width:100%;padding:1rem 0}
+@media(max-width:820px){.hero{grid-template-columns:1fr;text-align:center}}
+.index{font-family:var(--serif);font-weight:700;letter-spacing:-4px;line-height:.78;font-size:clamp(6rem,17vw,13rem);color:var(--c1);position:relative;text-align:center}
+.index .ring{position:absolute;inset:-8%;border:3px dashed var(--c2);border-radius:50%;opacity:.5;animation:spin 26s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.index small{display:block;color:var(--muted);font-size:.12em;letter-spacing:3px;font-weight:600;margin-top:.4rem}
+.hero-right{text-align:left}@media(max-width:820px){.hero-right{text-align:center}}
+.eyebrow{display:inline-flex;align-items:center;gap:.5rem;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:.4rem .9rem;font-weight:600;font-size:.86rem;color:var(--c1-d);box-shadow:var(--sh);margin-bottom:1rem}
+.hero h1{font-family:var(--serif);font-weight:700;font-size:clamp(2rem,5vw,3.6rem);line-height:1;margin-bottom:.5rem}
+.hero h1 .amp{color:var(--c2)}
+.hero .sub{font-size:clamp(1.02rem,2.1vw,1.3rem);color:var(--muted);line-height:1.5;max-width:44ch;margin-bottom:1.3rem}
+@media(max-width:820px){.hero .sub{margin-inline:auto}}
+.d-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:1.5rem}
+@media(max-width:620px){.d-grid{grid-template-columns:1fr}}
+.d-card{display:flex;align-items:center;gap:.7rem;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:.6rem .8rem;box-shadow:var(--sh);text-align:left}
+.d-card .ic{width:34px;height:34px;border-radius:9px;background:var(--c1-soft);display:grid;place-items:center;flex-shrink:0;font-size:1.1rem}
+.d-card b{font-family:var(--serif);color:var(--c1-d);font-size:.95rem}
+.d-card span{display:block;font-size:.78rem;color:var(--muted);line-height:1.25}
+.hero-cta{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap}@media(max-width:820px){.hero-cta{justify-content:center}}
+.hero-cta .meta{font-size:.84rem;color:var(--muted)}
+/* WARMUP */
+.hook{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(1.2rem,3vw,2.6rem);align-items:center}
+@media(max-width:900px){.hook{grid-template-columns:1fr}}
+.hook h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2.4rem);line-height:1.1;margin-bottom:.7rem}
+.hook h2 .pc{color:var(--c2)}
+.hook .lead{color:var(--muted);font-size:clamp(1rem,1.9vw,1.15rem);line-height:1.55;max-width:46ch;margin-bottom:1.1rem}
+.trapb{display:flex;gap:.8rem;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--c2);border-radius:var(--r-sm);padding:.8rem .95rem;box-shadow:var(--sh)}
+.trapb .e{width:38px;height:38px;border-radius:10px;background:var(--c2-soft);display:grid;place-items:center;font-size:1.2rem;flex-shrink:0}
+.trapb b{display:block}.trapb span{color:var(--muted);font-size:.92rem;line-height:1.4}
+.hook .cap{color:var(--muted);font-size:.88rem;margin-top:.7rem;text-align:center}
+.sarc-real{background:var(--c1-soft);border-radius:10px;padding:.6rem .8rem;font-size:.92rem;color:var(--c1-d);line-height:1.45;margin-top:.2rem}
+/* SPLASH */
+.splash{background:radial-gradient(820px 560px at 50% 40%,var(--c1-soft),transparent 62%),var(--bg)}
+.splash .emoji{font-size:clamp(3.5rem,11vw,6.5rem);line-height:1;animation:bob 2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-12px)}}
+.splash h1{font-family:var(--serif);font-weight:700;font-size:clamp(1.9rem,5.5vw,3.4rem);margin:.4rem 0;color:var(--ink)}
+.splash p{color:var(--muted);font-size:clamp(1.02rem,2.2vw,1.3rem);max-width:42ch;margin:0 auto 1.8rem;line-height:1.5}
+/* LESSON */
+.lesson{max-width:1180px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:1rem;flex:1;min-height:0}
+.l-head{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.l-head .step{font-family:var(--serif);color:var(--muted);font-weight:600;font-size:.95rem}
+.dots{display:flex;gap:.3rem;flex-wrap:wrap;max-width:50%}.dots i{width:8px;height:8px;border-radius:50%;background:var(--bg-tint);transition:.3s}
+.dots i.on{background:var(--c1);transform:scale(1.4)}
+.l-card{background:linear-gradient(165deg,#FFFFFF 0%,#E3EEF7 100%);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:clamp(1.3rem,2.6vw,2.2rem);flex:1;min-height:0;overflow:auto}
+.sec-banner{display:flex;align-items:center;gap:1rem;background:linear-gradient(120deg,var(--c1),var(--c1-d));color:#fff;border-radius:16px;padding:1rem 1.3rem;margin-bottom:1.3rem}
+.sec-banner.alt{background:linear-gradient(120deg,var(--c2),#cc8220);color:#422a00}
+.sec-banner .big{font-family:var(--serif);font-weight:700;font-size:2.2rem;line-height:1;background:rgba(255,255,255,.2);border-radius:12px;padding:.3rem .7rem;white-space:nowrap}
+.sec-banner.alt .big{background:rgba(66,42,0,.14)}
+.sec-banner h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.15rem,2.6vw,1.55rem);line-height:1.1;margin-bottom:.15rem}
+.sec-banner p{font-size:.82rem;opacity:.92;line-height:1.3}
+.concept{display:grid;grid-template-columns:.8fr 1.2fr;gap:1.6rem;align-items:start}
+@media(max-width:860px){.concept{grid-template-columns:1fr}}
+.concept .art{background:#fff;border:1px solid var(--line);border-radius:var(--r);min-height:170px;display:grid;place-items:center;padding:1.2rem;align-self:stretch}
+.concept .info{display:flex;flex-direction:column;gap:.8rem}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:.6rem .8rem;align-items:start}
+.kv .ic{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;font-size:1.1rem;flex-shrink:0}
+.kv.a .ic{background:var(--c1-soft)}.kv.b .ic{background:var(--c2-soft)}.kv.c .ic{background:var(--good-soft)}.kv.d .ic{background:var(--gold-soft)}
+.kv h4{font-family:var(--serif);font-size:1.05rem;margin-bottom:.1rem}
+.kv p{color:var(--muted);font-size:clamp(.95rem,1.7vw,1.05rem);line-height:1.45}
+.kv p b{color:var(--ink)}
+.genres{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.2rem}
+.genres span{font-size:.8rem;font-weight:600;background:var(--bg-tint);color:var(--muted);padding:.25rem .6rem;border-radius:999px}
+.goldtip{background:var(--gold-soft);border-radius:12px;padding:.8rem 1rem;font-size:.95rem;line-height:1.45;color:#6a4400}
+.goldtip b{color:#9a6508}
+.energ{max-width:640px;margin:auto;text-align:center}
+.energ .ebadge{display:inline-block;font-family:var(--serif);font-weight:700;font-size:.8rem;letter-spacing:1px;color:#9a6508;background:var(--gold-soft);padding:.3rem .9rem;border-radius:999px;margin-bottom:1rem}
+.energ .emoji{font-size:clamp(3rem,9vw,4.5rem);line-height:1;display:block;margin-bottom:.4rem}
+.energ h2{font-family:var(--serif);font-weight:700;font-size:clamp(1.5rem,4vw,2.1rem);margin-bottom:.6rem}
+.energ p{color:var(--muted);font-size:1.08rem;line-height:1.55}
+.ex-slide{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;align-items:start}
+@media(max-width:860px){.ex-slide{grid-template-columns:1fr}}
+.ex-left{background:var(--bg-tint);border:1px solid var(--line);border-radius:var(--r-sm);padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.6rem}
+.ex-left .gt{font-size:.8rem;color:var(--muted);font-weight:600}
+.ex-left .mini{font-size:1.04rem;line-height:1.58;white-space:pre-line}
+.ex-left .src{font-size:.76rem;color:var(--muted);font-style:italic}
+.ex-right .ecmd{background:var(--c1-soft);border-left:3px solid var(--c1);border-radius:8px;padding:.7rem .85rem;font-weight:600;margin-bottom:.7rem}
+.ex-opts{display:flex;flex-direction:column;gap:.5rem;margin-bottom:.7rem}
+.eopt{display:flex;gap:.6rem;align-items:center;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:.65rem .8rem;font-size:.98rem}
+.eopt .lt{font-family:var(--serif);font-weight:700;width:26px;height:26px;display:grid;place-items:center;border-radius:7px;background:var(--bg-tint);flex-shrink:0}
+.eopt.correct{background:var(--good-soft);border-color:var(--good)}.eopt.correct .lt{background:var(--good);color:#fff}
+.eopt.dim{opacity:.55}
+.eexpl{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--c2);border-radius:10px;padding:.8rem .95rem;font-size:.94rem;line-height:1.5}
+.eexpl b{color:var(--c1-d)}.eexpl .wr{color:var(--red);font-weight:600}
+.l-nav{display:flex;justify-content:space-between;gap:1rem}
+.metodo{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem}
+@media(max-width:820px){.metodo{grid-template-columns:1fr}}
+.m-step{background:var(--bg-tint);border:1px solid var(--line);border-radius:var(--r);padding:1.3rem 1.2rem}
+.m-step .big{font-family:var(--serif);font-weight:700;font-size:2rem;line-height:1;color:var(--c1);display:flex;align-items:baseline;gap:.4rem}
+.m-step .big b{font-size:1rem;color:var(--c2);font-weight:700}
+.m-step h4{font-family:var(--serif);font-size:1.15rem;margin:.3rem 0 .4rem}.m-step p{color:var(--muted);font-size:1rem;line-height:1.45}
+.triad{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem}
+@media(max-width:820px){.triad{grid-template-columns:1fr}}
+.tri{background:var(--bg-tint);border:1px solid var(--line);border-radius:var(--r);padding:1.3rem 1.2rem;display:flex;flex-direction:column;gap:.5rem}
+.tri .bigic{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-size:1.5rem;background:var(--surface);box-shadow:var(--sh)}
+.tri h4{font-family:var(--serif);font-size:1.12rem}.tri p{color:var(--muted);font-size:.96rem;line-height:1.4}
+/* WORKED */
+.worked{max-width:1120px;margin:0 auto;width:100%;flex:1;min-height:0;display:flex;flex-direction:column;gap:1rem}
+.worked .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:clamp(1.3rem,2.6vw,2.2rem);flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:1.4rem}
+@media(max-width:860px){.worked .panel{grid-template-columns:1fr}}
+.w-text{background:var(--bg-tint);border:1px solid var(--line);border-radius:var(--r-sm);padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.6rem}
+.w-text .gt{font-size:.8rem;color:var(--muted);font-weight:600}
+.w-text .mini{font-size:clamp(1rem,1.7vw,1.08rem);line-height:1.58}
+.w-text .src{font-size:.76rem;color:var(--muted);font-style:italic}
+.w-text .cmd{margin-top:auto;background:var(--c1-soft);border-left:3px solid var(--c1);border-radius:8px;padding:.7rem .85rem;font-weight:600}
+.w-steps{display:flex;flex-direction:column;gap:.7rem;justify-content:center}
+.stp{display:grid;grid-template-columns:auto 1fr;gap:.8rem;align-items:start;opacity:.32;transition:.3s}
+.stp.show{opacity:1}
+.stp .n{width:44px;height:40px;border-radius:11px;background:var(--bg-tint);display:grid;place-items:center;font-family:var(--serif);font-weight:700;font-size:1.05rem;flex-shrink:0}
+.stp.show .n{background:var(--c1);color:#fff}
+.stp p{color:var(--muted);font-size:1rem;line-height:1.45}.stp.show p{color:var(--ink)}.stp p b{color:var(--c1-d)}
+.ans{background:var(--good-soft);border:1px solid rgba(46,158,91,.35);border-radius:var(--r-sm);padding:.85rem 1rem;font-size:1rem;line-height:1.45;opacity:0;transition:.3s}
+.ans.show{opacity:1}.ans b{color:var(--good)}
+/* SETUP */
+.setup{max-width:540px;margin:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh-lg);padding:clamp(1.6rem,4vw,2.5rem);text-align:center;width:100%;position:relative}
+.setup h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.6rem,4vw,2.2rem);margin-bottom:.35rem}
+.setup .sub{color:var(--muted);margin-bottom:1.3rem}
+.rows{display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.2rem}
+.row{display:flex;align-items:center;gap:.6rem}
+.row .tag{width:16px;height:16px;border-radius:5px;flex-shrink:0}
+.row input{flex:1;padding:.8rem 1rem;background:var(--bg);border:1.5px solid var(--line);border-radius:11px;color:var(--ink);font-size:1.02rem;font-family:var(--body)}
+.row input:focus{outline:none;border-color:var(--c1)}
+.row .rm{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.3rem;padding:0 .3rem}.row .rm:hover{color:var(--red)}
+.setup .acts{display:flex;flex-direction:column;gap:.7rem}
+/* DIAGRAMAS ANIMADOS */
+.diag{width:100%;display:flex;flex-direction:column;align-items:center;gap:.8rem}
+.diag-cap{font-size:.82rem;color:var(--muted);text-align:center;max-width:34ch}
+.arc{display:flex;align-items:flex-end;gap:.3rem;justify-content:center;flex-wrap:wrap;width:100%}
+.arc .st{background:var(--c1-soft);color:var(--c1-d);border-radius:10px;padding:.5rem .7rem;font-weight:700;font-size:.82rem;text-align:center;line-height:1.15}
+.arc .st.hi{background:var(--c1);color:#fff;transform:translateY(-12px);box-shadow:var(--sh)}
+.arc .st small{display:block;font-weight:500;font-size:.66rem;opacity:.9;margin-top:2px}
+.arc .ar{color:var(--muted);font-weight:800;align-self:center}
+.markrow{display:flex;flex-direction:column;gap:.45rem;width:100%;max-width:420px}
+.markrow .m{display:flex;gap:.6rem;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:.45rem .7rem;box-shadow:var(--sh);font-size:.82rem}
+.markrow .m .sg{font-family:var(--serif);font-weight:700;color:var(--c1);min-width:36px;text-align:center;font-size:1.15rem}
+.markrow .m b{display:block;font-size:.86rem}
+.markrow .m span{color:var(--muted)}
+.markrow .m.ok{background:var(--good-soft);border-color:var(--good)}
+.markrow .m.ok .sg{color:var(--good)}
+.d-svg{width:100%;max-width:260px;height:auto;max-height:34vh}
+.ice-bob{animation:bob 3.6s ease-in-out infinite}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes draw{to{stroke-dashoffset:0}}
+.iro{width:100%;max-width:290px;display:flex;flex-direction:column;align-items:center;gap:.5rem}
+.iro-said{width:100%;background:var(--c1);color:#fff;border-radius:12px;padding:.8rem 1rem;text-align:center;font-weight:600;box-shadow:var(--sh)}
+.iro-arrow{width:34px;height:22px}
+.iro-arrow path{stroke-dasharray:60;stroke-dashoffset:60;animation:draw 1s ease .2s forwards}
+.iro-meant{width:100%;background:var(--c2-soft);color:#5a3d00;border:1px dashed var(--c2);border-radius:12px;padding:.8rem 1rem;text-align:center;font-weight:600;opacity:0;animation:fadeUp .6s ease .5s forwards}
+.lex{width:100%;max-width:290px;display:flex;flex-direction:column;align-items:center;gap:.6rem}
+.lex-scale{display:flex;justify-content:space-between;width:100%;font-size:.78rem;color:var(--muted);font-weight:600}
+.lex-mid{color:var(--c1-d)}
+.lex-bar{position:relative;width:100%;height:10px;border-radius:999px;background:linear-gradient(90deg,#2E9E5B,#E0922F,#E24A4A)}
+.lex-dot{position:absolute;top:50%;width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid var(--c1-d);transform:translate(-50%,-50%);animation:lexslide 3.8s ease-in-out infinite}
+@keyframes lexslide{0%,100%{left:12%}50%{left:88%}}
+.lex-ex{display:flex;gap:.5rem;font-weight:700;font-size:.95rem}
+.lex-ex .pos{color:#2E9E5B}.lex-ex .neu{color:var(--c1-d)}.lex-ex .neg{color:var(--red)}
+/* JOGO — DECIFRA A ENTRELINHA */
+.game-wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:1.6rem;align-items:center;flex:1;min-height:0}
+@media(max-width:860px){.game-wrap{grid-template-columns:1fr}}
+.mural{background:#d9b98a;background-image:radial-gradient(circle at 18% 28%,rgba(90,60,20,.14) 1.5px,transparent 2px),radial-gradient(circle at 68% 58%,rgba(90,60,20,.12) 1.5px,transparent 2px),radial-gradient(circle at 42% 82%,rgba(90,60,20,.12) 1.5px,transparent 2px);background-size:24px 24px,30px 30px,27px 27px;border:7px solid #8a5a2b;border-radius:12px;box-shadow:inset 0 0 44px rgba(60,40,10,.22),var(--sh-lg);padding:.85rem;display:flex;flex-direction:column;gap:.6rem;align-items:center}
+.mural-head{font-family:var(--serif);font-weight:700;color:var(--c1-d);font-size:1.1rem;display:flex;gap:.5rem;align-items:center}
+.phrase{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center}
+.wb{min-width:40px;min-height:46px;display:grid;place-items:center;padding:.4rem .7rem;border-radius:10px;font-family:var(--serif);font-weight:700;font-size:1.05rem;background:var(--c1);color:#fff;box-shadow:var(--sh);position:relative}
+.wb:not(.on){background:repeating-linear-gradient(45deg,#cdddda,#cdddda 6px,#bcd0cd 6px,#bcd0cd 12px);color:transparent;box-shadow:none}
+.wb:not(.on)::after{content:'?';position:absolute;inset:0;display:grid;place-items:center;color:#6f8a86;font-size:1.2rem}
+.wb.on.new{animation:flipIn .55s ease}
+@keyframes flipIn{from{transform:rotateX(90deg);opacity:0}to{transform:none;opacity:1}}
+.mural-hint{font-size:.85rem;color:var(--muted)}
+.game-side{display:flex;flex-direction:column;gap:.85rem}
+.turn-banner{display:flex;align-items:center;justify-content:center;gap:.6rem;font-family:var(--serif);font-weight:700;font-size:clamp(1.1rem,2.4vw,1.4rem)}
+.turn-banner .dot{width:16px;height:16px;border-radius:50%}
+.side-rule{text-align:center;color:var(--muted);font-size:.86rem;line-height:1.45;margin-top:-.3rem}
+.rank{display:flex;flex-direction:column;gap:.55rem}
+.rank-row{display:grid;grid-template-columns:120px 1fr auto;gap:.7rem;align-items:center}
+@media(max-width:560px){.rank-row{grid-template-columns:84px 1fr auto}}
+.rank-row .nm{font-weight:700;font-size:.9rem;display:flex;align-items:center;gap:.4rem}
+.rank-row .nm .dot{width:11px;height:11px;border-radius:50%}
+.rank-track{height:16px;border-radius:999px;background:var(--bg-tint);overflow:hidden}
+.rank-track>i{display:block;height:100%;border-radius:999px;transition:width .6s ease}
+.rank-row .sc{font-family:var(--serif);font-weight:700;font-size:.9rem;min-width:58px;text-align:right}
+.game-btns{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap}
+.guess-panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:.9rem;box-shadow:var(--sh);text-align:center}
+.guess-panel h4{font-family:var(--serif);margin-bottom:.6rem;font-size:.95rem}
+.guess-panel .jb{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap}
+.case-tab{align-self:center;background:#fff;border-radius:6px 6px 0 0;padding:.3rem .9rem;font-family:var(--serif);font-weight:700;color:#7a4a18;font-size:.9rem;box-shadow:0 3px 8px rgba(0,0,0,.22);transform:rotate(-1deg)}
+.case-intro{background:#fff8e6;border-radius:3px;padding:.45rem .8rem;font-size:.8rem;color:#5a4a2a;line-height:1.35;text-align:center;max-width:52ch;box-shadow:0 4px 9px rgba(0,0,0,.2);transform:rotate(.5deg)}
+.suspects{display:flex;flex-wrap:wrap;gap:.45rem .7rem;justify-content:center}
+.suspect{width:76px;background:#fff;border-radius:3px;padding:6px 6px 4px;box-shadow:0 5px 11px rgba(0,0,0,.28);position:relative;transition:.35s}
+.suspect:nth-child(odd){transform:rotate(-2.5deg)}
+.suspect:nth-child(even){transform:rotate(2deg)}
+.suspect:nth-child(3n){transform:rotate(1.4deg)}
+.suspect::before{content:'';position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff9a9a,#d22);box-shadow:0 2px 3px rgba(0,0,0,.35);z-index:2}
+.suspect .ph{height:44px;border-radius:2px;background:var(--c1-soft);display:grid;place-items:center;font-size:1.6rem}
+.suspect .snm{font-family:var(--serif);font-size:.64rem;font-weight:700;text-align:center;margin-top:3px;color:#333;line-height:1.05}
+.suspect .strait{font-size:.54rem;color:#8a7a5a;text-align:center;line-height:1;margin-top:1px}
+.suspect.out{filter:grayscale(.85);opacity:.62}
+.suspect.out::after,.suspect.culprit::after{position:absolute;top:40%;left:50%;font-family:var(--serif);font-weight:700;font-size:.6rem;letter-spacing:1px;padding:.08rem .3rem;border-radius:3px;z-index:3;background:rgba(255,255,255,.7)}
+.suspect.out::after{content:'INOCENTE';transform:translate(-50%,-50%) rotate(-13deg);border:2px solid var(--good);color:var(--good)}
+.suspect.culprit{animation:culpritGlow 1.4s ease-in-out infinite}
+.suspect.culprit::after{content:'CULPADO';transform:translate(-50%,-50%) rotate(-13deg);border:2px solid var(--red);color:var(--red)}
+@keyframes culpritGlow{0%,100%{box-shadow:0 5px 11px rgba(0,0,0,.28)}50%{box-shadow:0 5px 14px rgba(0,0,0,.3),0 0 10px 3px rgba(226,74,74,.6)}}
+.clue-list{width:100%;display:flex;flex-wrap:wrap;gap:.45rem;justify-content:center}
+.clue{width:47%;min-width:200px;flex:1 1 200px;background:#fff6a0;padding:.4rem .6rem;font-size:.71rem;line-height:1.28;color:#4a431f;box-shadow:0 3px 7px rgba(0,0,0,.2);position:relative}
+.clue:nth-child(odd){transform:rotate(-1.1deg)}.clue:nth-child(even){transform:rotate(1deg)}
+.clue::before{content:'';position:absolute;top:-5px;left:50%;transform:translateX(-50%);width:10px;height:10px;border-radius:50%;background:#e0922f;box-shadow:0 2px 3px rgba(0,0,0,.3)}
+.clue .cn{display:block;font-family:var(--serif);font-weight:700;color:#b06a00;font-size:.64rem;letter-spacing:.5px;margin-bottom:.05rem}
+.clue.locked{background:#e9dfc2;color:#9a8c6a}
+.clue.locked .cn{color:#9a8c6a}
+.qprog{width:100%}
+.qprog-top{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);font-weight:600;margin-bottom:.25rem}
+.qprog-bar{height:12px;border-radius:999px;background:var(--bg-tint);overflow:hidden}
+.qprog-bar>i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--c1),var(--c2));transition:width .5s ease;width:0}
+.q-prog-mini{font-size:.82rem;color:var(--muted);font-weight:600;margin-right:auto}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#1c2b29;color:#fff;padding:.7rem 1.2rem;border-radius:999px;font-weight:600;font-size:.9rem;box-shadow:0 10px 30px rgba(0,0,0,.3);z-index:500;animation:toastIn .3s ease;max-width:90vw;text-align:center}
+.toast.out{opacity:0;transition:opacity .4s}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translateX(-50%)}}
+.bank-group{margin-bottom:1.4rem}
+.bank-group h3{font-family:var(--serif);color:var(--c1-d);font-size:1.15rem;margin-bottom:.6rem}
+.bank-q{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh);padding:1rem 1.2rem;margin-bottom:.8rem}
+.bank-q .qh{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-bottom:.5rem}
+.bank-q .tag{font-size:.72rem;font-weight:700;padding:.2rem .6rem;border-radius:999px;background:var(--c1-soft);color:var(--c1-d)}
+.bank-q .tag.lv{background:var(--c2-soft);color:#9a6508}
+.bank-q .bt{font-size:.9rem;line-height:1.55;color:var(--muted);white-space:pre-line;background:var(--bg-tint);border-radius:8px;padding:.6rem .8rem;margin-bottom:.5rem}
+.bank-q .bsrc{font-size:.72rem;color:var(--muted);font-style:italic;margin-bottom:.5rem}
+.bank-q .bcmd{font-weight:600;margin-bottom:.5rem}
+.bank-q .bopt{font-size:.9rem;padding:.3rem .5rem;border-radius:7px;margin-bottom:.2rem}
+.bank-q .bopt.ok{background:var(--good-soft);color:#176b38;font-weight:600}
+.bank-q .bcmt{font-size:.85rem;color:var(--muted);line-height:1.45;margin-top:.5rem;border-top:1px dashed var(--line);padding-top:.5rem}
+/* QUESTION */
+.q-badge{font-family:var(--serif);font-weight:700;background:var(--c2-soft);color:#9a6508;padding:.4rem 1rem;border-radius:10px;font-size:.88rem}
+.q-meta{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:-.2rem 0 .6rem}
+.q-full{color:var(--muted);font-size:.84rem;font-style:italic}
+.q-turn{font-weight:700;font-size:.9rem;display:inline-flex;align-items:center;gap:.4rem}.q-turn .dot{width:12px;height:12px;border-radius:50%}
+.q-grid{display:grid;grid-template-columns:1.15fr 1fr;gap:1.3rem;flex:1;min-height:0}
+@media(max-width:980px){.q-grid{grid-template-columns:1fr}}
+.stim{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:clamp(1.1rem,2.2vw,1.6rem);overflow:auto;display:flex;flex-direction:column;gap:.85rem}
+.stim .gtag{align-self:flex-start;display:inline-flex;align-items:center;gap:.4rem;background:var(--bg-tint);color:var(--muted);font-size:.8rem;font-weight:600;padding:.3rem .7rem;border-radius:999px}
+.stim .txt{font-size:clamp(1rem,1.6vw,1.13rem);line-height:1.68;white-space:pre-line}
+.stim .src{font-size:.76rem;color:var(--muted);font-style:italic;text-align:right;margin-top:auto}
+.inter{display:flex;flex-direction:column;gap:.7rem;overflow:auto}
+.timer{display:flex;align-items:center;justify-content:center;gap:.9rem;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:.5rem;box-shadow:var(--sh)}
+.timer .tv{font-family:var(--serif);font-weight:700;font-size:1.9rem;min-width:108px;text-align:center;color:var(--c1-d)}
+.tbtn{background:var(--bg-tint);border:none;color:var(--ink);width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:1.05rem}.tbtn:hover{background:var(--c1-soft)}
+.cmd{font-size:clamp(1.03rem,1.9vw,1.24rem);font-weight:600;background:var(--c1-soft);border-left:4px solid var(--c1);padding:.85rem 1rem;border-radius:10px;line-height:1.4}
+.lar-hint{font-size:.76rem;color:var(--c1-d);font-weight:600;opacity:.85}
+.opts{display:flex;flex-direction:column;gap:.5rem}
+.opt{display:flex;align-items:center;gap:.8rem;text-align:left;background:var(--surface);border:1.5px solid var(--line);color:var(--ink);padding:.78rem 1rem;border-radius:12px;font-size:clamp(.97rem,1.55vw,1.05rem);box-shadow:var(--sh)}
+.opt .lt{font-family:var(--serif);font-weight:700;width:30px;height:30px;flex-shrink:0;display:grid;place-items:center;border-radius:9px;background:var(--bg-tint)}
+.opt.correct{background:var(--good-soft);border-color:var(--good)}.opt.correct .lt{background:var(--good);color:#fff}
+.opt.dim{opacity:.5}
+.cmt{background:var(--c1-soft);border:1px solid rgba(46,125,119,.22);border-radius:12px;padding:.85rem 1.05rem}
+.cmt h4{font-family:var(--serif);color:var(--c1-d);margin-bottom:.3rem}.cmt p{color:var(--ink);line-height:1.5;font-size:.94rem}
+.judge{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:.9rem;box-shadow:var(--sh);text-align:center}
+.judge h4{font-family:var(--serif);color:var(--ink);margin-bottom:.6rem;font-size:.95rem}
+.judge .jb{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap}
+.hide{display:none!important}
+/* PODIUM */
+#screen-podium{background:radial-gradient(760px 480px at 50% -5%,var(--c2-soft),transparent 60%),var(--bg)}
+.pod-list{max-width:460px;margin:1rem auto 0;display:flex;flex-direction:column;gap:.5rem}
+.pod-list .r{display:flex;justify-content:space-between;align-items:center;gap:.6rem;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:.6rem 1rem;box-shadow:var(--sh);font-weight:600}
+.pod-list .r .pos{font-family:var(--serif);font-weight:700;color:var(--c1-d)}
+.pod-list .r.first{border-color:var(--c2);background:var(--gold-soft)}
+.raiox{max-width:720px;margin:1rem auto 0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:1rem 1.3rem}
+.raiox h3{font-family:var(--serif);font-size:1.2rem;margin-bottom:.1rem;display:flex;align-items:center;gap:.5rem}
+.raiox .sb{color:var(--muted);font-size:.88rem;margin-bottom:.9rem}
+.rx-row{display:grid;grid-template-columns:200px 1fr auto;gap:.7rem;align-items:center;margin-bottom:.6rem}
+@media(max-width:560px){.rx-row{grid-template-columns:110px 1fr auto}}
+.rx-row .lab{font-weight:600;font-size:.82rem;line-height:1.1}
+.rx-bar{height:15px;border-radius:999px;background:var(--bg-tint);overflow:hidden}
+.rx-bar>i{display:block;height:100%;border-radius:999px;transition:width .8s ease}
+.rx-row .pct{font-family:var(--serif);font-weight:700;font-size:.9rem;min-width:52px;text-align:right}
+.rx-tip{margin-top:.7rem;font-size:.88rem;color:var(--muted);line-height:1.45;background:var(--bg-tint);border-radius:10px;padding:.65rem .85rem}.rx-tip b{color:var(--c1-d)}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:.9rem;height:min(28vh,230px);margin:.8rem auto .3rem;padding-top:32px;max-width:580px}
+.pstep{position:relative;width:clamp(84px,22vw,146px);border-radius:14px 14px 0 0;display:flex;flex-direction:column;align-items:center;padding-top:1.1rem;color:#fff;box-shadow:var(--sh-lg);animation:rise .7s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rise{from{height:0!important;opacity:0}}
+.pstep .medal{position:absolute;top:-20px;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-family:var(--serif);font-weight:700;color:#422a00;background:#fff;border:3px solid var(--c2);box-shadow:var(--sh)}
+.pstep .nm{font-family:var(--serif);font-weight:700;font-size:clamp(.8rem,2vw,1rem);text-align:center;padding:0 .3rem;margin-top:.5rem;text-shadow:0 1px 3px rgba(0,0,0,.28)}
+.pstep .sc{font-weight:700;font-size:.88rem;opacity:.95}
+.pstep .rk{position:absolute;bottom:.7rem;font-family:var(--serif);font-weight:700;font-size:clamp(1.5rem,6vw,2.3rem);color:rgba(255,255,255,.3)}
+.p1{height:100%}.p2{height:74%}.p3{height:54%}
+.pstep .crown{position:absolute;top:-30px;font-size:1.7rem;animation:bob 2.2s ease-in-out infinite}
+.cf{position:fixed;top:-12px;width:9px;height:14px;z-index:200;animation:fall linear forwards;pointer-events:none;border-radius:2px}
+@keyframes fall{to{transform:translateY(106vh) rotate(560deg)}}
+/* TRILHA */
+.trail-wrap{display:grid;grid-template-columns:1.25fr .75fr;gap:1.4rem;align-items:center;flex:1;min-height:0}
+@media(max-width:900px){.trail-wrap{grid-template-columns:1fr}}
+.board-panel{background:linear-gradient(160deg,#fff,#EDE7F6);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:1rem}
+.board{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center}
+.space{position:relative;width:52px;height:52px;border-radius:12px;background:#fff;border:1.5px solid var(--line);display:grid;place-items:center;font-family:var(--serif);font-weight:700;color:var(--muted);box-shadow:var(--sh)}
+.space .sn{font-size:.82rem;opacity:.65}
+.space .sic{position:absolute;top:-9px;right:-6px;font-size:.95rem}
+.space.start{background:var(--c1);color:#fff;border-color:var(--c1-d)}
+.space.end{background:var(--c2);color:#223100;border-color:#6b8a1a}
+.space.sp.bonus{background:#E7F3CF;border-color:var(--c2)}
+.space.sp.shortcut{background:#DDEBFB;border-color:#4a86c7}
+.space.sp.back{background:#FBE6D2;border-color:#E0922F}
+.space.sp.trap{background:#F6DADA;border-color:var(--red)}
+.space .toks{position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);display:flex;gap:1px}
+.tok{width:17px;height:17px;border-radius:50%;color:#fff;font-size:.6rem;font-weight:700;display:grid;place-items:center;border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,.25);transition:.4s}
+.board-legend{display:flex;flex-wrap:wrap;gap:.4rem .9rem;justify-content:center;margin-top:1rem;font-size:.74rem;color:var(--muted)}
+.board-legend span{display:inline-flex;align-items:center;gap:.25rem}
+.board-legend .lg{width:13px;height:13px;border-radius:4px;border:1.5px solid var(--line);display:inline-block}
+.board-legend .lg.start{background:var(--c1)}.board-legend .lg.end{background:var(--c2)}
+.board-legend .lg.bonus{background:#E7F3CF}.board-legend .lg.shortcut{background:#DDEBFB}.board-legend .lg.back{background:#FBE6D2}.board-legend .lg.trap{background:#F6DADA}
+.board-cap{text-align:center;font-size:.82rem;color:var(--muted);margin-top:.6rem}
+/* diagramas D02/D11/D15 */
+.refd{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;justify-content:center}
+.rb{background:#fff;border:1px solid var(--line);box-shadow:var(--sh);border-radius:10px;padding:.5rem .8rem;font-weight:700;font-size:.9rem}
+.rb.main{background:var(--c1-soft);color:var(--c1-d)}
+.ref-link{color:var(--c2);font-weight:700;font-size:.82rem}
+.ccd{display:flex;align-items:stretch;gap:.5rem;flex-wrap:wrap;justify-content:center}
+.cc{border-radius:12px;padding:.6rem .8rem;text-align:center;font-size:.72rem;min-width:94px;display:flex;flex-direction:column;gap:.15rem}
+.cc small{font-weight:600;font-size:.82rem}
+.cc.cause{background:var(--c1-soft);color:var(--c1-d)}
+.cc.effect{background:var(--c2-soft);color:#394d10}
+.cc-arrow{align-self:center;font-weight:700;color:var(--muted);font-size:.8rem;animation:ccpulse 2.4s ease-in-out infinite}
+@keyframes ccpulse{0%,100%{opacity:1}50%{opacity:.45}}
+.cjd{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;justify-content:center;font-weight:700}
+.cj{background:#fff;border:1px solid var(--line);box-shadow:var(--sh);border-radius:10px;padding:.5rem .7rem;font-size:.86rem}
+.cj.op{background:var(--c2-soft);color:#394d10}
+.cj-note{font-size:.8rem;color:var(--muted);text-align:center;margin-top:.5rem}
+/* tabela de bolso */
+.tabela{max-width:780px;margin:0 auto;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--sh)}
+.trow{display:grid;grid-template-columns:.8fr 1.6fr;gap:.5rem;padding:.5rem .9rem;border-bottom:1px solid var(--line);font-size:clamp(.82rem,1.6vw,.95rem)}
+.trow:last-child{border-bottom:none}
+.trow:nth-child(even){background:var(--c1-soft)}
+.trow.th{background:var(--c1);color:#fff;font-family:var(--serif);font-weight:700}
+.tr-rel{font-weight:700;color:var(--c1-d)}
+.trow.th .tr-rel,.trow.th span{color:#fff}
+.tr-con{color:var(--ink)}
+/* warmup conn-demo */
+.conn-demo{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh-lg);padding:1.1rem 1.2rem;max-width:400px;margin:0 auto}
+.cd-head{font-family:var(--serif);font-weight:700;color:var(--c1-d);margin-bottom:.6rem}
+.cd-line{display:flex;flex-wrap:wrap;align-items:baseline;gap:.3rem;padding:.5rem 0;border-top:1px solid var(--line);font-size:.98rem}
+.cd-line em{margin-left:auto;font-style:normal;font-size:.72rem;font-weight:700;color:#394d10;background:var(--c2-soft);padding:.1rem .5rem;border-radius:999px}
+.cd-k{background:var(--c1);color:#fff;border-radius:6px;padding:.05rem .4rem}
+/* ===== MEMÓRIA LITERÁRIA ===== */
+.bingo-wrap{display:grid;grid-template-columns:1.4fr 1fr;gap:1.2rem;align-items:stretch;flex:1;min-height:0}
+@media(max-width:980px){.bingo-wrap{grid-template-columns:1fr}}
+.card-panel{position:relative;border-radius:18px;padding:1rem 1.1rem 1.2rem;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(165deg,#FBF6EC,#F0E6D1);border:3px solid #d8c7a4;box-shadow:inset 0 0 0 6px rgba(200,145,42,.14),var(--sh-lg)}
+.card-panel::before{content:'';position:absolute;inset:7px;border:1.5px solid rgba(138,46,67,.22);border-radius:12px;pointer-events:none}
+.card-title{font-family:var(--serif);font-weight:700;color:var(--c1-d);font-size:1rem;margin-bottom:.75rem;z-index:1;text-align:center}
+.bingo-card{display:grid;grid-template-columns:repeat(4,var(--mcell,112px));grid-auto-rows:var(--mcell,112px);gap:10px;z-index:1}
+@media(max-width:1180px){.bingo-card{--mcell:90px}}
+@media(max-width:560px){.bingo-card{--mcell:64px}}
+.mcard{position:relative;border-radius:14px;border:1.5px solid #c9a96a;display:flex;align-items:center;justify-content:center;cursor:default;transition:transform .18s,box-shadow .18s;box-shadow:var(--sh);background:linear-gradient(145deg,#8A2E43,#67212F);color:#f1dcdc}
+.mcard .mface{font-size:clamp(1.5rem,4.2vw,2.5rem);line-height:1}
+.mcard.up{background:#fff;border-color:var(--c2);color:var(--ink);animation:flipUp .3s ease}
+@keyframes flipUp{from{transform:rotateY(80deg);opacity:.3}to{transform:none;opacity:1}}
+.mcard.matched{background:var(--good-soft);border-color:var(--good);box-shadow:0 0 0 2px var(--good);color:var(--ink)}
+.mcard.live{cursor:pointer}
+.mcard.live:hover{transform:scale(1.05);box-shadow:0 0 0 3px var(--c2),0 8px 16px rgba(0,0,0,.16)}
+.card-foot{margin-top:.85rem;z-index:1}
+.bingo-hint{font-weight:700;color:var(--c1-d);font-size:1rem;text-align:center}
+.bingo-hint.on{color:var(--c2)}
+.rank-row .lines{font-size:.74rem;color:var(--c2);font-weight:800}
+/* diagramas D14/D20/D21 */
+.bal{display:flex;gap:.8rem;justify-content:center;align-items:stretch}
+.bside{flex:1;max-width:150px;border-radius:12px;padding:.7rem;text-align:center;display:flex;flex-direction:column;gap:.15rem}
+.bside.f{background:var(--c2-soft);color:#06323a}
+.bside.o{background:#FBE6D2;color:#6a4400}
+.bside small{font-size:.82rem}
+.bside .bl{font-size:.7rem;font-weight:700;opacity:.85;margin-top:.2rem}
+.compd{display:flex;flex-direction:column;gap:.45rem;align-items:center;max-width:300px}
+.news{background:#fff;border:1px solid var(--line);border-radius:10px;padding:.5rem .7rem;box-shadow:var(--sh);font-size:.92rem;width:100%;text-align:center}
+.news .nh{display:block;font-size:.66rem;font-weight:700;color:var(--muted);letter-spacing:.5px}
+.vs-same{font-size:.74rem;color:#0f7c8c;font-weight:700}
+.posd{display:flex;flex-direction:column;gap:.45rem;align-items:center;max-width:320px}
+.pbubble{background:var(--c1-soft);border-radius:12px;padding:.55rem .8rem;font-size:.9rem}
+.pbubble.b2{background:#FBE6D2}
+.pfact{font-size:.78rem;font-weight:700;color:var(--c1-d);margin-top:.2rem}
+/* warmup manchetes */
+.news-demo{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh-lg);padding:1.1rem 1.2rem;max-width:400px;margin:0 auto}
+.nd-head{font-family:var(--serif);font-weight:700;color:var(--c1-d);margin-bottom:.5rem}
+.nd-line{padding:.5rem 0;border-top:1px solid var(--line);font-size:.98rem}
+.nd-line .tag{display:inline-block;font-size:.66rem;font-weight:700;border-radius:999px;padding:.1rem .5rem;margin-right:.4rem;vertical-align:middle}
+.nd-line .fato{background:var(--c2-soft);color:#06323a}
+.nd-line .op{background:#FBE6D2;color:#6a4400}
+footer{text-align:center;padding:.5rem;font-family:var(--serif);letter-spacing:2.5px;font-size:.68rem;color:var(--muted);border-top:1px solid var(--line);background:var(--bg);flex-shrink:0}
+</style>
+</head>
+<body>
+<button id="fsBtn" title="Tela cheia" onclick="app.fullscreen()">⛶</button>
+<header id="topbar">
+  <div class="brand"><span class="mk">S6</span> Aulão SPAECE · 9º</div>
+  <div id="scoreboard"></div>
+  <button class="ibtn" id="sfx-btn" title="Ligar/desligar som do jogo" onclick="app.toggleSfx()" style="position:absolute;right:100px">🔊</button>
+  <button class="ibtn" title="Memória Literária" onclick="app.toGame()" style="position:absolute;right:56px">🧠</button>
+  <button class="ibtn" title="Ver pódio" onclick="app.finish()" style="position:absolute;right:12px">🏁</button>
+</header>
+<div id="stage">
+  <section id="screen-intro" class="screen center active">
+    <div class="hero">
+      <div><div class="index"><span class="ring"></span>06<small>AULÃO 06 / 06</small></div></div>
+      <div class="hero-right">
+        <span class="eyebrow">✒️ Língua Portuguesa · 9º ano EF · SPAECE/CE</span>
+        <h1>Estilo <span class="amp">&amp; Narrativa</span></h1>
+        <p class="sub">Nada no texto é por acaso: conflito, voz do narrador, pontuação e variação linguística. Leia como quem desvenda escolhas — com o <b>Método 3E</b> e o jogo <b>Memória Literária</b>.</p>
+        <div class="d-grid">
+          <div class="d-card"><span class="ic">🎬</span><div><b>D10</b><span>Conflito e elementos da narrativa</span></div></div>
+          <div class="d-card"><span class="ic">🗣️</span><div><b>D13</b><span>Marcas do locutor/interlocutor</span></div></div>
+          <div class="d-card"><span class="ic">❗</span><div><b>D17</b><span>Pontuação expressiva</span></div></div>
+          <div class="d-card"><span class="ic">🔤</span><div><b>D19</b><span>Recursos ortográficos/morfossintáticos</span></div></div>
+        </div>
+        <div class="hero-cta"><button class="btn" onclick="app.flowGo(0)">Bora analisar ✒️</button><button class="btn ghost" onclick="app.openBank()">📋 Banco de questões</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-warmup" class="screen">
+    <div class="wrap fill">
+      <div class="toprow"><button class="back" onclick="app.go('screen-intro')">‹ Voltar</button><span class="phase-tag">Aquecimento</span></div>
+      <div class="hook">
+        <div>
+          <h2>Por que um autor usa <span class="pc">aspas</span>, <span class="pc">reticências…</span> ou escreve <span class="pc">“vc”</span> num conto?</h2>
+          <p class="lead">Nada no texto é por acaso. Cada marca é uma <b>escolha</b> com um <b>efeito</b> — e reconhecer isso é o segredo das questões de hoje. Cuidado com estas ciladas:</p>
+          <div style="display:flex;flex-direction:column;gap:.6rem">
+            <div class="trapb"><span class="e">🚫</span><div><b>“Marca = erro”</b><span>Achar que “vc”, gíria ou fala regional são erros de português. São escolhas expressivas e marcam o perfil de quem fala — isso é preconceito linguístico.</span></div></div>
+            <div class="trapb"><span class="e">⏸️</span><div><b>“Pontuação é só pausa”</b><span>Achar que reticências, travessão e exclamação só marcam respiração — quando mudam o sentido e a emoção da frase.</span></div></div>
+            <div class="trapb"><span class="e">🎬</span><div><b>Passar batido no conflito</b><span>Não perceber o <b>ponto de virada</b>: o momento em que a história muda de rumo.</span></div></div>
+          </div>
+        </div>
+        <div>
+          <div class="news-demo">
+            <div class="nd-head">Três marcas, três efeitos:</div>
+            <div class="nd-line"><span class="tag fato">ASPAS</span>Ele é um “gênio”. → ironia: o autor duvida.</div>
+            <div class="nd-line"><span class="tag op">RETICÊNCIAS</span>Eu até queria, mas… → hesitação, suspense.</div>
+            <div class="nd-line"><span class="tag op">“vc” / “cê”</span>“Cê vai mesmo?” → marca a fala — não é erro.</div>
+          </div>
+          <p class="cap">👆 A mesma ideia muda de sentido conforme a marca que o autor escolhe.</p>
+        </div>
+      </div>
+      <div class="center" style="margin-top:1.2rem"><button class="btn" onclick="app.flowNext()">Conhecer o Método 3E ▸</button></div>
+    </div>
+  </section>
+
+  <section id="screen-lesson" class="screen">
+    <div class="lesson">
+      <div class="l-head"><span class="step" id="l-step"></span><div class="dots" id="l-dots"></div></div>
+      <div class="l-card" id="l-card"></div>
+      <div class="l-nav"><button class="btn ghost" onclick="app.lessonPrev()">‹ Voltar</button><button class="btn" id="l-next" onclick="app.lessonNext()">Próximo ▸</button></div>
+    </div>
+  </section>
+
+  <section id="screen-worked" class="screen">
+    <div class="worked">
+      <div class="l-head"><span class="step">🤝 Resolva comigo · Método 3E em ação</span><button class="back" onclick="app.flowBack()">‹ Voltar à aula</button></div>
+      <div class="panel">
+        <div class="w-text"><span class="gt" id="wk-gt"></span><div class="mini" id="wk-text"></div><div class="src" id="wk-src"></div><div class="cmd" id="wk-cmd"></div></div>
+        <div class="w-steps" id="wk-steps"></div>
+      </div>
+      <div class="l-nav"><button class="btn ghost" id="wk-step-btn" onclick="app.workedStep()">Passo 1 — Voz</button><button class="btn accent hide" id="wk-go" onclick="app.flowNext()">Agora é jogo! 🎮</button></div>
+    </div>
+  </section>
+
+  <section id="screen-splash" class="screen center splash">
+    <div class="wrap"><button class="back" style="position:absolute;top:1rem;left:1rem" onclick="app.flowBack()">‹ Voltar</button>
+      <div class="emoji" id="sp-emoji"></div><h1 id="sp-title"></h1><p id="sp-sub"></p><button class="btn accent" onclick="app.flowNext()">Bora! ⚡</button></div>
+  </section>
+
+  <section id="screen-setup" class="screen center">
+    <div class="setup"><button class="back" style="position:absolute;top:1rem;left:1rem" onclick="app.flowBack()">‹ Voltar</button>
+      <h2>Montem as equipes 🙌</h2><p class="sub">De 2 a 6 equipes. Joga-se uma por rodada, revezando, para formar pares na Memória Literária.</p>
+      <div class="rows" id="rows"></div>
+      <div class="acts"><button class="btn ghost sm" onclick="app.addTeam()">+ Adicionar equipe</button><button class="btn" onclick="app.start()">Começar o jogo 🎲</button></div>
+    </div>
+  </section>
+
+  <section id="screen-game" class="screen">
+    <div class="wrap fill">
+      <div class="toprow"><button class="back" onclick="app.flowBack()">‹ Voltar</button><span class="phase-tag">🧠 Memória Literária</span></div>
+      <div class="bingo-wrap">
+        <div class="card-panel">
+          <div class="card-title">🧠 Mesa da memória — virem duas cartas e achem os pares!</div>
+          <div class="bingo-card" id="bingo-card"></div>
+          <div class="card-foot"><div class="bingo-hint" id="bingo-hint"></div></div>
+        </div>
+        <div class="game-side">
+          <div class="turn-banner" id="turn-banner"></div>
+          <div class="qprog"><div class="qprog-top"><span>Progresso do jogo</span><span id="qprog-label"></span></div><div class="qprog-bar"><i id="qprog-fill"></i></div></div>
+          <div class="rank" id="rank"></div>
+          <p class="side-rule">A equipe da vez <b>sorteia uma questão</b>. Acertou, <b>vira duas cartas</b> da mesa (4×4). Achou um <b>par</b>, ganha <b>+25</b> — e todos memorizam as posições! Quando o tabuleiro zera, entram cartas novas. Vence quem fizer mais pontos ao fim das questões.</p>
+          <div class="game-btns">
+            <button class="btn accent" id="attack-btn" onclick="app.drawQuestion()">✒️ Sortear questão</button>
+            <button class="btn neutral sm" onclick="app.finish()">Encerrar 🏁</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="sortov" style="display:none;position:fixed;inset:0;background:rgba(18,46,70,.5);z-index:2000;align-items:center;justify-content:center;padding:1rem"><div id="sortcard" style="background:#fff;border-radius:22px;padding:2rem 2.2rem;max-width:430px;width:100%;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.3)"></div></div>
+
+  <section id="screen-question" class="screen">
+    <div class="wrap fill">
+      <div class="toprow"><button class="back" onclick="app.toGame()">‹ Mural</button><span class="q-prog-mini" id="q-prog-mini"></span><span class="q-badge" id="q-badge"></span></div>
+      <div class="q-meta"><span class="q-full" id="q-full"></span><span class="q-turn" id="q-turn"></span></div>
+      <div class="q-grid">
+        <div class="stim"><span class="gtag" id="q-gtag"></span><div class="txt" id="q-text"></div><div class="src" id="q-src"></div></div>
+        <div class="inter">
+          <div class="timer" id="q-timer"><button class="tbtn" onclick="app.adjustTimer(-15)">−</button><span class="tv" id="tv">02:30</span><button class="tbtn" onclick="app.adjustTimer(15)">+</button><button class="tbtn" id="ttoggle" onclick="app.toggleTimer()">▶</button></div>
+          <div class="cmd" id="q-cmd"></div>
+          <div class="lar-hint">3E: Enredo (o que acontece?) · Escolha (que marca o autor usou?) · Efeito (por que, qual o efeito?).</div>
+          <div class="opts" id="q-opts"></div>
+          <button class="btn" id="q-reveal" onclick="app.reveal()">Mostrar resposta</button>
+          <div class="cmt hide" id="q-cmt"><h4>Gabarito comentado</h4><p id="q-cmt-txt"></p></div>
+          <div class="judge hide" id="q-judge"><h4 id="q-judge-h"></h4><div class="jb"><button class="btn good sm" onclick="app.resolveQ(true)">✅ Acertou</button><button class="btn red sm" onclick="app.resolveQ(false)">❌ Não acertou</button></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-bank" class="screen">
+    <div class="wrap">
+      <div class="toprow"><button class="back" onclick="app.go('screen-intro')">‹ Voltar</button><span class="phase-tag">📋 Banco de questões (19)</span></div>
+      <div id="bank-list"></div>
+    </div>
+  </section>
+
+  <section id="screen-podium" class="screen" style="text-align:center;justify-content:flex-start;padding-top:1.3rem;padding-bottom:1.6rem">
+    <div class="wrap"><h1 style="font-family:var(--serif);font-weight:700;font-size:clamp(1.8rem,5vw,2.9rem);color:var(--c1-d)">🧠 Memória encerrada!</h1>
+      <div class="podium" id="podium"></div>
+      <div class="pod-list" id="pod-list"></div>
+      <div class="raiox" id="raiox"></div>
+      <div class="center" style="margin-top:1.2rem"><button class="btn sm" onclick="location.reload()">Reiniciar aulão ↻</button></div>
+    </div>
+  </section>
+</div>
+<footer>AULÕES PARA PROFESSORES</footer>
+
+<script>
+const FULL={
+ D10:"D10 — Identificar o conflito gerador e os elementos da narrativa (enredo, personagens, tempo, espaço, narrador).",
+ D13:"D13 — Identificar marcas linguísticas que evidenciam o locutor e o interlocutor (voz, registro, ponto de vista).",
+ D17:"D17 — Reconhecer o efeito de sentido da pontuação e de outras notações expressivas.",
+ D19:"D19 — Reconhecer o efeito de recursos ortográficos e morfossintáticos (grafia, diminutivos, repetição)."
+};
+const ART={
+ narr:`<div class="arc"><div class="st">Apresentação</div><span class="ar">→</span><div class="st">Conflito</div><span class="ar">→</span><div class="st hi">Clímax ⚡<small>ponto de virada</small></div><span class="ar">→</span><div class="st">Desfecho</div></div><div class="diag-cap">O conflito move a história; o clímax é o ponto de virada — onde tudo muda.</div>`,
+ voz:`<div class="markrow"><div class="m"><span class="sg">👔</span><div><b>Registro formal</b><span>“Vossa senhoria poderia comparecer?”</span></div></div><div class="m"><span class="sg">👕</span><div><b>Registro informal/regional</b><span>“Cê vai mesmo, muié?”</span></div></div><div class="m ok"><span class="sg">✔</span><div><b>Não é erro</b><span>é escolha: marca quem fala e para quem.</span></div></div></div>`,
+ pont:`<div class="markrow"><div class="m"><span class="sg">…</span><div><b>Reticências</b><span>suspense, hesitação, fala interrompida</span></div></div><div class="m"><span class="sg">—</span><div><b>Travessão</b><span>corte brusco, fala de personagem, destaque</span></div></div><div class="m"><span class="sg">“”</span><div><b>Aspas</b><span>ironia, fala de outro, sentido especial</span></div></div><div class="m"><span class="sg">!</span><div><b>Exclamação</b><span>emoção, ênfase, espanto</span></div></div></div>`,
+ orto:`<div class="markrow"><div class="m"><span class="sg">🔤</span><div><b>Grafia da fala</b><span>“muié”, “cê”, “tá” → registram a oralidade</span></div></div><div class="m"><span class="sg">🐚</span><div><b>Diminutivo</b><span>“casinha”, “caladinho” → afeto, ternura, ironia</span></div></div><div class="m"><span class="sg">🔁</span><div><b>Repetição</b><span>“caladinho, caladinho” → intensidade</span></div></div></div>`
+};
+
+/* ========= AULA ========= */
+const teach=[
+ {t:'triad',title:"Nada no texto é por acaso",tri:[
+   {ic:"🎬",h:"Narrativa & conflito (D10)",p:"Toda história tem enredo, personagens, tempo, espaço e narrador. O conflito é o motor; o ponto de virada é onde a trama muda de rumo."},
+   {ic:"🗣️",h:"Quem fala e para quem (D13)",p:"O registro (formal, informal, regional) e o ponto de vista revelam o locutor e o interlocutor. Marca de oralidade não é erro: é escolha expressiva."},
+   {ic:"❗",h:"Pontuação & recursos (D17/D19)",p:"Aspas, reticências, travessão, diminutivos, repetição e grafia da fala criam efeitos de sentido. Cada sinal provoca uma reação no leitor."}]},
+ {t:'metodo',title:"Método 3E — para ler as escolhas do autor",steps:[
+   {L:"E1",tag:"Enredo",h:"O que acontece?",p:"Primeiro, a história: qual é o conflito? Onde está o ponto de virada? Quem narra (e de que ponto de vista)?"},
+   {L:"E2",tag:"Escolha",h:"Que marca o autor usou?",p:"Localize a escolha: uma aspa, uma reticência, um travessão, uma gíria, um diminutivo, uma grafia da fala."},
+   {L:"E3",tag:"Efeito",h:"Qual é o efeito?",p:"Pergunte: por que o autor escolheu isso? Que efeito de sentido produz? (Dica de ouro: marca de fala nunca é ‘erro’.)"}]},
+ /* D10 */
+ {t:'c',code:"D10",part:"1 de 1",full:FULL.D10,title:"O conflito e o ponto de virada",art:"narr",
+  kv:[
+   {cls:'a',ic:"🎬",h:"O que a prova pede",p:"Identificar o conflito gerador (o problema que move a história) e os elementos da narrativa: enredo, personagens, tempo, espaço e narrador."},
+   {cls:'b',ic:"🔀",h:"O ponto de virada",p:"É o instante em que a história muda de rumo — a revelação, a decisão, o encontro inesperado. As provas adoram perguntar por ele."}],
+  genres:["Conto","Romance","Crônica narrativa","Fábula"],
+  tip:"<b>Dica de ouro:</b> procure o verbo ou a frase que ‘quebra’ a calma da cena — ali costuma estar a virada."},
+ {t:'ex',code:"D10",gt:"🎬 Conto (adaptado)",
+  text:"Eu sabia a lição de cor; o Raimundo, filho do mestre, é que não sabia. Ele me ofereceu uma moeda de prata para que eu lhe explicasse tudo antes da chamada. Aceitei, com vergonha. Mas, no instante em que eu escondia o dinheiro, o Curvelo nos viu — e sorriu.",
+  src:"Adaptado de Machado de Assis, Conto de Escola (1884). Domínio público.",
+  cmd:"O ponto de virada (conflito) da cena é:",
+  options:[{t:"o momento em que o Curvelo vê o dinheiro e sorri, ameaçando denunciar.",c:true},{t:"a hora em que o menino chega à escola de manhã.",c:false},{t:"o fato de o narrador, ainda muito jovem, não conseguir decorar aquela lição de sintaxe.",c:false},{t:"a descrição detalhada e demorada da sala de aula e do mestre.",c:false}],
+  expl:["✅ <b>A certa:</b> tudo corria escondido até o Curvelo ver a cena — esse olhar (e o sorriso) muda o rumo: agora há a ameaça da denúncia.","Os outros itens são partes da ambientação, não o conflito que faz a história virar."]},
+ /* D13 */
+ {t:'c',code:"D13",part:"1 de 1",full:FULL.D13,title:"Marcas de quem fala (e para quem)",art:"voz",
+  kv:[
+   {cls:'a',ic:"🗣️",h:"O que a prova pede",p:"Perceber, pelas marcas linguísticas (registro, pronomes, gírias, grafia), QUEM é o locutor e com QUEM ele fala — e o ponto de vista de quem narra."},
+   {cls:'b',ic:"🚫",h:"A cilada do preconceito",p:"Formas como ‘cê’, ‘muié’, ‘pra mó de’ NÃO são erros: são escolhas que marcam a origem, a classe e o jeito do personagem. Tratá-las como ‘erro’ é preconceito linguístico."}],
+  genres:["Conto","Entrevista","Letra de música","Romance"],
+  tip:"<b>Dica de ouro:</b> pergunte ‘que efeito essa marca cria?’ — nunca ‘isso está certo ou errado?’."},
+ {t:'ex',code:"D13",trap:true,gt:"🗣️ Diálogo (adaptado)",
+  text:"No pátio do cortiço, as falas se misturavam. — Ô muié, cadê que ocê num veio ni mim ontem? — gritava uma lavadeira. Rita Baiana ria e requebrava o corpo, e o seu jeito de falar dava o tom alegre e popular daquela gente.",
+  src:"Adaptado de Aluísio Azevedo, O Cortiço (1890). Domínio público.",
+  cmd:"As formas ‘muié’, ‘ocê’ e ‘ni mim’, no texto, indicam que:",
+  options:[{t:"o autor marca o registro popular e regional das personagens — uma escolha expressiva.",c:true},{t:"há erros de português que o autor deixou passar por descuido.",c:false},{t:"as personagens não sabiam falar nem escrever de forma nenhuma.",c:false},{t:"o autor quis reproduzir, ao mesmo tempo, o modo de falar de todas as regiões do país.",c:false}],
+  expl:["✅ <b>A certa:</b> o autor ESCOLHE registrar a fala popular para caracterizar aquela gente — é marca de identidade, não erro.","Chamar isso de ‘erro’ é a cilada do preconceito linguístico: na literatura, a variação é recurso expressivo."]},
+ /* D17 */
+ {t:'c',code:"D17",part:"1 de 1",full:FULL.D17,title:"A pontuação que emociona",art:"pont",
+  kv:[
+   {cls:'a',ic:"❗",h:"O que a prova pede",p:"Reconhecer o EFEITO DE SENTIDO de sinais e notações: reticências, travessão, aspas, exclamação, interrogação, itálico."},
+   {cls:'b',ic:"🎯",h:"Sinal ≠ só pausa",p:"Cada sinal provoca algo: reticências suspendem (suspense); travessão corta (surpresa, fala); aspas distanciam (ironia); exclamação intensifica (emoção)."}],
+  genres:["Conto","Poema","Crônica","Tirinha"],
+  tip:"<b>Dica de ouro:</b> leia a frase SEM o sinal e veja o que se perde. O que falta é o efeito dele."},
+ {t:'ex',code:"D17",gt:"❗ Fragmento (adaptado)",
+  text:"Camilo saíra leve como uma pluma: a cartomante garantira que nada de mau lhe aconteceria. Sorriu o caminho todo, confiante. Chegou à casa do amigo e bateu. A porta abriu-se devagar — e o sorriso congelou no rosto.",
+  src:"Adaptado de Machado de Assis, A Cartomante (1884). Domínio público.",
+  cmd:"O travessão em “abriu-se devagar — e o sorriso congelou” serve para:",
+  options:[{t:"marcar um corte brusco que produz surpresa e tensão na cena.",c:true},{t:"separar os itens de uma longa enumeração de objetos.",c:false},{t:"indicar que uma personagem começou a falar em voz alta ali.",c:false},{t:"mostrar que faltou uma palavra qualquer na frase do narrador.",c:false}],
+  expl:["✅ <b>A certa:</b> o travessão corta a frase de repente, no susto — a pontuação cria a virada emocional.","Sem o travessão, a frase perde o impacto: é o sinal que constrói a surpresa."]},
+ /* D19 */
+ {t:'c',code:"D19",part:"1 de 1",full:FULL.D19,title:"Grafia, diminutivo e repetição",art:"orto",
+  kv:[
+   {cls:'a',ic:"🔤",h:"O que a prova pede",p:"Reconhecer o efeito de recursos ortográficos (grafar a fala: ‘tá’, ‘muié’) e morfossintáticos (diminutivos, aumentativos, repetição de palavras)."},
+   {cls:'b',ic:"🐚",h:"Pequeno com intenção",p:"O diminutivo pode trazer afeto (‘filhinho’), desprezo (‘textinho’) ou ironia. A repetição intensifica (‘caladinho, caladinho’)."}],
+  genres:["Conto regional","Crônica","Poema","Diálogo"],
+  tip:"<b>Dica de ouro:</b> ‘-inho’ nem sempre é tamanho — quase sempre é emoção."},
+ {t:'ex',code:"D19",gt:"🔤 Conto regional (adaptado)",
+  text:"Pois, moço, aquele cavalo arisco era o xodó do velho. Cuidava dele com uns cuidadinho que até dava gosto de ver. Quando o bicho adoeceu, o home ficou caladinho, caladinho, sem comer.",
+  src:"Adaptado de Simões Lopes Neto, Contos Gauchescos (1912). Domínio público.",
+  cmd:"A repetição “caladinho, caladinho” produz, no texto, o efeito de:",
+  options:[{t:"intensificar o silêncio e a tristeza profunda do personagem.",c:true},{t:"corrigir uma palavra que havia sido escrita de forma errada antes.",c:false},{t:"indicar que havia duas pessoas caladas, e não apenas uma.",c:false},{t:"mostrar que o narrador esqueceu o que ia dizer no meio da frase.",c:false}],
+  expl:["✅ <b>A certa:</b> repetir ‘caladinho’ reforça o quanto o homem ficou em silêncio — a repetição intensifica a emoção.","O diminutivo + a repetição somam ternura e intensidade: é recurso expressivo, não erro nem engano."]},
+ {t:'energ',e:"🎭",badge:"Dinâmica rápida · 1 min",title:"Qual é o efeito?",
+  desc:"Eu mostro uma frase com uma marca (ex.: ‘Ele é um “gênio”.’ / ‘Eu até queria, mas…’). A turma responde em coro: que EFEITO essa marca cria? (ironia? suspense? emoção?) Depois, alguém justifica."},
+ {t:'tabela',title:"Tabela de bolso — pontuação expressiva",rows:[
+   ["Reticências (…)","suspense, hesitação, fala interrompida, continuidade sugerida"],
+   ["Travessão (—)","fala de personagem, corte brusco, destaque, surpresa"],
+   ["Aspas (“ ”)","ironia, fala de outro, palavra em sentido especial"],
+   ["Exclamação (!)","emoção, ênfase, espanto, ordem"],
+   ["Interrogação (?)","dúvida, ironia, pergunta retórica"],
+   ["Diminutivo (-inho)","afeto, desprezo, ironia — raramente só tamanho"],
+   ["Repetição","intensidade, insistência, ritmo"]]}
+];
+
+const worked={
+ gt:"🎬 Conto (adaptado)",
+ text:"Camilo saltou do bonde tranquilo: a cartomante havia garantido que nada de mau lhe aconteceria. Bateu à porta da casa do amigo — e parou. Lá dentro, duas vozes conversavam baixo…",
+ src:"Adaptado de Machado de Assis, A Cartomante (1884). Domínio público.",
+ cmd:"Ache o ponto de virada e explique o efeito do travessão e das reticências.",
+ steps:[
+  {t:"<b>E1 — Enredo.</b> A cena vinha calma: Camilo estava ‘tranquilo’, confiante. O ponto de virada é quando ele para à porta e ouve as duas vozes — a trama muda de rumo."},
+  {t:"<b>E2 — Escolha.</b> O autor escolhe um travessão (‘— e parou’) e reticências (‘baixo…’) em vez de contar tudo de uma vez."},
+  {t:"<b>E3 — Efeito.</b> O travessão corta a ação de repente (surpresa); as reticências suspendem a frase e criam suspense — o leitor sente o perigo antes de saber o que é."}],
+ answer:"<b>Virada:</b> o instante em que Camilo para e ouve as vozes. <b>Efeito da pontuação:</b> o travessão provoca um corte brusco (susto) e as reticências criam suspense — a pontuação constrói a tensão da cena."
+};
+
+/* ========= 16 QUESTÕES — textos literários reais (domínio público), adaptados e atribuídos ========= */
+const T_CART="Camilo saíra da casa da cartomante leve como uma pluma: ela lhe garantira que nada de mau lhe aconteceria e que o segredo jamais seria descoberto. Durante todo o caminho, sorriu, confiante, lembrando o rosto da mulher amada.\n\nChegou enfim à casa do amigo Vilela e bateu. A porta abriu-se devagar — e o sorriso de Camilo congelou no rosto.";
+const S_CART="Adaptado de Machado de Assis, A Cartomante (1884). Domínio público. Fragmento.";
+const T_ESC="Eu sabia a lição de sintaxe de cor; o Raimundo, filho do mestre, é que não sabia. Ele me ofereceu uma moeda de prata para que eu lhe explicasse tudo antes da chamada. Aceitei, com vergonha.\n\nMas, no instante exato em que eu escondia o dinheiro no bolso, o Curvelo nos viu do outro lado da sala — e sorriu, com um sorriso que já valia uma denúncia.";
+const S_ESC="Adaptado de Machado de Assis, Conto de Escola (1884). Domínio público. Fragmento.";
+const T_CASM="Não consultes dicionários: ‘casmurro’ não está aqui no sentido que eles lhe dão, mas no que lhe pôs o vulgo, de homem calado e metido consigo.\n\nCapitu e eu fôramos criados juntos. Os seus olhos, porém, eram como os de cigana oblíqua e dissimulada — ou assim eu os via agora, já velho e desconfiado, contando esta história a meu modo.";
+const S_CASM="Adaptado de Machado de Assis, Dom Casmurro (1899). Domínio público. Fragmento.";
+const T_BRAS="Ao leitor,\n\nQue Stendhal confessasse haver escrito um de seus livros para cem leitores, coisa é que admira. Coisa que não admira, nem provavelmente consterna, é se este outro livro não tiver os cem leitores de Stendhal, nem cinquenta, nem vinte, e quando muito, dez. Dez? Talvez cinco.";
+const S_BRAS="Adaptado de Machado de Assis, Memórias Póstumas de Brás Cubas (1881). Domínio público. Fragmento.";
+const T_COR="No pátio do cortiço, as falas se misturavam o dia inteiro. — Ô muié, cadê que ocê num veio ni mim ontem? — gritava uma lavadeira para a vizinha.\n\nRita Baiana ria, requebrava o corpo no meio do terreiro, e o seu jeito de falar, cantado e cheio de gíria, dava o tom alegre e popular daquela gente amontoada.";
+const S_COR="Adaptado de Aluísio Azevedo, O Cortiço (1890). Domínio público. Fragmento.";
+const T_GAU="Pois, moço, aquele cavalo overo e arisco era o xodó do velho. Cuidava dele com uns cuidadinho que até dava gosto de ver.\n\nQuando o bicho adoeceu, o home ficou caladinho, caladinho, sem comer, sem falar, de olho preso no animal.";
+const S_GAU="Adaptado de Simões Lopes Neto, Contos Gauchescos (1912). Domínio público. Fragmento.";
+
+const Q={
+ /* ===== D10 — conflito e elementos da narrativa ===== */
+ q1:{id:1,code:"D10",lv:"b",title:"A Cartomante · ponto de virada",gen:"🎬 Conto (adaptado)",text:T_CART,src:S_CART,
+  cmd:"O momento em que a cena muda completamente é quando:",
+  options:[{t:"a porta se abre devagar e o sorriso de Camilo congela no rosto.",c:true},{t:"Camilo sai da casa da cartomante, leve e confiante.",c:false},{t:"Camilo caminha devagar pela rua, ainda sorrindo e pensando no rosto da mulher amada.",c:false},{t:"Camilo bate à porta da casa do amigo Vilela.",c:false}],
+  comment:"A cena vinha calma e confiante; a virada acontece quando a porta se abre e o sorriso congela — é ali que a história muda de rumo."},
+ q2:{id:2,code:"D10",lv:"e",title:"Conto de Escola · conflito",gen:"🎬 Conto (adaptado)",text:T_ESC,src:S_ESC,
+  cmd:"Qual é o problema (conflito) que surge na cena?",
+  options:[{t:"o menino é flagrado pelo Curvelo escondendo o dinheiro recebido.",c:true},{t:"ele sente muita vergonha de não ter estudado a lição de sintaxe antes da aula.",c:false},{t:"ele recebe uma moeda de prata do colega Raimundo.",c:false},{t:"ele guarda um segredo havia muito tempo.",c:false}],
+  comment:"O problema que muda a cena é ser visto pelo Curvelo escondendo o dinheiro — dali nasce a ameaça da denúncia. As demais são só o contexto."},
+ q3:{id:3,code:"D10",lv:"d",title:"Dom Casmurro · narrador",gen:"📖 Romance (adaptado)",text:T_CASM,src:S_CASM,
+  cmd:"Pelo trecho, o narrador do romance:",
+  options:[{t:"conta a história em 1ª pessoa, já adulto, com um olhar desconfiado sobre o passado.",c:true},{t:"narra os fatos no exato momento em que acontecem, sem nenhuma distância no tempo.",c:false},{t:"é uma voz neutra, que não demonstra nenhuma opinião sobre os fatos.",c:false},{t:"observa a história inteira de fora, como alguém que nunca fez parte de nada daquilo.",c:false}],
+  comment:"‘Já velho e desconfiado... a meu modo’ mostra um narrador-personagem (1ª pessoa), que conta a história muitos anos depois, com seu próprio olhar."},
+ q4:{id:4,code:"D10",lv:"b",title:"A Cartomante · elementos",gen:"🎬 Conto (adaptado)",text:T_CART,src:S_CART,
+  cmd:"A comparação “leve como uma pluma” mostra que Camilo estava:",
+  options:[{t:"tranquilo e confiante, antes do susto que viria.",c:true},{t:"muito cansado, depois de caminhar sozinho por horas seguidas naquela tarde.",c:false},{t:"doente e fraco naquele dia.",c:false},{t:"andando depressa, com pressa de chegar.",c:false}],
+  comment:"A comparação pinta a leveza/confiança do personagem — contraste proposital com o susto do final. Prepara a virada da cena."},
+ /* ===== D13 — marcas do locutor/interlocutor ===== */
+ q5:{id:5,code:"D13",lv:"b",title:"O Cortiço · registro popular",gen:"🗣️ Romance (adaptado)",text:T_COR,src:S_COR,
+  cmd:"As formas “muié”, “ocê” e “ni mim” servem para:",
+  options:[{t:"marcar a fala popular das personagens, do jeito que elas realmente falavam.",c:true},{t:"mostrar que as personagens erraram feio ao falar a língua portuguesa na escola.",c:false},{t:"provar que as personagens não sabiam ler nem escrever.",c:false},{t:"deixar o texto mais curto, com menos letras.",c:false}],
+  comment:"A grafia da fala marca o registro popular e a identidade das personagens — é escolha expressiva do autor. Tratar como ‘erro’ seria preconceito linguístico."},
+ q6:{id:6,code:"D13",lv:"d",title:"Brás Cubas · locutor e leitor",gen:"📖 Romance (adaptado)",text:T_BRAS,src:S_BRAS,
+  cmd:"Ao começar com “Ao leitor” e falar em “este outro livro”, o narrador:",
+  options:[{t:"se dirige diretamente ao leitor, como quem conversa com ele.",c:true},{t:"copia um trecho do livro de outro escritor, chamado Stendhal.",c:false},{t:"descreve o preço do livro para quem for comprá-lo.",c:false},{t:"afirma que seu livro teve o mesmo sucesso do livro de Stendhal.",c:false}],
+  comment:"As marcas ‘Ao leitor’ e ‘este outro livro’ mostram o locutor se dirigindo diretamente ao interlocutor (o leitor) — uma conversa, com ironia."},
+ q7:{id:7,code:"D13",lv:"e",title:"Contos Gauchescos · quem fala",gen:"🗣️ Conto regional (adaptado)",text:T_GAU,src:S_GAU,
+  cmd:"Pelo jeito de falar (“Pois, moço…”, “o home”), percebe-se que quem narra é:",
+  options:[{t:"um homem simples, do campo, contando o caso de forma oral para outra pessoa.",c:true},{t:"um professor, explicando uma regra de gramática.",c:false},{t:"um apresentador de notícias de televisão, falando sempre de modo muito formal.",c:false},{t:"uma criança, que ainda está aprendendo a falar.",c:false}],
+  comment:"O vocativo ‘moço’ e formas como ‘o home’ marcam um narrador popular, do campo, que conversa com um interlocutor — registro oral e regional."},
+ q8:{id:8,code:"D13",lv:"b",title:"Dom Casmurro · ponto de vista",gen:"📖 Romance (adaptado)",text:T_CASM,src:S_CASM,
+  cmd:"A frase “ou assim eu os via agora” deixa claro que a descrição de Capitu é:",
+  options:[{t:"a opinião do narrador, e não uma verdade comprovada.",c:true},{t:"uma descrição exata e já comprovada dos olhos de Capitu.",c:false},{t:"algo que a própria Capitu disse sobre si mesma.",c:false},{t:"a fala de outra personagem, apenas repetida pelo narrador.",c:false}],
+  comment:"‘Assim eu os via’ marca que é a visão do narrador — um olhar parcial de quem conta a história. A marca linguística denuncia o ponto de vista."},
+ /* ===== D17 — pontuação expressiva ===== */
+ q9:{id:9,code:"D17",lv:"b",title:"A Cartomante · travessão",gen:"❗ Conto (adaptado)",text:T_CART,src:S_CART,
+  cmd:"O travessão em “abriu-se devagar — e o sorriso de Camilo congelou” produz o efeito de:",
+  options:[{t:"um corte repentino, que aumenta a surpresa e a tensão.",c:true},{t:"separar, um a um, os itens de uma lista bem comprida de objetos.",c:false},{t:"marcar o início da fala de uma personagem.",c:false},{t:"mostrar que o autor hesitou na escolha da palavra.",c:false}],
+  comment:"O travessão quebra a frase de repente, no susto — a pontuação cria a virada emocional. Sem ele, a cena perde o impacto."},
+ q10:{id:10,code:"D17",lv:"d",title:"Brás Cubas · pergunta irônica",gen:"❗ Romance (adaptado)",text:T_BRAS,src:S_BRAS,
+  cmd:"O efeito de “Dez? Talvez cinco.”, ao final, é:",
+  options:[{t:"criar um tom de ironia e humor, diminuindo aos poucos o número de leitores.",c:true},{t:"informar, com números exatos e comprovados, qual foi a tiragem total do livro.",c:false},{t:"pedir que o leitor escolha o próprio número de leitores.",c:false},{t:"mostrar que o narrador não sabia contar direito.",c:false}],
+  comment:"A pergunta curta seguida de ‘Talvez cinco’ é ironia: o narrador diminui o próprio público de propósito, com humor. A pontuação dá o tom."},
+ q11:{id:11,code:"D17",lv:"b",title:"Conto de Escola · travessão",gen:"❗ Conto (adaptado)",text:T_ESC,src:S_ESC,
+  cmd:"O travessão em “nos viu do outro lado da sala — e sorriu” serve para:",
+  options:[{t:"criar uma pausa que aumenta o suspense antes do gesto decisivo.",c:true},{t:"marcar apenas o fim do parágrafo, sem nenhuma outra função dentro do texto.",c:false},{t:"indicar que a frase foi copiada de outro autor.",c:false},{t:"separar duas listas diferentes de nomes.",c:false}],
+  comment:"O travessão segura a frase um instante antes de ‘sorriu’ — o gesto que ameaça. A pausa reforça a tensão do flagrante."},
+ q12:{id:12,code:"D17",lv:"d",title:"Dom Casmurro · travessão explicativo",gen:"❗ Romance (adaptado)",text:T_CASM,src:S_CASM,
+  cmd:"O travessão em “dissimulada — ou assim eu os via agora” introduz:",
+  options:[{t:"uma ressalva do narrador, que relativiza o que ele mesmo acabou de afirmar.",c:true},{t:"a fala da própria Capitu, respondendo diretamente ao narrador naquele instante.",c:false},{t:"uma lista com vários defeitos físicos atribuídos à personagem.",c:false},{t:"o fim abrupto e definitivo da narração.",c:false}],
+  comment:"Depois do travessão, o narrador faz uma ressalva (‘ou assim eu os via’): ele admite que é a SUA visão. A pontuação introduz essa dúvida."},
+ /* ===== D19 — recursos ortográficos/morfossintáticos ===== */
+ q13:{id:13,code:"D19",lv:"b",title:"Contos Gauchescos · repetição",gen:"🔤 Conto regional (adaptado)",text:T_GAU,src:S_GAU,
+  cmd:"A repetição “caladinho, caladinho” tem o efeito de:",
+  options:[{t:"intensificar o silêncio e a tristeza do personagem.",c:true},{t:"corrigir, logo em seguida, uma palavra que havia sido escrita de forma errada.",c:false},{t:"indicar que havia duas pessoas caladas na cena.",c:false},{t:"mostrar que o narrador perdeu o fio da história.",c:false}],
+  comment:"Repetir ‘caladinho’ reforça o quanto o homem se fechou no silêncio — a repetição intensifica a emoção. É recurso expressivo."},
+ q14:{id:14,code:"D19",lv:"d",title:"Contos Gauchescos · diminutivo",gen:"🔤 Conto regional (adaptado)",text:T_GAU,src:S_GAU,
+  cmd:"No texto, o diminutivo em “uns cuidadinho” expressa principalmente:",
+  options:[{t:"o carinho e o zelo do velho com o animal.",c:true},{t:"o tamanho pequeno das mãos do personagem.",c:false},{t:"o pouco tempo que ele tinha para cuidar do cavalo.",c:false},{t:"o desprezo do velho pelo animal doente.",c:false}],
+  comment:"O diminutivo ‘cuidadinho’ não fala de tamanho: carrega afeto e zelo. O sufixo ‘-inho’, aqui, é emoção — recurso morfológico expressivo."},
+ q15:{id:15,code:"D19",lv:"b",title:"O Cortiço · grafia da fala",gen:"🔤 Romance (adaptado)",text:T_COR,src:S_COR,
+  cmd:"Escrever “muié” em vez de “mulher” é um recurso que serve para:",
+  options:[{t:"registrar na escrita o modo como a personagem realmente fala.",c:true},{t:"ensinar ao leitor qual é a forma correta e oficial de escrever essa palavra.",c:false},{t:"deixar a palavra mais curta, para o texto ficar mais rápido.",c:false},{t:"indicar que a personagem estava gritando muito.",c:false}],
+  comment:"A grafia ‘muié’ imita a pronúncia popular — um recurso ortográfico para registrar a oralidade e caracterizar quem fala, não um erro."},
+ q16:{id:16,code:"D19",lv:"e",title:"Conto de Escola · grafia e sentido",gen:"🔤 Conto (adaptado)",text:T_ESC,src:S_ESC,
+  cmd:"A expressão “um sorriso que já valia uma denúncia” mostra que o autor, com poucas palavras:",
+  options:[{t:"condensa um sentido grande: o sorriso já ameaça, mesmo sem ninguém falar nada.",c:true},{t:"afirma que o Curvelo realmente escreveu e entregou uma denúncia formal contra os colegas.",c:false},{t:"explica o significado da palavra ‘denúncia’ para o leitor.",c:false},{t:"descreve o formato exato dos dentes do menino que sorri.",c:false}],
+  comment:"A construção sintética (‘um sorriso que já valia uma denúncia’) carrega muito sentido em poucas palavras: o gesto, sozinho, já ameaça."}
+};
+
+/* ===== Efeitos sonoros — Web Audio API (sintetizado, sem arquivos; roda offline em qualquer navegador) ===== */
+const SFX=(function(){
+  var ctx=null,on=true;
+  function ac(){try{if(!ctx){var C=window.AudioContext||window.webkitAudioContext;if(!C)return null;ctx=new C();}if(ctx.state==='suspended')ctx.resume();return ctx;}catch(e){return null;}}
+  function tone(freq,start,dur,type,vol){var c=ac();if(!c||!on)return;var t0=c.currentTime+start;var o=c.createOscillator(),g=c.createGain();o.type=type||'sine';o.frequency.setValueAtTime(freq,t0);g.gain.setValueAtTime(0.0001,t0);g.gain.linearRampToValueAtTime(vol||0.2,t0+0.012);g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);o.connect(g);g.connect(c.destination);o.start(t0);o.stop(t0+dur+0.03);}
+  function slide(f1,f2,start,dur,type,vol){var c=ac();if(!c||!on)return;var t0=c.currentTime+start;var o=c.createOscillator(),g=c.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f1,t0);o.frequency.exponentialRampToValueAtTime(f2,t0+dur);g.gain.setValueAtTime(0.0001,t0);g.gain.linearRampToValueAtTime(vol||0.2,t0+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);o.connect(g);g.connect(c.destination);o.start(t0);o.stop(t0+dur+0.03);}
+  return {
+    unlock:function(){ac();},
+    toggle:function(){on=!on;if(on){ac();tone(880,0,0.08,'triangle',0.15);}return on;},
+    isOn:function(){return on;},
+    pop:function(){tone(660,0,0.06,'square',0.12);tone(990,0.05,0.06,'square',0.10);},
+    reveal:function(){tone(784,0,0.1,'triangle',0.16);tone(1175,0.09,0.16,'triangle',0.16);},
+    correct:function(){tone(659.25,0,0.12,'triangle',0.22);tone(830.6,0.1,0.12,'triangle',0.22);tone(1046.5,0.2,0.26,'triangle',0.22);},
+    wrong:function(){slide(320,200,0,0.32,'sine',0.16);},
+    win:function(){[523.25,659.25,783.99,1046.5].forEach(function(f,i){tone(f,i*0.13,0.26,'triangle',0.22);});tone(1318.5,0.58,0.55,'triangle',0.2);tone(1046.5,0.58,0.55,'triangle',0.14);}
+  };
+})();
+
+const COLORS=["#8A2E43","#C8912A","#2E7D6B","#3E5C9A","#B5532A","#6B4E8A"];
+const DEFAULT_TEAMS=["Narradores","Cronistas","Poetas"];
+const PTS={e:10,b:15,d:20};
+const LV={e:"Elementar",b:"Básico",d:"Desejável"};
+const CONCEITOS=[
+ {ic:"🔀",t:"Ponto de virada"},{ic:"⚔️",t:"Conflito"},{ic:"🎬",t:"Narrador"},
+ {ic:"🗣️",t:"Oralidade"},{ic:"🌵",t:"Fala regional"},{ic:"💬",t:"Gíria / informal"},
+ {ic:"…",t:"Reticências"},{ic:"—",t:"Travessão"},{ic:"“”",t:"Aspas (ironia)"},
+ {ic:"❗",t:"Exclamação"},{ic:"🐚",t:"Diminutivo"},{ic:"🔁",t:"Repetição"}
+];
+const PAIR_PTS=25;
+const BASE={e:10,b:15,d:20};
+const HIT=15,SINK=30;
+const app={
+ flowIdx:-1,teams:[],lessonIdx:0,lessonRevealed:false,workedIdx:0,
+ turn:0,played:[],current:null,winner:null,memoryMode:false,board:[],firstPick:null,boardsCleared:0,
+ stats:{D10:{t:0,g:0},D13:{t:0,g:0},D17:{t:0,g:0},D19:{t:0,g:0}},
+ timer:150,tInt:null,tRun:false,
+ go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));const el=document.getElementById(id);el.classList.add('active');el.scrollTop=0;document.body.classList.toggle('in-game',this.teams.length>0&&id!=='screen-intro');if(this.tInt){clearInterval(this.tInt);this.tRun=false;}},
+ fullscreen(){if(!document.fullscreenElement){document.documentElement.requestFullscreen?.();}else{document.exitFullscreen?.();}},
+ flowGo(i){this.flowIdx=i;const f=FLOW[i];if(!f)return;
+   if(f.s==='warmup')this.go('screen-warmup');
+   else if(f.s==='lesson'){this.lessonIdx=0;this.renderLesson();this.go('screen-lesson');}
+   else if(f.s==='worked'){this.workedIdx=0;this.renderWorked();this.go('screen-worked');}
+   else if(f.s==='setup'){this.renderTeams();this.go('screen-setup');}
+   else if(f.s==='game'){this.renderGame();this.go('screen-game');}
+   else if(f.s==='podium')this.finish();},
+ flowNext(){this.flowGo(this.flowIdx+1);},
+ flowBack(){this.flowIdx>0?this.flowGo(this.flowIdx-1):this.go('screen-intro');},
+ toGame(){if(this.teams.length){this.renderGame();this.go('screen-game');}},
+ openBank(){const names={D10:'D10 — Conflito e elementos da narrativa',D13:'D13 — Marcas do locutor/interlocutor',D17:'D17 — Pontuação expressiva',D19:'D19 — Recursos ortográficos/morfossintáticos'};const byc={D10:[],D13:[],D17:[],D19:[]};Object.values(Q).forEach(q=>byc[q.code].push(q));const L=['A','B','C','D','E'];let html='';['D10','D13','D17','D19'].forEach(code=>{html+=`<div class="bank-group"><h3>${names[code]} <span style="font-size:.82rem;color:var(--muted);font-weight:400">· ${byc[code].length} questões</span></h3>`;byc[code].forEach(q=>{html+=`<div class="bank-q"><div class="qh"><span class="tag">${q.code}</span><span class="tag lv">${LV[q.lv]}</span><span style="font-size:.8rem;color:var(--muted)">${q.gen}</span></div><div class="bt">${q.text}</div><div class="bsrc">${q.src}</div><div class="bcmd">${q.cmd}</div>${q.options.map((o,i)=>`<div class="bopt ${o.c?'ok':''}">${L[i]}) ${o.t}${o.c?' ✔':''}</div>`).join('')}<div class="bcmt"><b>Gabarito comentado:</b> ${q.comment}</div></div>`;});html+='</div>';});document.getElementById('bank-list').innerHTML=html;this.go('screen-bank');},
+
+ renderLesson(){const l=teach[this.lessonIdx];this.lessonRevealed=false;
+   document.getElementById('l-step').textContent=`Aula · ${this.lessonIdx+1} de ${teach.length}`;
+   document.getElementById('l-dots').innerHTML=teach.map((_,i)=>`<i class="${i===this.lessonIdx?'on':''}"></i>`).join('');
+   let html='';
+   if(l.t==='triad'){html=`<div style="text-align:center;margin-bottom:1.1rem"><h2 style="font-family:var(--serif);font-size:clamp(1.5rem,3.4vw,2.1rem)">${l.title}</h2></div><div class="triad">${l.tri.map(t=>`<div class="tri"><div class="bigic">${t.ic}</div><h4>${t.h}</h4><p>${t.p}</p></div>`).join('')}</div>`;}
+   else if(l.t==='metodo'){html=`<div style="text-align:center;margin-bottom:1.1rem"><h2 style="font-family:var(--serif);font-size:clamp(1.5rem,3.4vw,2.1rem)">${l.title}</h2></div><div class="metodo">${l.steps.map(s=>`<div class="m-step"><div class="big">${s.L} <b>${s.tag}</b></div><h4>${s.h}</h4><p>${s.p}</p></div>`).join('')}</div>`;}
+   else if(l.t==='energ'){html=`<div class="energ"><span class="ebadge">${l.badge}</span><span class="emoji">${l.e}</span><h2>${l.title}</h2><p>${l.desc}</p></div>`;}
+   else if(l.t==='c'){html=`<div class="sec-banner"><div class="big">${l.code}</div><div><h2>${l.title} <span style="opacity:.8;font-size:.7em">· parte ${l.part}</span></h2><p>${l.full}</p></div></div><div class="concept"><div class="art">${ART[l.art]}</div><div class="info">${l.kv.map(k=>`<div class="kv ${k.cls}"><span class="ic">${k.ic}</span><div><h4>${k.h}</h4><p>${k.p}</p></div></div>`).join('')}${l.genres?`<div><div style="font-size:.82rem;color:var(--muted);font-weight:600;margin-bottom:.3rem">Gêneros em que costuma aparecer:</div><div class="genres">${l.genres.map(g=>`<span>${g}</span>`).join('')}</div></div>`:''}${l.tip?`<div class="goldtip">${l.tip}</div>`:''}</div></div>`;}
+   else if(l.t==='ex'){
+     const banner=l.trap?`<div class="sec-banner alt"><div class="big">🕵️</div><div><h2>Caça à Cilada</h2><p>Treine o olho: onde o grupo escorregou?</p></div></div>`:`<div class="sec-banner alt"><div class="big">${l.code}</div><div><h2>Exemplo na prática</h2><p>Veja o Método 3P resolvendo uma questão deste descritor.</p></div></div>`;
+     html=`${banner}<div class="ex-slide"><div class="ex-left"><span class="gt">${l.gt}</span><div class="mini">${l.text}</div><span class="src">${l.src}</span></div><div class="ex-right"><div class="ecmd">${l.cmd}</div><div class="ex-opts" id="ex-opts">${l.options.map((o,i)=>`<div class="eopt" data-correct="${o.c}"><span class="lt">${['A','B','C','D','E'][i]}</span><span>${o.t}</span></div>`).join('')}</div><button class="btn sm" id="ex-btn" onclick="app.lessonReveal()">Mostrar resposta</button><div class="eexpl hide" id="ex-expl">${l.expl.map(x=>`<div>${x}</div>`).join('')}</div></div></div>`;
+   }
+   else if(l.t==='tabela'){html=`<div style="text-align:center;margin-bottom:1rem"><h2 style="font-family:var(--serif);font-size:clamp(1.5rem,3.4vw,2.1rem)">${l.title}</h2><p style="color:var(--muted);font-size:.92rem">Guarde no bolso: a relação lógica e os conectivos que a marcam.</p></div><div class="tabela"><div class="trow th"><span>Relação</span><span>Conectivos típicos</span></div>${l.rows.map(rw=>`<div class="trow"><span class="tr-rel">${rw[0]}</span><span class="tr-con">${rw[1]}</span></div>`).join('')}</div>`;}
+   document.getElementById('l-card').innerHTML=html;
+   document.getElementById('l-next').textContent=this.lessonIdx===teach.length-1?'Resolver uma questão juntos ▸':'Próximo ▸';
+ },
+ lessonReveal(){if(this.lessonRevealed)return;this.lessonRevealed=true;document.querySelectorAll('#ex-opts .eopt').forEach(o=>o.classList.add(o.dataset.correct==='true'?'correct':'dim'));document.getElementById('ex-btn').classList.add('hide');document.getElementById('ex-expl').classList.remove('hide');},
+ lessonNext(){this.lessonIdx<teach.length-1?(this.lessonIdx++,this.renderLesson()):this.flowNext();},
+ lessonPrev(){this.lessonIdx>0?(this.lessonIdx--,this.renderLesson()):this.go('screen-warmup');},
+
+ renderWorked(){document.getElementById('wk-gt').textContent=worked.gt;document.getElementById('wk-text').textContent=worked.text;document.getElementById('wk-src').textContent=worked.src;document.getElementById('wk-cmd').textContent=worked.cmd;document.getElementById('wk-steps').innerHTML=worked.steps.map((s,i)=>`<div class="stp" id="wst-${i}"><span class="n">${['E1','E2','E3'][i]}</span><p>${s.t}</p></div>`).join('')+`<div class="ans" id="wk-ans">${worked.answer}</div>`;const b=document.getElementById('wk-step-btn');b.classList.remove('hide');b.textContent='Passo 1 — Enredo';document.getElementById('wk-go').classList.add('hide');},
+ workedStep(){if(this.workedIdx<worked.steps.length){document.getElementById('wst-'+this.workedIdx).classList.add('show');this.workedIdx++;const b=document.getElementById('wk-step-btn');b.textContent=this.workedIdx<worked.steps.length?`Passo ${this.workedIdx+1} — ${['Enredo','Escolha','Efeito'][this.workedIdx]}`:'Revelar a resposta';}else{document.getElementById('wk-ans').classList.add('show');document.getElementById('wk-step-btn').classList.add('hide');document.getElementById('wk-go').classList.remove('hide');}},
+
+ renderTeams(){const box=document.getElementById('rows');if(box.dataset.init)return;box.dataset.init="1";DEFAULT_TEAMS.forEach(n=>this.addTeam(n));},
+ addTeam(name){const box=document.getElementById('rows');if(box.children.length>=6)return;const i=box.children.length;const r=document.createElement('div');r.className='row';r.innerHTML=`<span class="tag" style="background:${COLORS[i]}"></span><input type="text" value="${typeof name==='string'?name:''}" placeholder="Equipe ${i+1}"><button class="rm" onclick="this.parentElement.remove()">×</button>`;box.appendChild(r);},
+ start(){const inputs=document.querySelectorAll('#rows input');this.teams=[];inputs.forEach((inp,i)=>{const nm=inp.value.trim();if(nm)this.teams.push({id:i,name:nm,score:0,color:COLORS[i%COLORS.length]});});if(this.teams.length<2){alert('Crie pelo menos 2 equipes.');return;}this.turn=0;this.played=[];this.winner=null;this.memoryMode=false;this.firstPick=null;this.boardsCleared=0;this.dealBoard();this.maxQ=Math.max(this.teams.length,Math.floor(Object.keys(Q).length/this.teams.length)*this.teams.length);this.renderScore();this.flowNext();},
+ renderScore(){document.getElementById('scoreboard').innerHTML=this.teams.map((t,i)=>`<div class="chip ${i===this.turn?'turn':''}" id="chip-${t.id}"><span class="tag" style="background:${t.color}"></span><span class="nm">${t.name}</span><span class="pt" id="pt-${t.id}">${t.score}</span></div>`).join('');},
+ curTeam(){return this.teams[this.turn];},
+ nextTurn(){this.turn=(this.turn+1)%this.teams.length;this.renderScore();},
+
+ renderGame(){this.renderScore();const t=this.curTeam();
+   document.getElementById('turn-banner').innerHTML=`<span class="dot" style="background:${t.color}"></span> Vez dos <span style="color:${t.color}">${t.name}</span>`;
+   let g='';this.board.forEach((cd,i)=>{const face=cd.st==='up'||cd.st==='matched';const mt=cd.st==='matched';const click=this.memoryMode&&cd.st==='down';g+=`<button class="mcard${face?' up':''}${mt?' matched':''}${click?' live':''}" ${click?`onclick="app.flipCard(${i})"`:'disabled'}><span class="mface">${face?cd.ic:'📖'}</span></button>`;});
+   document.getElementById('bingo-card').innerHTML=g;
+   const fh=document.getElementById('bingo-hint');fh.textContent=this.memoryMode?(this.firstPick===null?'🎯 Acertou! Virem a 1ª carta.':'Agora virem a 2ª carta para achar o par!'):'Acertem uma questão para virar duas cartas.';fh.classList.toggle('on',this.memoryMode);
+   const rk=[...this.teams].sort((a,b)=>b.score-a.score);
+   document.getElementById('rank').innerHTML=rk.map(tm=>`<div class="rank-row"><span class="nm"><span class="dot" style="background:${tm.color}"></span>${tm.name}${tm.pairs?` <span class="lines">🃏${tm.pairs}</span>`:''}</span><div class="rank-track"><i style="width:${Math.round(tm.score/Math.max(1,rk[0].score)*100)}%;background:${tm.color}"></i></div><span class="sc">${tm.score} pts</span></div>`).join('');
+   const tot=Object.keys(Q).length;document.getElementById('qprog-label').textContent=`${this.played.length} de ${tot} questões`;document.getElementById('qprog-fill').style.width=Math.min(100,Math.round(this.played.length/tot*100))+'%';
+   const ab=document.getElementById('attack-btn');if(ab)ab.classList.toggle('hide',this.memoryMode);
+ },
+  toast(msg){const d=document.createElement('div');d.className='toast';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>{d.classList.add('out');setTimeout(()=>d.remove(),400);},2800);},
+ toggleSfx(){const on=SFX.toggle();const b=document.getElementById('sfx-btn');if(b){b.textContent=on?'🔊':'🔇';b.title=on?'Som ligado (clique para desligar)':'Som desligado (clique para ligar)';}},
+ drawQuestion(){if(this.memoryMode)return;const avail=Object.values(Q).filter(q=>!this.played.includes(q.id));if(avail.length===0){this.finish();return;}SFX.pop();this.current=avail[Math.floor(Math.random()*avail.length)];this.played.push(this.current.id);this.openQuestion(this.current);},
+ afterTurnCheck(){const left=Object.values(Q).filter(q=>!this.played.includes(q.id)).length;if(left===0){this.finish();return;}this.renderGame();this.go('screen-game');},
+ dealBoard(){const pick=[...CONCEITOS].sort(()=>Math.random()-0.5).slice(0,8);const cards=[];pick.forEach(c=>{cards.push({ic:c.ic,key:c.t,st:'down'});cards.push({ic:c.ic,key:c.t,st:'down'});});cards.sort(()=>Math.random()-0.5);this.board=cards;this.firstPick=null;},
+ flipCard(i){if(!this.memoryMode)return;const cd=this.board[i];if(!cd||cd.st!=='down')return;SFX.pop();cd.st='up';
+   if(this.firstPick===null){this.firstPick=i;this.renderGame();this.go('screen-game');return;}
+   const j=this.firstPick;this.firstPick=null;const t=this.curTeam();
+   if(this.board[j].key===cd.key){this.board[j].st='matched';cd.st='matched';t.pairs=(t.pairs||0)+1;t.score+=PAIR_PTS;SFX.win();this.toast('🃏 Par encontrado pelos '+t.name+'! +'+PAIR_PTS+' pts');this.renderScore();
+     if(this.board.every(c=>c.st==='matched')){const qLeft=Object.values(Q).filter(q=>!this.played.includes(q.id)).length;if(qLeft>0){this.boardsCleared=(this.boardsCleared||0)+1;this.dealBoard();this.toast('🔀 Tabuleiro limpo! Novas cartas na mesa.');}}
+   }else{SFX.wrong();this.toast('❌ Não formou par — memorizem as posições!');}
+   this.memoryMode=false;this.nextTurn();this.afterTurnCheck();},
+ openQuestion(q){const t=this.curTeam();document.getElementById('q-badge').textContent=q.code;document.getElementById('q-full').textContent=FULL[q.code]||'';document.getElementById('q-turn').innerHTML=`<span class="dot" style="background:${t.color}"></span> ${t.name} · ${LV[q.lv]} · vale ${BASE[q.lv]} pts + jogada`;
+   document.getElementById('q-prog-mini').textContent=`Questão ${this.played.length} de ${this.maxQ}`;
+   document.getElementById('q-gtag').textContent=q.gen||'';document.getElementById('q-text').textContent=q.text||'';document.getElementById('q-src').textContent=q.src||'';document.getElementById('q-cmd').textContent=q.cmd;
+   const opts=[...q.options].sort(()=>Math.random()-0.5);const L=['A','B','C','D','E','F'];
+   document.getElementById('q-opts').innerHTML=opts.map((o,i)=>`<div class="opt" data-correct="${o.c}"><span class="lt">${L[i]}</span><span>${o.t}</span></div>`).join('');
+   document.getElementById('q-cmt').classList.add('hide');document.getElementById('q-judge').classList.add('hide');document.getElementById('q-reveal').classList.remove('hide');
+   document.getElementById('q-judge-h').textContent=`Os ${t.name} acertaram?`;
+   this.timer=150;this.tRun=false;this.updateTimer();document.getElementById('ttoggle').textContent='▶';this.go('screen-question');},
+ adjustTimer(n){if(this.timer+n>0){this.timer+=n;this.updateTimer();}},
+ toggleTimer(){const b=document.getElementById('ttoggle');if(this.tRun){clearInterval(this.tInt);this.tRun=false;b.textContent='▶';}else{this.tRun=true;b.textContent='⏸';this.tInt=setInterval(()=>{this.timer--;this.updateTimer();if(this.timer<=0){clearInterval(this.tInt);this.tRun=false;b.textContent='⏱';document.getElementById('tv').style.color='var(--red)';}},1000);}},
+ updateTimer(){const m=String(Math.floor(this.timer/60)).padStart(2,'0');const s=String(this.timer%60).padStart(2,'0');const el=document.getElementById('tv');el.textContent=`${m}:${s}`;if(this.timer>5)el.style.color='';},
+ reveal(){SFX.reveal();if(this.tInt)clearInterval(this.tInt);this.tRun=false;document.getElementById('ttoggle').textContent='▶';document.getElementById('q-reveal').classList.add('hide');document.querySelectorAll('#q-opts .opt').forEach(o=>o.classList.add(o.dataset.correct==='true'?'correct':'dim'));document.getElementById('q-cmt-txt').textContent=this.current.comment;document.getElementById('q-cmt').classList.remove('hide');document.getElementById('q-judge').classList.remove('hide');},
+ resolveQ(correct){const q=this.current;const t=this.curTeam();correct?SFX.correct():SFX.wrong();const _st=this.stats[q.code];if(_st)_st.t++;
+   if(!correct){this.toast('✒️ Resposta errada — sem jogada nesta rodada.');this.nextTurn();this.afterTurnCheck();return;}
+   if(_st)_st.g++;t.score+=BASE[q.lv];
+   this.board.forEach(c=>{if(c.st==='up')c.st='down';});this.firstPick=null;
+   this.memoryMode=true;this.toast('🎯 Acertou! Virem duas cartas na mesa.');this.renderGame();this.go('screen-game');},
+  finish(){SFX.win();const r=[...this.teams].sort((a,b)=>b.score-a.score);
+   const slots=[{t:r[1],cls:'p2',rk:2},{t:r[0],cls:'p1',rk:1},{t:r[2],cls:'p3',rk:3}];
+   document.getElementById('podium').innerHTML=slots.map(o=>o.t?`<div class="pstep ${o.cls}" style="background:${o.t.color}">${o.rk===1?'<div class="crown">👑</div>':''}<div class="medal">${o.rk}</div><div class="nm">${o.t.name}</div><div class="sc">${o.t.score} pts</div><div class="rk">${o.rk}º</div></div>`:'').join('');
+   const totPairs=this.teams.reduce((a,b)=>a+(b.pairs||0),0);
+   document.getElementById('pod-list').innerHTML=`<div class="r first" style="justify-content:center"><span class="pos">🃏 Pares encontrados pela turma: ${totPairs} · tabuleiros limpos: ${this.boardsCleared||0}</span></div>`+r.map((t,i)=>`<div class="r ${i===0?'first':''}"><span class="pos">${i+1}º</span><span style="flex:1;text-align:left;padding-left:.6rem">${t.name}</span><span>${t.score} pts</span></div>`).join('');
+   this.renderRaioX();this.go('screen-podium');this.confetti();},
+  renderRaioX(){const codes=['D10','D13','D17','D19'];const names={D10:'Narrativa e conflito',D13:'Marcas do locutor',D17:'Pontuação expressiva',D19:'Recursos orto/morfo'};let rows='',worst=null,worstPct=101;codes.forEach(c=>{const s=this.stats[c]||{t:0,g:0};const pct=s.t?Math.round(s.g/s.t*100):null;const col=pct===null?'#c9cfdb':(pct>=70?'var(--good)':pct>=40?'var(--gold)':'var(--red)');rows+=`<div class="rx-row"><span class="lab">${c} · ${names[c]}</span><div class="rx-bar"><i style="width:${pct===null?0:pct}%;background:${col}"></i></div><span class="pct">${pct===null?'—':pct+'%'}</span></div>`;if(pct!==null&&pct<worstPct){worstPct=pct;worst=c;}});let tip='Marque “acertou / não acertou” em cada questão para o Raio-X refletir o desempenho real da turma.';if(worst!==null)tip=`A turma teve mais dificuldade em <b>${worst} — ${names[worst]}</b>. Vale reforçar esse descritor com o Método 3E no próximo encontro.`;document.getElementById('raiox').innerHTML=`<h3>🔎 Raio-X da turma</h3><div class="sb">Acertos por descritor ao longo do jogo</div>${rows}<div class="rx-tip">${tip}</div>`;},
+ confetti(){for(let i=0;i<70;i++){const c=document.createElement('div');c.className='cf';c.style.left=Math.random()*100+'vw';c.style.background=COLORS[i%COLORS.length];c.style.animationDuration=(2.5+Math.random()*2)+'s';c.style.animationDelay=(Math.random()*.6)+'s';c.style.transform=`rotate(${Math.random()*360}deg)`;document.body.appendChild(c);setTimeout(()=>c.remove(),5300);}}
+};
+const FLOW=[{s:'warmup'},{s:'lesson'},{s:'worked'},{s:'setup'},{s:'game'},{s:'podium'}];
+document.addEventListener('keydown',e=>{const a=document.querySelector('.screen.active')?.id;if(a==='screen-question'&&(e.key==='Enter'||e.key===' ')&&!document.getElementById('q-reveal').classList.contains('hide')){e.preventDefault();app.reveal();}if(a==='screen-lesson'){if(e.key==='ArrowRight')app.lessonNext();if(e.key==='ArrowLeft')app.lessonPrev();}if(a==='screen-worked'&&(e.key==='Enter'||e.key===' ')){e.preventDefault();if(!document.getElementById('wk-step-btn').classList.contains('hide'))app.workedStep();}});
+</script>
+</body>
+</html>

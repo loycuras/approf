@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aulão SPAECE · 9º ano EF · 03 — Nas Entrelinhas</title>
+<style>
+/* Tipografia do sistema (serif/sans) — sem CDN externo, 100% offline */
+:root{
+  --bg:#F2F5F4;--bg-tint:#E3EDEA;--surface:#FFFFFF;
+  --ink:#1C2B29;--muted:#51635F;--line:rgba(28,43,41,.12);--line-2:rgba(28,43,41,.22);
+  --c1:#2E7D77;--c1-d:#1E564F;--c1-soft:#DFEDEB;--c2:#E0922F;--c2-soft:#FBEAD0;
+  --good:#2E9E5B;--good-soft:#E4F5EB;--red:#E24A4A;--gold:#E0922F;--gold-soft:#FBEAD0;
+  --serif:'Fraunces',Georgia,serif;--body:'Inter',system-ui,sans-serif;
+  --r:20px;--r-sm:13px;--sh:0 10px 30px rgba(28,43,41,.09);--sh-lg:0 18px 46px rgba(46,125,119,.16);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--body);background:var(--bg);color:var(--ink);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important}}
+img{max-width:100%}
+#fsBtn{position:fixed;top:10px;right:12px;z-index:400;background:var(--surface);border:1px solid var(--line);color:var(--ink);width:40px;height:40px;border-radius:12px;cursor:pointer;font-size:1.1rem;display:grid;place-items:center;box-shadow:var(--sh)}
+#fsBtn:hover{background:var(--c1-soft);border-color:var(--c1)}
+#topbar{display:none;align-items:center;gap:1rem;padding:.6rem 60px .6rem 1.2rem;background:rgba(255,255,255,.92);border-bottom:1px solid var(--line);flex-shrink:0}
+body.in-game #topbar{display:flex}
+.brand{font-family:var(--serif);font-weight:700;font-size:1rem;display:flex;align-items:center;gap:.5rem;white-space:nowrap;color:var(--c1-d)}
+.brand .mk{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,var(--c1),var(--c2));display:grid;place-items:center;font-size:.7rem;color:#fff;font-weight:700;font-family:var(--body)}
+#scoreboard{display:flex;gap:.5rem;flex:1;justify-content:center;flex-wrap:wrap}
+.chip{display:flex;align-items:center;gap:.5rem;background:var(--surface);border:1px solid var(--line);padding:.32rem .8rem;border-radius:999px;box-shadow:var(--sh);transition:transform .25s,box-shadow .25s}
+.chip .tag{width:10px;height:10px;border-radius:50%}
+.chip .nm{font-size:.8rem;color:var(--muted);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip .pt{font-family:var(--serif);font-weight:700;font-size:1.05rem}
+.chip.bump{transform:scale(1.15);box-shadow:0 0 0 2px var(--c2)}
+.chip.turn{box-shadow:0 0 0 3px var(--c2)}
+.ibtn{background:var(--surface);border:1px solid var(--line);color:var(--ink);width:38px;height:38px;border-radius:11px;cursor:pointer;font-size:1.02rem;display:grid;place-items:center}
+.ibtn:hover{background:var(--c1-soft)}
+#stage{position:relative;flex:1;min-height:0}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;padding:clamp(1rem,3vw,2.4rem);overflow:auto}
+.screen.active{display:flex;animation:pop .4s ease both}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.screen.center{align-items:center;justify-content:center;text-align:center}
+.wrap{width:100%;max-width:1280px;margin:0 auto}
+.fill{flex:1;min-height:0;display:flex;flex-direction:column}
+.toprow{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem;flex-wrap:wrap}
+.back{display:inline-flex;align-items:center;gap:.35rem;background:var(--surface);border:1px solid var(--line);color:var(--muted);padding:.5rem .95rem;border-radius:999px;cursor:pointer;font-weight:600;font-size:.88rem;box-shadow:var(--sh)}
+.back:hover{color:var(--c1-d);border-color:var(--c1)}
+.phase-tag{font-family:var(--serif);font-weight:700;font-size:.95rem;color:var(--c1-d);background:var(--c1-soft);padding:.4rem .9rem;border-radius:999px}
+.btn{font-family:var(--serif);font-weight:700;font-size:1.05rem;border:none;border-radius:14px;padding:.9rem 1.8rem;cursor:pointer;color:#fff;background:var(--c1);transition:transform .16s,box-shadow .16s,background .16s;box-shadow:0 10px 24px rgba(46,125,119,.25)}
+.btn:hover{transform:translateY(-2px);background:var(--c1-d)}
+.btn:active{transform:translateY(0)}
+.btn.accent{background:var(--c2);color:#422a00;box-shadow:0 10px 24px rgba(224,146,47,.28)}.btn.accent:hover{background:#cc8220}
+.btn.good{background:var(--good)}.btn.good:hover{background:#25814a}
+.btn.red{background:var(--red)}.btn.red:hover{background:#c93c3c}
+.btn.ghost{background:var(--surface);color:var(--c1-d);border:1.5px solid var(--line-2);box-shadow:var(--sh)}.btn.ghost:hover{background:var(--c1-soft)}
+.btn.neutral{background:var(--bg-tint);color:var(--muted);box-shadow:none;border:1.5px solid var(--line)}.btn.neutral:hover{background:#d6e2df;color:var(--ink)}
+.btn.sm{font-size:.92rem;padding:.6rem 1.15rem;border-radius:11px}
+/* INTRO */
+#screen-intro{background:radial-gradient(680px 420px at 12% 8%,var(--c1-soft),transparent 60%),radial-gradient(680px 420px at 88% 14%,var(--c2-soft),transparent 60%),var(--bg)}
+.hero{display:grid;grid-template-columns:auto 1fr;gap:clamp(1.5rem,4vw,3.5rem);align-items:center;max-width:1180px;margin:auto;width:100%;padding:1rem 0}
+@media(max-width:820px){.hero{grid-template-columns:1fr;text-align:center}}
+.index{font-family:var(--serif);font-weight:700;letter-spacing:-4px;line-height:.78;font-size:clamp(6rem,17vw,13rem);color:var(--c1);position:relative;text-align:center}
+.index .ring{position:absolute;inset:-8%;border:3px dashed var(--c2);border-radius:50%;opacity:.5;animation:spin 26s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.index small{display:block;color:var(--muted);font-size:.12em;letter-spacing:3px;font-weight:600;margin-top:.4rem}
+.hero-right{text-align:left}@media(max-width:820px){.hero-right{text-align:center}}
+.eyebrow{display:inline-flex;align-items:center;gap:.5rem;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:.4rem .9rem;font-weight:600;font-size:.86rem;color:var(--c1-d);box-shadow:var(--sh);margin-bottom:1rem}
+.hero h1{font-family:var(--serif);font-weight:700;font-size:clamp(2rem,5vw,3.6rem);line-height:1;margin-bottom:.5rem}
+.hero h1 .amp{color:var(--c2)}
+.hero .sub{font-size:clamp(1.02rem,2.1vw,1.3rem);color:var(--muted);line-height:1.5;max-width:44ch;margin-bottom:1.3rem}
+@media(max-width:820px){.hero .sub{margin-inline:auto}}
+.d-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:1.5rem}
+@media(max-width:620px){.d-grid{grid-template-columns:1fr}}
+.d-card{display:flex;align-items:center;gap:.7rem;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:.6rem .8rem;box-shadow:var(--sh);text-align:left}
+.d-card .ic{width:34px;height:34px;border-radius:9px;background:var(--c1-soft);display:grid;place-items:center;flex-shrink:0;font-size:1.1rem}
+.d-card b{font-family:var(--serif);color:var(--c1-d);font-size:.95rem}
+.d-card span{display:block;font-size:.78rem;color:var(--muted);line-height:1.25}
+.hero-cta{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap}@media(max-width:820px){.hero-cta{justify-content:center}}
+.hero-cta .meta{font-size:.84rem;color:var(--muted)}
+/* WARMUP */
+.hook{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(1.2rem,3vw,2.6rem);align-items:center}
+@media(max-width:900px){.hook{grid-template-columns:1fr}}
+.hook h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2.4rem);line-height:1.1;margin-bottom:.7rem}
+.hook h2 .pc{color:var(--c2)}
+.hook .lead{color:var(--muted);font-size:clamp(1rem,1.9vw,1.15rem);line-height:1.55;max-width:46ch;margin-bottom:1.1rem}
+.trapb{display:flex;gap:.8rem;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--c2);border-radius:var(--r-sm);padding:.8rem .95rem;box-shadow:var(--sh)}
+.trapb .e{width:38px;height:38px;border-radius:10px;background:var(--c2-soft);display:grid;place-items:center;font-size:1.2rem;flex-shrink:0}
+.trapb b{display:block}.trapb span{color:var(--muted);font-size:.92rem;line-height:1.4}
+.hook .cap{color:var(--muted);font-size:.88rem;margin-top:.7rem;text-align:center}
+.sarc-real{background:var(--c1-soft);border-radius:10px;padding:.6rem .8rem;font-size:.92rem;color:var(--c1-d);line-height:1.45;margin-top:.2rem}
+/* SPLASH */
+.splash{background:radial-gradient(820px 560px at 50% 40%,var(--c1-soft),transparent 62%),var(--bg)}
+.splash .emoji{font-size:clamp(3.5rem,11vw,6.5rem);line-height:1;animation:bob 2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-12px)}}
+.splash h1{font-family:var(--serif);font-weight:700;font-size:clamp(1.9rem,5.5vw,3.4rem);margin:.4rem 0;color:var(--ink)}
+.splash p{color:var(--muted);font-size:clamp(1.02rem,2.2vw,1.3rem);max-width:42ch;margin:0 auto 1.8rem;line-height:1.5}
+/* LESSON */
+.lesson{max-width:1180px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:1rem;flex:1;min-height:0}
+.l-head{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.l-head .step{font-family:var(--serif);color:var(--muted);font-weight:600;font-size:.95rem}
+.dots{display:flex;gap:.3rem;flex-wrap:wrap;max-width:50%}.dots i{width:8px;height:8px;border-radius:50%;background:var(--bg-tint);transition:.3s}
+.dots i.on{background:var(--c1);transform:scale(1.4)}
+.l-card{background:linear-gradient(165deg,#FFFFFF 0%,#E7F0EE 100%);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:clamp(1.3rem,2.6vw,2.2rem);flex:1;min-height:0;overflow:auto}
+.sec-banner{display:flex;align-items:center;gap:1rem;background:linear-gradient(120deg,var(--c1),var(--c1-d));color:#fff;border-radius:16px;padding:1rem 1.3rem;margin-bottom:1.3rem}
+.sec-banner.alt{background:linear-gradient(120deg,var(--c2),#cc8220);color:#422a00}
+.sec-banner .big{font-family:var(--serif);font-weight:700;font-size:2.2rem;line-height:1;background:rgba(255,255,255,.2);border-radius:12px;padding:.3rem .7rem;white-space:nowrap}
+.sec-banner.alt .big{background:rgba(66,42,0,.14)}
+.sec-banner h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.15rem,2.6vw,1.55rem);line-height:1.1;margin-bottom:.15rem}
+.sec-banner p{font-size:.82rem;opacity:.92;line-height:1.3}
+.concept{display:grid;grid-template-columns:.8fr 1.2fr;gap:1.6rem;align-items:start}
+@media(max-width:860px){.concept{grid-template-columns:1fr}}
+.concept .art{background:#fff;border:1px solid var(--line);border-radius:var(--r);min-height:170px;display:grid;place-items:center;padding:1.2rem;align-self:stretch}
+.concept .info{display:flex;flex-direction:column;gap:.8rem}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:.6rem .8rem;align-items:start}
+.kv .ic{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;font-size:1.1rem;flex-shrink:0}
+.kv.a .ic{background:var(--c1-soft)}.kv.b .ic{background:var(--c2-soft)}.kv.c .ic{background:var(--good-soft)}.kv.d .ic{background:var(--gold-soft)}
+.kv h4{font-family:var(--serif);font-size:1.05rem;margin-bottom:.1rem}
+.kv p{color:var(--muted);font-size:clamp(.95rem,1.7vw,1.05rem);line-height:1.45}
+.kv p b{color:var(--ink)}
+.genres{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.2rem}
+.genres span{font-size:.8rem;font-weight:600;background:var(--bg-tint);color:var(--muted);padding:.25rem .6rem;border-radius:999px}
+.goldtip{background:var(--gold-soft);border-radius:12px;padding:.8rem 1rem;font-size:.95rem;line-height:1.45;color:#6a4400}
+.goldtip b{color:#9a6508}
+.energ{max-width:640px;margin:auto;text-align:center}
+.energ .ebadge{display:inline-block;font-family:var(--serif);font-weight:700;font-size:.8rem;letter-spacing:1px;color:#9a6508;background:var(--gold-soft);padding:.3rem .9rem;border-radius:999px;margin-bottom:1rem}
+.energ .emoji{font-size:clamp(3rem,9vw,4.5rem);line-height:1;display:block;margin-bottom:.4rem}
+.energ h2{font-family:var(--serif);font-weight:700;font-size:clamp(1.5rem,4vw,2.1rem);margin-bottom:.6rem}
+.energ p{color:var(--muted);font-size:1.08rem;line-height:1.55}
+.ex-slide{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;align-items:start}
+@media(max-width:860px){.ex-slide{grid-template-columns:1fr}}
+.ex-left{background:var(--bg-tint);border:1px solid var(--line);border-radius:var(--r-sm);padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.6rem}
+.ex-left .gt{font-size:.8rem;color:var(--muted);font-weight:600}
+.ex-left .mini{font-size:1.04rem;line-height:1.58;white-space:pre-line}
+.ex-left .src{font-size:.76rem;color:var(--muted);font-style:italic}
+.ex-right .ecmd{background:var(--c1-soft);border-left:3px solid var(--c1);border-radius:8px;padding:.7rem .85rem;font-weight:600;margin-bottom:.7rem}
+.ex-opts{display:flex;flex-direction:column;gap:.5rem;margin-bottom:.7rem}
+.eopt{display:flex;gap:.6rem;align-items:center;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:.65rem .8rem;font-size:.98rem}
+.eopt .lt{font-family:var(--serif);font-weight:700;width:26px;height:26px;display:grid;place-items:center;border-radius:7px;background:var(--bg-tint);flex-shrink:0}
+.eopt.correct{background:var(--good-soft);border-color:var(--good)}.eopt.correct .lt{background:var(--good);color:#fff}
+.eopt.dim{opacity:.55}
+.eexpl{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--c2);border-radius:10px;padding:.8rem .95rem;font-size:.94rem;line-height:1.5}
+.eexpl b{color:var(--c1-d)}.eexpl .wr{color:var(--red);font-weight:600}
+.l-nav{display:flex;justify-content:space-between;gap:1rem}
+.metodo{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem}
+@media(max-width:820px){.metodo{grid-template-columns:1fr}}
+.m-step{background:var(--bg-tint);border:1px solid var(--line);border-radius:var(--r);padding:1.3rem 1.2rem}
+.m-step .big{font-family:var(--serif);font-weight:700;font-size:2rem;line-height:1;color:var(--c1);display:flex;align-items:baseline;gap:.4rem}
+.m-step .big b{font-size:1rem;color:var(--c2);font-weight:700}
+.m-step h4{font-family:var(--serif);font-size:1.15rem;margin:.3rem 0 .4rem}.m-step p{color:var(--muted);font-size:1rem;line-height:1.45}
+.triad{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem}
+@media(max-width:820px){.triad{grid-template-columns:1fr}}
+.tri{background:var(--bg-tint);border:1px solid var(--line);border-radius:var(--r);padding:1.3rem 1.2rem;display:flex;flex-direction:column;gap:.5rem}
+.tri .bigic{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-size:1.5rem;background:var(--surface);box-shadow:var(--sh)}
+.tri h4{font-family:var(--serif);font-size:1.12rem}.tri p{color:var(--muted);font-size:.96rem;line-height:1.4}
+/* WORKED */
+.worked{max-width:1120px;margin:0 auto;width:100%;flex:1;min-height:0;display:flex;flex-direction:column;gap:1rem}
+.worked .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:clamp(1.3rem,2.6vw,2.2rem);flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:1.4rem}
+@media(max-width:860px){.worked .panel{grid-template-columns:1fr}}
+.w-text{background:var(--bg-tint);border:1px solid var(--line);border-radius:var(--r-sm);padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.6rem}
+.w-text .gt{font-size:.8rem;color:var(--muted);font-weight:600}
+.w-text .mini{font-size:clamp(1rem,1.7vw,1.08rem);line-height:1.58}
+.w-text .src{font-size:.76rem;color:var(--muted);font-style:italic}
+.w-text .cmd{margin-top:auto;background:var(--c1-soft);border-left:3px solid var(--c1);border-radius:8px;padding:.7rem .85rem;font-weight:600}
+.w-steps{display:flex;flex-direction:column;gap:.7rem;justify-content:center}
+.stp{display:grid;grid-template-columns:auto 1fr;gap:.8rem;align-items:start;opacity:.32;transition:.3s}
+.stp.show{opacity:1}
+.stp .n{width:44px;height:40px;border-radius:11px;background:var(--bg-tint);display:grid;place-items:center;font-family:var(--serif);font-weight:700;font-size:1.05rem;flex-shrink:0}
+.stp.show .n{background:var(--c1);color:#fff}
+.stp p{color:var(--muted);font-size:1rem;line-height:1.45}.stp.show p{color:var(--ink)}.stp p b{color:var(--c1-d)}
+.ans{background:var(--good-soft);border:1px solid rgba(46,158,91,.35);border-radius:var(--r-sm);padding:.85rem 1rem;font-size:1rem;line-height:1.45;opacity:0;transition:.3s}
+.ans.show{opacity:1}.ans b{color:var(--good)}
+/* SETUP */
+.setup{max-width:540px;margin:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh-lg);padding:clamp(1.6rem,4vw,2.5rem);text-align:center;width:100%;position:relative}
+.setup h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.6rem,4vw,2.2rem);margin-bottom:.35rem}
+.setup .sub{color:var(--muted);margin-bottom:1.3rem}
+.rows{display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.2rem}
+.row{display:flex;align-items:center;gap:.6rem}
+.row .tag{width:16px;height:16px;border-radius:5px;flex-shrink:0}
+.row input{flex:1;padding:.8rem 1rem;background:var(--bg);border:1.5px solid var(--line);border-radius:11px;color:var(--ink);font-size:1.02rem;font-family:var(--body)}
+.row input:focus{outline:none;border-color:var(--c1)}
+.row .rm{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.3rem;padding:0 .3rem}.row .rm:hover{color:var(--red)}
+.setup .acts{display:flex;flex-direction:column;gap:.7rem}
+/* DIAGRAMAS ANIMADOS */
+.diag{width:100%;display:flex;flex-direction:column;align-items:center;gap:.8rem}
+.diag-cap{font-size:.82rem;color:var(--muted);text-align:center;max-width:30ch}
+.d-svg{width:100%;max-width:260px;height:auto;max-height:34vh}
+.ice-bob{animation:bob 3.6s ease-in-out infinite}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes draw{to{stroke-dashoffset:0}}
+.iro{width:100%;max-width:290px;display:flex;flex-direction:column;align-items:center;gap:.5rem}
+.iro-said{width:100%;background:var(--c1);color:#fff;border-radius:12px;padding:.8rem 1rem;text-align:center;font-weight:600;box-shadow:var(--sh)}
+.iro-arrow{width:34px;height:22px}
+.iro-arrow path{stroke-dasharray:60;stroke-dashoffset:60;animation:draw 1s ease .2s forwards}
+.iro-meant{width:100%;background:var(--c2-soft);color:#5a3d00;border:1px dashed var(--c2);border-radius:12px;padding:.8rem 1rem;text-align:center;font-weight:600;opacity:0;animation:fadeUp .6s ease .5s forwards}
+.lex{width:100%;max-width:290px;display:flex;flex-direction:column;align-items:center;gap:.6rem}
+.lex-scale{display:flex;justify-content:space-between;width:100%;font-size:.78rem;color:var(--muted);font-weight:600}
+.lex-mid{color:var(--c1-d)}
+.lex-bar{position:relative;width:100%;height:10px;border-radius:999px;background:linear-gradient(90deg,#2E9E5B,#E0922F,#E24A4A)}
+.lex-dot{position:absolute;top:50%;width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid var(--c1-d);transform:translate(-50%,-50%);animation:lexslide 3.8s ease-in-out infinite}
+@keyframes lexslide{0%,100%{left:12%}50%{left:88%}}
+.lex-ex{display:flex;gap:.5rem;font-weight:700;font-size:.95rem}
+.lex-ex .pos{color:#2E9E5B}.lex-ex .neu{color:var(--c1-d)}.lex-ex .neg{color:var(--red)}
+/* JOGO — DECIFRA A ENTRELINHA */
+.game-wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:1.6rem;align-items:center;flex:1;min-height:0}
+@media(max-width:860px){.game-wrap{grid-template-columns:1fr}}
+.mural{background:#d9b98a;background-image:radial-gradient(circle at 18% 28%,rgba(90,60,20,.14) 1.5px,transparent 2px),radial-gradient(circle at 68% 58%,rgba(90,60,20,.12) 1.5px,transparent 2px),radial-gradient(circle at 42% 82%,rgba(90,60,20,.12) 1.5px,transparent 2px);background-size:24px 24px,30px 30px,27px 27px;border:7px solid #8a5a2b;border-radius:12px;box-shadow:inset 0 0 44px rgba(60,40,10,.22),var(--sh-lg);padding:.85rem;display:flex;flex-direction:column;gap:.6rem;align-items:center}
+.mural-head{font-family:var(--serif);font-weight:700;color:var(--c1-d);font-size:1.1rem;display:flex;gap:.5rem;align-items:center}
+.phrase{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center}
+.wb{min-width:40px;min-height:46px;display:grid;place-items:center;padding:.4rem .7rem;border-radius:10px;font-family:var(--serif);font-weight:700;font-size:1.05rem;background:var(--c1);color:#fff;box-shadow:var(--sh);position:relative}
+.wb:not(.on){background:repeating-linear-gradient(45deg,#cdddda,#cdddda 6px,#bcd0cd 6px,#bcd0cd 12px);color:transparent;box-shadow:none}
+.wb:not(.on)::after{content:'?';position:absolute;inset:0;display:grid;place-items:center;color:#6f8a86;font-size:1.2rem}
+.wb.on.new{animation:flipIn .55s ease}
+@keyframes flipIn{from{transform:rotateX(90deg);opacity:0}to{transform:none;opacity:1}}
+.mural-hint{font-size:.85rem;color:var(--muted)}
+.game-side{display:flex;flex-direction:column;gap:.85rem}
+.turn-banner{display:flex;align-items:center;justify-content:center;gap:.6rem;font-family:var(--serif);font-weight:700;font-size:clamp(1.1rem,2.4vw,1.4rem)}
+.turn-banner .dot{width:16px;height:16px;border-radius:50%}
+.side-rule{text-align:center;color:var(--muted);font-size:.86rem;line-height:1.45;margin-top:-.3rem}
+.rank{display:flex;flex-direction:column;gap:.55rem}
+.rank-row{display:grid;grid-template-columns:120px 1fr auto;gap:.7rem;align-items:center}
+@media(max-width:560px){.rank-row{grid-template-columns:84px 1fr auto}}
+.rank-row .nm{font-weight:700;font-size:.9rem;display:flex;align-items:center;gap:.4rem}
+.rank-row .nm .dot{width:11px;height:11px;border-radius:50%}
+.rank-track{height:16px;border-radius:999px;background:var(--bg-tint);overflow:hidden}
+.rank-track>i{display:block;height:100%;border-radius:999px;transition:width .6s ease}
+.rank-row .sc{font-family:var(--serif);font-weight:700;font-size:.9rem;min-width:58px;text-align:right}
+.game-btns{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap}
+.guess-panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:.9rem;box-shadow:var(--sh);text-align:center}
+.guess-panel h4{font-family:var(--serif);margin-bottom:.6rem;font-size:.95rem}
+.guess-panel .jb{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap}
+.case-tab{align-self:center;background:#fff;border-radius:6px 6px 0 0;padding:.3rem .9rem;font-family:var(--serif);font-weight:700;color:#7a4a18;font-size:.9rem;box-shadow:0 3px 8px rgba(0,0,0,.22);transform:rotate(-1deg)}
+.case-intro{background:#fff8e6;border-radius:3px;padding:.45rem .8rem;font-size:.8rem;color:#5a4a2a;line-height:1.35;text-align:center;max-width:52ch;box-shadow:0 4px 9px rgba(0,0,0,.2);transform:rotate(.5deg)}
+.suspects{display:flex;flex-wrap:wrap;gap:.45rem .7rem;justify-content:center}
+.suspect{width:76px;background:#fff;border-radius:3px;padding:6px 6px 4px;box-shadow:0 5px 11px rgba(0,0,0,.28);position:relative;transition:.35s}
+.suspect:nth-child(odd){transform:rotate(-2.5deg)}
+.suspect:nth-child(even){transform:rotate(2deg)}
+.suspect:nth-child(3n){transform:rotate(1.4deg)}
+.suspect::before{content:'';position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff9a9a,#d22);box-shadow:0 2px 3px rgba(0,0,0,.35);z-index:2}
+.suspect .ph{height:44px;border-radius:2px;background:var(--c1-soft);display:grid;place-items:center;font-size:1.6rem}
+.suspect .snm{font-family:var(--serif);font-size:.64rem;font-weight:700;text-align:center;margin-top:3px;color:#333;line-height:1.05}
+.suspect .strait{font-size:.54rem;color:#8a7a5a;text-align:center;line-height:1;margin-top:1px}
+.suspect.out{filter:grayscale(.85);opacity:.62}
+.suspect.out::after,.suspect.culprit::after{position:absolute;top:40%;left:50%;font-family:var(--serif);font-weight:700;font-size:.6rem;letter-spacing:1px;padding:.08rem .3rem;border-radius:3px;z-index:3;background:rgba(255,255,255,.7)}
+.suspect.out::after{content:'INOCENTE';transform:translate(-50%,-50%) rotate(-13deg);border:2px solid var(--good);color:var(--good)}
+.suspect.culprit{animation:culpritGlow 1.4s ease-in-out infinite}
+.suspect.culprit::after{content:'CULPADO';transform:translate(-50%,-50%) rotate(-13deg);border:2px solid var(--red);color:var(--red)}
+@keyframes culpritGlow{0%,100%{box-shadow:0 5px 11px rgba(0,0,0,.28)}50%{box-shadow:0 5px 14px rgba(0,0,0,.3),0 0 10px 3px rgba(226,74,74,.6)}}
+.clue-list{width:100%;display:flex;flex-wrap:wrap;gap:.45rem;justify-content:center}
+.clue{width:47%;min-width:200px;flex:1 1 200px;background:#fff6a0;padding:.4rem .6rem;font-size:.71rem;line-height:1.28;color:#4a431f;box-shadow:0 3px 7px rgba(0,0,0,.2);position:relative}
+.clue:nth-child(odd){transform:rotate(-1.1deg)}.clue:nth-child(even){transform:rotate(1deg)}
+.clue::before{content:'';position:absolute;top:-5px;left:50%;transform:translateX(-50%);width:10px;height:10px;border-radius:50%;background:#e0922f;box-shadow:0 2px 3px rgba(0,0,0,.3)}
+.clue .cn{display:block;font-family:var(--serif);font-weight:700;color:#b06a00;font-size:.64rem;letter-spacing:.5px;margin-bottom:.05rem}
+.clue.locked{background:#e9dfc2;color:#9a8c6a}
+.clue.locked .cn{color:#9a8c6a}
+.qprog{width:100%}
+.qprog-top{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);font-weight:600;margin-bottom:.25rem}
+.qprog-bar{height:12px;border-radius:999px;background:var(--bg-tint);overflow:hidden}
+.qprog-bar>i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--c1),var(--c2));transition:width .5s ease;width:0}
+.q-prog-mini{font-size:.82rem;color:var(--muted);font-weight:600;margin-right:auto}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#1c2b29;color:#fff;padding:.7rem 1.2rem;border-radius:999px;font-weight:600;font-size:.9rem;box-shadow:0 10px 30px rgba(0,0,0,.3);z-index:500;animation:toastIn .3s ease;max-width:90vw;text-align:center}
+.toast.out{opacity:0;transition:opacity .4s}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translateX(-50%)}}
+.bank-group{margin-bottom:1.4rem}
+.bank-group h3{font-family:var(--serif);color:var(--c1-d);font-size:1.15rem;margin-bottom:.6rem}
+.bank-q{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh);padding:1rem 1.2rem;margin-bottom:.8rem}
+.bank-q .qh{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-bottom:.5rem}
+.bank-q .tag{font-size:.72rem;font-weight:700;padding:.2rem .6rem;border-radius:999px;background:var(--c1-soft);color:var(--c1-d)}
+.bank-q .tag.lv{background:var(--c2-soft);color:#9a6508}
+.bank-q .bt{font-size:.9rem;line-height:1.55;color:var(--muted);white-space:pre-line;background:var(--bg-tint);border-radius:8px;padding:.6rem .8rem;margin-bottom:.5rem}
+.bank-q .bsrc{font-size:.72rem;color:var(--muted);font-style:italic;margin-bottom:.5rem}
+.bank-q .bcmd{font-weight:600;margin-bottom:.5rem}
+.bank-q .bopt{font-size:.9rem;padding:.3rem .5rem;border-radius:7px;margin-bottom:.2rem}
+.bank-q .bopt.ok{background:var(--good-soft);color:#176b38;font-weight:600}
+.bank-q .bcmt{font-size:.85rem;color:var(--muted);line-height:1.45;margin-top:.5rem;border-top:1px dashed var(--line);padding-top:.5rem}
+/* QUESTION */
+.q-badge{font-family:var(--serif);font-weight:700;background:var(--c2-soft);color:#9a6508;padding:.4rem 1rem;border-radius:10px;font-size:.88rem}
+.q-meta{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:-.2rem 0 .6rem}
+.q-full{color:var(--muted);font-size:.84rem;font-style:italic}
+.q-turn{font-weight:700;font-size:.9rem;display:inline-flex;align-items:center;gap:.4rem}.q-turn .dot{width:12px;height:12px;border-radius:50%}
+.q-grid{display:grid;grid-template-columns:1.15fr 1fr;gap:1.3rem;flex:1;min-height:0}
+@media(max-width:980px){.q-grid{grid-template-columns:1fr}}
+.stim{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:clamp(1.1rem,2.2vw,1.6rem);overflow:auto;display:flex;flex-direction:column;gap:.85rem}
+.stim .gtag{align-self:flex-start;display:inline-flex;align-items:center;gap:.4rem;background:var(--bg-tint);color:var(--muted);font-size:.8rem;font-weight:600;padding:.3rem .7rem;border-radius:999px}
+.stim .txt{font-size:clamp(1rem,1.6vw,1.13rem);line-height:1.68;white-space:pre-line}
+.stim .src{font-size:.76rem;color:var(--muted);font-style:italic;text-align:right;margin-top:auto}
+.inter{display:flex;flex-direction:column;gap:.7rem;overflow:auto}
+.timer{display:flex;align-items:center;justify-content:center;gap:.9rem;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:.5rem;box-shadow:var(--sh)}
+.timer .tv{font-family:var(--serif);font-weight:700;font-size:1.9rem;min-width:108px;text-align:center;color:var(--c1-d)}
+.tbtn{background:var(--bg-tint);border:none;color:var(--ink);width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:1.05rem}.tbtn:hover{background:var(--c1-soft)}
+.cmd{font-size:clamp(1.03rem,1.9vw,1.24rem);font-weight:600;background:var(--c1-soft);border-left:4px solid var(--c1);padding:.85rem 1rem;border-radius:10px;line-height:1.4}
+.lar-hint{font-size:.76rem;color:var(--c1-d);font-weight:600;opacity:.85}
+.opts{display:flex;flex-direction:column;gap:.5rem}
+.opt{display:flex;align-items:center;gap:.8rem;text-align:left;background:var(--surface);border:1.5px solid var(--line);color:var(--ink);padding:.78rem 1rem;border-radius:12px;font-size:clamp(.97rem,1.55vw,1.05rem);box-shadow:var(--sh)}
+.opt .lt{font-family:var(--serif);font-weight:700;width:30px;height:30px;flex-shrink:0;display:grid;place-items:center;border-radius:9px;background:var(--bg-tint)}
+.opt.correct{background:var(--good-soft);border-color:var(--good)}.opt.correct .lt{background:var(--good);color:#fff}
+.opt.dim{opacity:.5}
+.cmt{background:var(--c1-soft);border:1px solid rgba(46,125,119,.22);border-radius:12px;padding:.85rem 1.05rem}
+.cmt h4{font-family:var(--serif);color:var(--c1-d);margin-bottom:.3rem}.cmt p{color:var(--ink);line-height:1.5;font-size:.94rem}
+.judge{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:.9rem;box-shadow:var(--sh);text-align:center}
+.judge h4{font-family:var(--serif);color:var(--ink);margin-bottom:.6rem;font-size:.95rem}
+.judge .jb{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap}
+.hide{display:none!important}
+/* PODIUM */
+#screen-podium{background:radial-gradient(760px 480px at 50% -5%,var(--c2-soft),transparent 60%),var(--bg)}
+.pod-list{max-width:460px;margin:1rem auto 0;display:flex;flex-direction:column;gap:.5rem}
+.pod-list .r{display:flex;justify-content:space-between;align-items:center;gap:.6rem;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:.6rem 1rem;box-shadow:var(--sh);font-weight:600}
+.pod-list .r .pos{font-family:var(--serif);font-weight:700;color:var(--c1-d)}
+.pod-list .r.first{border-color:var(--c2);background:var(--gold-soft)}
+.raiox{max-width:720px;margin:1rem auto 0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:1rem 1.3rem}
+.raiox h3{font-family:var(--serif);font-size:1.2rem;margin-bottom:.1rem;display:flex;align-items:center;gap:.5rem}
+.raiox .sb{color:var(--muted);font-size:.88rem;margin-bottom:.9rem}
+.rx-row{display:grid;grid-template-columns:200px 1fr auto;gap:.7rem;align-items:center;margin-bottom:.6rem}
+@media(max-width:560px){.rx-row{grid-template-columns:110px 1fr auto}}
+.rx-row .lab{font-weight:600;font-size:.82rem;line-height:1.1}
+.rx-bar{height:15px;border-radius:999px;background:var(--bg-tint);overflow:hidden}
+.rx-bar>i{display:block;height:100%;border-radius:999px;transition:width .8s ease}
+.rx-row .pct{font-family:var(--serif);font-weight:700;font-size:.9rem;min-width:52px;text-align:right}
+.rx-tip{margin-top:.7rem;font-size:.88rem;color:var(--muted);line-height:1.45;background:var(--bg-tint);border-radius:10px;padding:.65rem .85rem}.rx-tip b{color:var(--c1-d)}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:.9rem;height:min(28vh,230px);margin:.8rem auto .3rem;padding-top:32px;max-width:580px}
+.pstep{position:relative;width:clamp(84px,22vw,146px);border-radius:14px 14px 0 0;display:flex;flex-direction:column;align-items:center;padding-top:1.1rem;color:#fff;box-shadow:var(--sh-lg);animation:rise .7s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rise{from{height:0!important;opacity:0}}
+.pstep .medal{position:absolute;top:-20px;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-family:var(--serif);font-weight:700;color:#422a00;background:#fff;border:3px solid var(--c2);box-shadow:var(--sh)}
+.pstep .nm{font-family:var(--serif);font-weight:700;font-size:clamp(.8rem,2vw,1rem);text-align:center;padding:0 .3rem;margin-top:.5rem;text-shadow:0 1px 3px rgba(0,0,0,.28)}
+.pstep .sc{font-weight:700;font-size:.88rem;opacity:.95}
+.pstep .rk{position:absolute;bottom:.7rem;font-family:var(--serif);font-weight:700;font-size:clamp(1.5rem,6vw,2.3rem);color:rgba(255,255,255,.3)}
+.p1{height:100%}.p2{height:74%}.p3{height:54%}
+.pstep .crown{position:absolute;top:-30px;font-size:1.7rem;animation:bob 2.2s ease-in-out infinite}
+.cf{position:fixed;top:-12px;width:9px;height:14px;z-index:200;animation:fall linear forwards;pointer-events:none;border-radius:2px}
+@keyframes fall{to{transform:translateY(106vh) rotate(560deg)}}
+footer{text-align:center;padding:.5rem;font-family:var(--serif);letter-spacing:2.5px;font-size:.68rem;color:var(--muted);border-top:1px solid var(--line);background:var(--bg);flex-shrink:0}
+</style>
+</head>
+<body>
+<button id="fsBtn" title="Tela cheia" onclick="app.fullscreen()">⛶</button>
+<header id="topbar">
+  <div class="brand"><span class="mk">S3</span> Aulão SPAECE · 9º</div>
+  <div id="scoreboard"></div>
+  <button class="ibtn" id="sfx-btn" title="Ligar/desligar som do jogo" onclick="app.toggleSfx()" style="position:absolute;right:100px">🔊</button>
+  <button class="ibtn" title="Mural do jogo" onclick="app.toGame()" style="position:absolute;right:56px">🔍</button>
+  <button class="ibtn" title="Ver pódio" onclick="app.finish()" style="position:absolute;right:12px">🏁</button>
+</header>
+<div id="stage">
+  <section id="screen-intro" class="screen center active">
+    <div class="hero">
+      <div><div class="index"><span class="ring"></span>03<small>AULÃO 03 / 06</small></div></div>
+      <div class="hero-right">
+        <span class="eyebrow">🔍 Língua Portuguesa · 9º ano EF · SPAECE/CE</span>
+        <h1>Nas <span class="amp">Entrelinhas</span></h1>
+        <p class="sub">Inferência, ironia e humor: aprenda a ler o que o texto diz <b>sem dizer</b> — com o <b>Método 3P</b> e o jogo <b>Detetive das Entrelinhas</b>.</p>
+        <div class="d-grid">
+          <div class="d-card"><span class="ic"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#1E564F" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M16 16l5 5"/></svg></span><div><b>D04</b><span>Inferir informação implícita</span></div></div>
+          <div class="d-card"><span class="ic"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#1E564F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h6v5a3 3 0 01-6 0z"/><path d="M13 4h6v5a3 3 0 01-6 0z"/><path d="M8 13v5M16 13v5M5 20h6M13 20h6"/></svg></span><div><b>D16</b><span>Efeito de humor ou ironia</span></div></div>
+          <div class="d-card"><span class="ic"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#1E564F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h4v4c0 2-1.5 3.5-4 4"/><path d="M15 7h4v4c0 2-1.5 3.5-4 4"/></svg></span><div><b>D18</b><span>Efeito da escolha da palavra</span></div></div>
+        </div>
+        <div class="hero-cta"><button class="btn" onclick="app.flowGo(0)">Bora investigar 🔍</button><button class="btn ghost" onclick="app.openBank()">📋 Banco de questões</button></div><div class="hero-cta" style="margin-top:.6rem"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-warmup" class="screen">
+    <div class="wrap fill">
+      <div class="toprow"><button class="back" onclick="app.go('screen-intro')">‹ Voltar</button><span class="phase-tag">Aquecimento</span></div>
+      <div class="hook">
+        <div>
+          <h2>O que a sua mãe quer dizer com <span class="pc">“Parabéns, bonito!”</span>?</h2>
+          <p class="lead">Ninguém lê essa frase ao pé da letra. Todo mundo entende as <b>entrelinhas</b> — e é exatamente isso que o SPAECE cobra. As três ciladas de hoje:</p>
+          <div style="display:flex;flex-direction:column;gap:.6rem">
+            <div class="trapb"><span class="e">🔍</span><div><b>Extrapolação de senso comum</b><span>Marcar uma alternativa verdadeira no mundo real, mas que o texto não sustenta com nenhuma pista.</span></div></div>
+            <div class="trapb"><span class="e">🎭</span><div><b>Ironia ao pé da letra</b><span>Levar a sério uma fala irônica e marcar o sentido literal — quando o autor quis dizer o contrário.</span></div></div>
+            <div class="trapb"><span class="e">🔤</span><div><b>Palavra “neutra”</b><span>Ignorar a carga de uma palavra escolhida (“bando”, “lar”, “barraco”) e perder o efeito de sentido.</span></div></div>
+          </div>
+        </div>
+        <div>
+          <div class="post-card" style="background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--sh-lg);padding:1.1rem 1.2rem;max-width:380px;margin:0 auto">
+            <div style="display:flex;align-items:center;gap:.7rem;margin-bottom:.8rem"><div style="width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--c1),var(--c2));display:grid;place-items:center;font-size:1.4rem;flex-shrink:0">👩</div><div><div style="font-weight:700">Mãe</div><div style="font-size:.82rem;color:var(--muted)">agora mesmo</div></div></div>
+            <p style="font-size:1rem;line-height:1.5;margin-bottom:.7rem">Olhou para o seu quarto todo bagunçado e disse:</p>
+            <blockquote style="background:var(--c2-soft);border-left:4px solid var(--c2);border-radius:10px;padding:.9rem 1rem;font-family:var(--serif);font-weight:600;font-size:1.08rem;line-height:1.4;color:#5a3d00;margin:0">“Parabéns! Que quarto <b>lindo</b>, hein?”</blockquote>
+            <p class="sarc-real">👉 Sentido real: <b>“arrume essa bagunça agora”</b>. A palavra diz uma coisa; o tom diz o contrário.</p>
+          </div>
+          <p class="cap">Ler nas entrelinhas é separar o que foi <b>dito</b> do que foi <b>querido dizer</b>.</p>
+        </div>
+      </div>
+      <div class="center" style="margin-top:1.2rem"><button class="btn" onclick="app.flowNext()">Conhecer o Método 3P ▸</button></div>
+    </div>
+  </section>
+
+  <section id="screen-lesson" class="screen">
+    <div class="lesson">
+      <div class="l-head"><span class="step" id="l-step"></span><div class="dots" id="l-dots"></div></div>
+      <div class="l-card" id="l-card"></div>
+      <div class="l-nav"><button class="btn ghost" onclick="app.lessonPrev()">‹ Voltar</button><button class="btn" id="l-next" onclick="app.lessonNext()">Próximo ▸</button></div>
+    </div>
+  </section>
+
+  <section id="screen-worked" class="screen">
+    <div class="worked">
+      <div class="l-head"><span class="step">🤝 Resolva comigo · Método 3P em ação</span><button class="back" onclick="app.flowBack()">‹ Voltar à aula</button></div>
+      <div class="panel">
+        <div class="w-text"><span class="gt" id="wk-gt"></span><div class="mini" id="wk-text"></div><div class="src" id="wk-src"></div><div class="cmd" id="wk-cmd"></div></div>
+        <div class="w-steps" id="wk-steps"></div>
+      </div>
+      <div class="l-nav"><button class="btn ghost" id="wk-step-btn" onclick="app.workedStep()">Passo 1 — Pistas</button><button class="btn accent hide" id="wk-go" onclick="app.flowNext()">Agora é jogo! 🎮</button></div>
+    </div>
+  </section>
+
+  <section id="screen-splash" class="screen center splash">
+    <div class="wrap"><button class="back" style="position:absolute;top:1rem;left:1rem" onclick="app.flowBack()">‹ Voltar</button>
+      <div class="emoji" id="sp-emoji"></div><h1 id="sp-title"></h1><p id="sp-sub"></p><button class="btn accent" onclick="app.flowNext()">Bora! ⚡</button></div>
+  </section>
+
+  <section id="screen-setup" class="screen center">
+    <div class="setup"><button class="back" style="position:absolute;top:1rem;left:1rem" onclick="app.flowBack()">‹ Voltar</button>
+      <h2>Montem as equipes 🙌</h2><p class="sub">De 2 a 6 equipes de investigação. Joga-se uma por rodada, revezando, para resolver o caso.</p>
+      <div class="rows" id="rows"></div>
+      <div class="acts"><button class="btn ghost sm" onclick="app.addTeam()">+ Adicionar equipe</button><button class="btn" onclick="app.start()">Começar a investigação 🔍</button></div>
+    </div>
+  </section>
+
+  <section id="screen-game" class="screen">
+    <div class="wrap fill">
+      <div class="toprow"><button class="back" onclick="app.flowBack()">‹ Voltar</button><span class="phase-tag">🕵️ Detetive das Entrelinhas</span></div>
+      <div class="game-wrap">
+        <div class="mural">
+          <div class="case-tab" id="case-tab"></div>
+          <div class="case-intro" id="case-intro"></div>
+          <div class="suspects" id="suspects"></div>
+          <div class="clue-list" id="clue-list"></div>
+        </div>
+        <div class="game-side">
+          <div class="turn-banner" id="turn-banner"></div>
+          <div class="qprog"><div class="qprog-top"><span>Progresso da investigação</span><span id="qprog-label"></span></div><div class="qprog-bar"><i id="qprog-fill"></i></div></div>
+          <p class="side-rule">A cada acerto, a equipe soma pontos (Elementar <b>+10</b> · Básico <b>+15</b> · Desejável <b>+20</b>) e revela uma <b>nova evidência</b>. Com todas as pistas na mesa, chega a <b>hora da acusação</b>: cada equipe aponta um culpado e <b>quem acertar ganha +30</b>.</p>
+          <div class="rank" id="rank"></div>
+          <div class="game-btns">
+            <button class="btn accent" onclick="app.drawQuestion()">Investigar 🔎</button>
+            <button class="btn accent sm hide" id="accuse-btn" onclick="app.openAccuse()">Hora da acusação! 👤</button>
+            <button class="btn neutral sm" onclick="app.finish()">Encerrar 🏁</button>
+          </div>
+          <div class="guess-panel hide" id="accuse-panel">
+            <h4 id="accuse-h"></h4>
+            <div class="jb" id="accuse-opts"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-question" class="screen">
+    <div class="wrap fill">
+      <div class="toprow"><button class="back" onclick="app.toGame()">‹ Mural</button><span class="q-prog-mini" id="q-prog-mini"></span><span class="q-badge" id="q-badge"></span></div>
+      <div class="q-meta"><span class="q-full" id="q-full"></span><span class="q-turn" id="q-turn"></span></div>
+      <div class="q-grid">
+        <div class="stim"><span class="gtag" id="q-gtag"></span><div class="txt" id="q-text"></div><div class="src" id="q-src"></div></div>
+        <div class="inter">
+          <div class="timer" id="q-timer"><button class="tbtn" onclick="app.adjustTimer(-15)">−</button><span class="tv" id="tv">02:30</span><button class="tbtn" onclick="app.adjustTimer(15)">+</button><button class="tbtn" id="ttoggle" onclick="app.toggleTimer()">▶</button></div>
+          <div class="cmd" id="q-cmd"></div>
+          <div class="lar-hint">3P: Pistas no texto · Pontes para o não-dito · Prova (volte e confirme).</div>
+          <div class="opts" id="q-opts"></div>
+          <button class="btn" id="q-reveal" onclick="app.reveal()">Mostrar resposta</button>
+          <div class="cmt hide" id="q-cmt"><h4>Gabarito comentado</h4><p id="q-cmt-txt"></p></div>
+          <div class="judge hide" id="q-judge"><h4 id="q-judge-h"></h4><div class="jb"><button class="btn good sm" onclick="app.resolveQ(true)">✅ Acertou</button><button class="btn red sm" onclick="app.resolveQ(false)">❌ Não acertou</button></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-bank" class="screen">
+    <div class="wrap">
+      <div class="toprow"><button class="back" onclick="app.go('screen-intro')">‹ Voltar</button><span class="phase-tag">📋 Banco de questões (21)</span></div>
+      <div id="bank-list"></div>
+    </div>
+  </section>
+
+  <section id="screen-podium" class="screen" style="text-align:center;justify-content:flex-start;padding-top:1.3rem;padding-bottom:1.6rem">
+    <div class="wrap"><h1 style="font-family:var(--serif);font-weight:700;font-size:clamp(1.8rem,5vw,2.9rem);color:var(--c1-d)">🏆 Caso encerrado!</h1>
+      <div class="podium" id="podium"></div>
+      <div class="pod-list" id="pod-list"></div>
+      <div class="raiox" id="raiox"></div>
+      <div class="center" style="margin-top:1.2rem"><button class="btn sm" onclick="location.reload()">Reiniciar aulão ↻</button></div>
+    </div>
+  </section>
+</div>
+<footer>AULÕES PARA PROFESSORES</footer>
+
+<script>
+const FULL={
+ D04:"D04 — Inferir uma informação implícita em um texto.",
+ D16:"D16 — Identificar o efeito de sentido decorrente do humor ou da ironia.",
+ D18:"D18 — Reconhecer o efeito de sentido decorrente da escolha de uma palavra ou expressão."
+};
+const ART={
+ inf:`<div class="diag"><svg class="d-svg ice-bob" viewBox="0 0 260 220"><rect x="0" y="0" width="260" height="92" fill="#E3EDEA"/><rect x="0" y="92" width="260" height="128" fill="#CBE1DE"/><line x1="0" y1="92" x2="260" y2="92" stroke="#2E7D77" stroke-width="2" stroke-dasharray="5 4"/><polygon points="130,30 166,92 94,92" fill="#fff" stroke="#1E564F" stroke-width="2"/><polygon points="94,92 166,92 202,200 58,200" fill="#8FC2BC" stroke="#1E564F" stroke-width="2" opacity=".92"/><text x="130" y="22" text-anchor="middle" font-family="Inter" font-size="11" font-weight="700" fill="#1E564F">DITO</text><text x="130" y="150" text-anchor="middle" font-family="Inter" font-size="11" font-weight="700" fill="#143b36">NÃO-DITO</text></svg><div class="diag-cap">Inferir é enxergar o que está sob a linha d'água.</div></div>`,
+ iro:`<div class="diag"><div class="iro"><div class="iro-said">“Que <b>bela</b> ideia…” 🙂</div><svg class="iro-arrow" viewBox="0 0 40 24"><path d="M20 2 L20 20 M12 13 L20 21 L28 13" fill="none" stroke="#E0922F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><div class="iro-meant">quis dizer: “que ideia <b>ruim</b>” 🙄</div></div><div class="diag-cap">Ironia: dizer o contrário do que se pensa — o tom denuncia.</div></div>`,
+ lex:`<div class="diag"><div class="lex"><div class="lex-scale"><span>afetivo</span><span class="lex-mid">a mesma coisa</span><span>pejorativo</span></div><div class="lex-bar"><i class="lex-dot"></i></div><div class="lex-ex"><span class="pos">lar</span> · <span class="neu">casa</span> · <span class="neg">barraco</span></div></div><div class="diag-cap">Três palavras, um só lugar: cada escolha carrega um sentido.</div></div>`
+};
+
+/* ========= AULA ========= */
+const teach=[
+ {t:'triad',title:"Ler nas entrelinhas é um superpoder",tri:[
+   {ic:"🔍",h:"Inferência (D04)",p:"O texto nem sempre diz tudo com todas as letras. Inferir é concluir o que ficou subentendido — a partir de PISTAS que o próprio texto dá."},
+   {ic:"🎭",h:"Humor e ironia (D16)",p:"Às vezes o autor diz uma coisa para significar outra (ironia) ou cria uma quebra de expectativa que faz rir. O sentido está no jogo, não na letra."},
+   {ic:"🔤",h:"A palavra certa (D18)",p:"Trocar uma palavra por outra muda tudo. 'Lar', 'casa' e 'barraco' apontam o mesmo lugar — com sentimentos bem diferentes."}]},
+ {t:'metodo',title:"Método 3P — para ler nas entrelinhas",steps:[
+   {L:"P1",tag:"Pistas",h:"Levantar as pistas",p:"Observe o que o texto mostra: as palavras escolhidas, o contexto e, principalmente, o TOM. Toda inferência começa numa pista do próprio texto."},
+   {L:"P2",tag:"Pontes",h:"Construir a ponte",p:"Ligue o dito ao não-dito: o que essas pistas deixam subentendido? Cuidado — a ponte tem que sair do texto, não do seu 'achismo'."},
+   {L:"P3",tag:"Prova",h:"Provar no texto",p:"Volte e confirme: existe uma pista que sustenta a sua conclusão? Se não existe, é extrapolação — e a banca adora esse erro."}]},
+ /* D04 */
+ {t:'c',code:"D04",part:"1 de 2",full:FULL.D04,title:"Inferir o que está implícito",art:"inf",
+  kv:[
+   {cls:'a',ic:"🔍",h:"O que a prova pede",p:"Concluir algo que o texto NÃO diz com todas as letras, mas deixa subentendido por pistas: palavras, contexto, tom, atitudes das personagens."},
+   {cls:'b',ic:"🗣️",h:"Como o comando aparece",p:"“Conclui-se do texto que…”, “Depreende-se que…”, “O texto permite inferir que…”."}],
+  genres:["Crônica","Tirinha","Conto","Notícia"]},
+ {t:'c',code:"D04",part:"2 de 2",full:FULL.D04,title:"Inferência: a cilada e a técnica",art:"inf",
+  kv:[
+   {cls:'c',ic:"🌐",h:"A pegadinha: extrapolação de senso comum",p:"A banca oferece uma alternativa que é VERDADE no mundo real — mas que o texto não sustenta. Parece certa porque combina com o que você já pensa."},
+   {cls:'d',ic:"🔑",h:"No Método 3P (P3)",p:"Toda inferência precisa de uma PISTA no texto. Se a alternativa não tem respaldo no texto, por mais 'verdadeira' que pareça, está errada."}],
+  tip:"<b>Dica de ouro:</b> antes de marcar, pergunte: 'onde, no texto, está a pista que prova isso?'. Sem pista, é extrapolação."},
+ {t:'ex',code:"D04",gt:"🔍 Exemplo — fragmento",
+  text:"Ana olhou o relógio pela terceira vez em cinco minutos, mexeu os pés sob a cadeira e começou a enrolar uma mecha de cabelo. Faltava pouco para o resultado do vestibular sair.",
+  src:"Exemplo didático.",
+  cmd:"Depreende-se do texto que Ana está:",
+  options:[{t:"ansiosa.",c:true},{t:"entediada com uma aula demorada.",c:false},{t:"dormindo no sofá da sala.",c:false},{t:"com muito frio naquela sala.",c:false}],
+  expl:["✅ <b>A certa:</b> olhar o relógio várias vezes, mexer os pés e enrolar o cabelo são PISTAS de ansiedade diante da espera.","As outras não têm respaldo no texto: são <span class='wr'>extrapolações</span> — parecem possíveis, mas nenhuma pista as sustenta."]},
+ {t:'energ',e:"🔍",badge:"Dinâmica rápida · 1 min",title:"Caça à pista",
+  desc:"Vou dizer uma frase (ex.: 'João pegou o guarda-chuva antes de sair'). Em dupla, digam UMA coisa que dá para inferir (ex.: 'estava chovendo' ou 'o céu estava nublado'). Inferência é isso: concluir pela pista, sem inventar."},
+ /* D16 */
+ {t:'c',code:"D16",part:"1 de 2",full:FULL.D16,title:"O efeito do humor e da ironia",art:"iro",
+  kv:[
+   {cls:'a',ic:"🎭",h:"O que a prova pede",p:"Perceber o que CAUSA o humor ou a ironia. Ironia é dizer o contrário do que se pensa; o humor costuma vir de uma quebra de expectativa."},
+   {cls:'b',ic:"🗣️",h:"Como o comando aparece",p:"“O efeito de humor é provocado por…”, “A ironia do texto está em…”, “O humor da tirinha decorre de…”."}],
+  genres:["Crônica","Tirinha","Charge","Piada","Conto"]},
+ {t:'c',code:"D16",part:"2 de 2",full:FULL.D16,title:"Humor/ironia: a cilada e a técnica",art:"iro",
+  kv:[
+   {cls:'c',ic:"📖",h:"A pegadinha: entender ao pé da letra",p:"Quem lê a fala irônica literalmente erra: marca o sentido 'de dicionário', e não o sentido real (o contrário). O tom e o contexto denunciam a ironia."},
+   {cls:'d',ic:"🔑",h:"No Método 3P (P1)",p:"Procure a PISTA do tom: um elogio fora de hora, uma exclamação exagerada, uma quebra de expectativa no fim. É ela que revela a ironia."}],
+  tip:"<b>Dica de ouro:</b> se a fala não combina com a situação, desconfie — provavelmente é ironia, e significa o contrário do que diz."},
+ {t:'ex',code:"D16",gt:"🎭 Exemplo — diálogo",
+  text:"— Tirei zero na prova — contou o menino, de cabeça baixa.\n— Que notícia maravilhosa! — respondeu o pai, sem tirar os olhos do jornal.",
+  src:"Exemplo didático.",
+  cmd:"O efeito de ironia na resposta do pai está em:",
+  options:[{t:"usar “maravilhosa” para se referir a algo claramente ruim.",c:true},{t:"elogiar com toda a sinceridade o esforço que o filho fez ao estudar.",c:false},{t:"não ter escutado o que o menino falou.",c:false},{t:"ficar muito feliz com a nota baixa do filho.",c:false}],
+  expl:["✅ <b>A certa:</b> o pai diz o CONTRÁRIO do que pensa — 'maravilhosa' para um zero. O tom (sem tirar os olhos do jornal) reforça a ironia.","As demais leem a fala <span class='wr'>ao pé da letra</span>, como se o pai estivesse mesmo elogiando ou feliz."]},
+ {t:'energ',e:"🎭",badge:"Dinâmica rápida · 1 min",title:"Elogio às avessas",
+  desc:"Alguém faz um elogio sincero ('que dia lindo!'). A turma repete a MESMA frase com cara e tom de ironia, para significar o contrário. Sentiram como o tom muda tudo? Isso é ironia."},
+ /* D18 */
+ {t:'c',code:"D18",part:"1 de 2",full:FULL.D18,title:"O efeito da palavra escolhida",art:"lex",
+  kv:[
+   {cls:'a',ic:"🔤",h:"O que a prova pede",p:"Perceber por que o autor escolheu AQUELA palavra (e não outra parecida). Cada escolha carrega um sentido extra: afeto, desprezo, ênfase, humor."},
+   {cls:'b',ic:"🗣️",h:"Como o comando aparece",p:"“O efeito de sentido da palavra X é…”, “A expressão Y foi usada para…”, “Ao trocar X por Z, o sentido…”."}],
+  genres:["Artigo de opinião","Crônica","Propaganda","Notícia"]},
+ {t:'c',code:"D18",part:"2 de 2",full:FULL.D18,title:"A palavra: a cilada e a técnica",art:"lex",
+  kv:[
+   {cls:'c',ic:"⚖️",h:"A pegadinha: tratar a palavra como neutra",p:"O aluno ignora a CARGA da palavra e fica no sentido 'de dicionário'. Mas 'magro', 'esbelto' e 'esquelético' descrevem o mesmo corpo com julgamentos diferentes."},
+   {cls:'d',ic:"🔑",h:"No Método 3P (P1 e P2)",p:"A pista é a própria palavra. Pergunte: essa escolha aproxima ou afasta? Valoriza ou rebaixa? É séria ou irônica?"}],
+  tip:"<b>Dica de ouro:</b> troque mentalmente a palavra por um sinônimo neutro. O que se perde na troca é justamente o efeito de sentido."},
+ {t:'ex',code:"D18",gt:"🔤 Exemplo — fragmento",
+  text:"A reportagem não chamou os manifestantes de 'grupo' nem de 'multidão': preferiu dizer que 'um bando tomou a praça'.",
+  src:"Exemplo didático.",
+  cmd:"A escolha da palavra “bando” produz o efeito de:",
+  options:[{t:"transmitir uma visão negativa dos manifestantes.",c:true},{t:"destacar a boa organização e a disciplina daquele movimento de pessoas.",c:false},{t:"indicar o número exato de pessoas presentes.",c:false},{t:"descrever a praça onde tudo aconteceu.",c:false}],
+  expl:["✅ <b>A certa:</b> 'bando' tem carga pejorativa (associada a desordem), diferente de 'grupo' (neutro) ou 'multidão'. A escolha revela um julgamento.","As outras ignoram a <span class='wr'>carga</span> da palavra, tratando-a como neutra."]},
+ {t:'energ',e:"🔤",badge:"Dinâmica rápida · 1 min",title:"Termômetro da palavra",
+  desc:"Digo uma palavra neutra (ex.: 'comer'). A turma dá uma versão 'carinhosa' (ex.: 'saborear') e uma 'grosseira' (ex.: 'devorar'). Mesma ação, sentidos bem diferentes — isso é escolha lexical."},
+ /* Como a banca pensa */
+ {t:'triad',title:"Como a banca pensa",tri:[
+   {ic:"🔍",h:"Em D04 (inferência)",p:"O examinador põe uma alternativa 'verdadeira no mundo', mas sem pista no texto. Ele quer ver se você conclui PELO TEXTO — e não pelo seu achismo."},
+   {ic:"🎭",h:"Em D16 (humor/ironia)",p:"A banca oferece o sentido literal como isca. Ela testa se você percebe o tom e a quebra de expectativa — o sentido real, por trás da letra."},
+   {ic:"🔤",h:"Em D18 (palavra)",p:"O examinador escolhe uma palavra carregada e pergunta o efeito. Ele quer ver se você sente a diferença entre 'lar' e 'barraco'."}]},
+ /* Caça à Cilada */
+ {t:'ex',code:"🕵️",trap:true,gt:"Treino — qual é a cilada?",
+  text:"Numa crônica, o narrador chama o vizinho barulhento de 'um verdadeiro anjo de bondade' — logo depois de reclamar das festas que ele faz toda madrugada. Um grupo marcou que o narrador ELOGIA o vizinho.",
+  src:"Caça à Cilada · 1 de 2",
+  cmd:"Que erro o grupo cometeu?",
+  options:[{t:"Leu a ironia ao pé da letra.",c:true},{t:"Confundiu o tema com o título.",c:false},{t:"Ignorou um dado numérico.",c:false}],
+  expl:["✅ <b>Ironia ao pé da letra:</b> o contexto (reclamação das festas de madrugada) mostra que 'anjo de bondade' é IRÔNICO — significa justamente o contrário."]},
+ {t:'ex',code:"🕵️",trap:true,gt:"Treino — qual é a cilada?",
+  text:"Um texto conta que, ao ver o filho chegar com o boletim cheio de notas vermelhas, a mãe apenas respirou fundo e foi para a cozinha. Um grupo afirmou, com certeza absoluta, que 'a mãe não ligou para as notas'.",
+  src:"Caça à Cilada · 2 de 2",
+  cmd:"Qual é a cilada?",
+  options:[{t:"Extrapolação: concluíram algo sem pista no texto.",c:true},{t:"Confundiram um simples fato com a opinião pessoal do narrador.",c:false},{t:"Erro de cálculo das notas.",c:false}],
+  expl:["✅ <b>Extrapolação:</b> o texto não diz que ela 'não ligou'. Respirar fundo e sair em silêncio pode indicar até o contrário (decepção contida). Sem pista clara, afirmar com certeza é ir além do texto."]}
+];
+
+const worked={
+ gt:"🔍 Fragmento (didático)",
+ text:"No fim da tarde, Bruno chegou encharcado, tirou os sapatos cheios de lama na porta e disse, rindo: “Que dia maravilhoso para um passeio!”.",
+ src:"Exemplo didático.",
+ cmd:"O que Bruno quis dizer de verdade?",
+ steps:[
+  {t:"<b>P1 — Pistas.</b> O que o texto mostra? Bruno 'encharcado', 'sapatos cheios de lama' e falando 'rindo'. São pistas do contexto e do tom."},
+  {t:"<b>P2 — Pontes.</b> Ligue o dito ao não-dito: ninguém acha 'maravilhoso' chegar encharcado e enlameado. A fala contraria a situação — é ironia."},
+  {t:"<b>P3 — Prova.</b> Teste no texto: as pistas (chuva, lama, riso) sustentam a leitura irônica. Ele quis dizer o CONTRÁRIO — o passeio foi péssimo."}],
+ answer:"Bruno usou <b>ironia</b>: disse 'que dia maravilhoso' para dizer, na verdade, que o passeio foi terrível. As pistas (encharcado, lama, rindo) provam a inferência."
+};
+
+/* ========= 15 QUESTÕES — 4 textos reais, por descritor ========= */
+/* ===== 5 textos (9º ano EF) — humor, ironia, inferência e escolha de palavra ===== */
+const T_FOTO="Uma grande família se reúne para tirar uma foto em homenagem ao bisavô, já bem velho e doente — no “morre não morre” de sempre. Mas bater o retrato vira uma confusão: um reclama do lugar, outro quer aparecer na frente, há ciúmes e discussões sobre quem vai ficar de fora. Ninguém se entende.\n\nCansado de tanta bagunça, o próprio bisavô se levanta, toma a câmera das mãos dos parentes e tira ele mesmo a foto da família inteira — ficando, é claro, de fora do retrato.";
+const S_FOTO="Adaptado de VERÍSSIMO, Luis Fernando. “A foto”. (Fragmento adaptado.)";
+
+const T_RAP="Uma raposa faminta viu, no alto de uma parreira, cachos de uvas maduras e brilhantes. Deu um salto para alcançá-los, mas não chegou nem perto. Tomou impulso e pulou de novo, mais alto — e nada. Depois de muitas tentativas, cansada e sem conseguir as uvas, foi se afastando e resmungou, de nariz empinado: “Para que tanto esforço? Essas uvas estão verdes mesmo.”";
+const S_RAP="Adaptado de ESOPO. “A raposa e as uvas”. Fábula de domínio público. (Fragmento adaptado.)";
+
+const T_GATO="Durante uma peça de Romeu e Julieta encenada na Turquia, um gato que passeava pelo teatro resolveu subir ao palco no meio da apresentação. Diante da plateia, o felino se espreguiçou, deu uma leve mordida na mão de um dos atores — um brasileiro — e se acomodou no cenário, calmíssimo, como se fosse parte do elenco.\n\nO público caiu na risada e os vídeos da cena viajaram o mundo. No fim, foi o gato, e não o casal apaixonado, quem roubou a cena.";
+const S_GATO="Adaptado de Diário do Grande ABC. Disponível em: dgabc.com.br. Acesso em: 21 out. 2026. Fragmento.";
+
+const T_DOIS="Numa aula, a professora tenta convencer o pequeno Rodrigo a gostar de matemática. Conta, animada, a história de um supercomputador capaz de fazer milhões de contas por segundo e que nunca, jamais, erra um cálculo. “Viu como a matemática é incrível, Rodrigo?”, pergunta ela, orgulhosa.\n\nO menino pensa um pouco e responde, convicto: “Então tá, professora. Se a máquina nunca erra, que ela faça as contas. Eu não preciso.”";
+const S_DOIS="Adaptado de VERÍSSIMO, Luis Fernando. “Dois mais dois”. (Fragmento adaptado.)";
+
+const T_PIADA="— Por que o livro de Matemática vive triste e de mau humor?\n\n— Ora, porque ele tem problemas demais para resolver!";
+const S_PIADA="Piada popular (trocadilho).";
+
+const Q={
+ /* TEXTO 1 — "A foto" (Veríssimo) */
+ q1:{id:1,code:"D16",lv:"b",title:"A foto · humor",gen:"😄 Crônica (adaptada)",text:T_FOTO,src:S_FOTO,
+  cmd:"O efeito de humor do texto está, principalmente:",
+  options:[{t:"no fato de o próprio homenageado acabar tirando a foto.",c:true},{t:"na doença grave e comovente que atinge o bisavô homenageado.",c:false},{t:"na descrição detalhada da câmera fotográfica.",c:false},{t:"no número de parentes presentes na reunião.",c:false}],
+  comment:"A graça vem da reviravolta: depois de tanta briga, quem resolve a situação é o próprio bisavô homenageado, que tira a foto e fica de fora dela. O humor está nesse desfecho inesperado, não na doença em si."},
+ q2:{id:2,code:"D04",lv:"e",title:"A foto · inferência",gen:"😄 Crônica (adaptada)",text:T_FOTO,src:S_FOTO,
+  cmd:"Depreende-se do texto que a foto demorou a sair porque:",
+  options:[{t:"a família não parava de discutir.",c:true},{t:"a câmera dos parentes estava quebrada.",c:false},{t:"o bisavô não quis participar do retrato.",c:false},{t:"já estava ficando escuro na casa.",c:false}],
+  comment:"As pistas — reclamações, ciúmes e discussões sobre quem fica de fora — levam à conclusão de que a bagunça da família atrasou a foto. As outras opções não têm respaldo no texto (extrapolações)."},
+ q3:{id:3,code:"D18",lv:"b",title:"A foto · expressão",gen:"😄 Crônica (adaptada)",text:T_FOTO,src:S_FOTO,
+  cmd:"A expressão “morre não morre”, usada para o bisavô, sugere que ele está:",
+  options:[{t:"muito doente, entre a vida e a morte.",c:true},{t:"apenas um pouco cansado naquele dia.",c:false},{t:"fingindo estar doente para enganar a família.",c:false},{t:"recuperado e cheio de energia.",c:false}],
+  comment:"“Morre não morre” é expressão popular para quem está muito doente há tempos, num estado incerto. A escolha dessas palavras mostra a gravidade — não um cansaço passageiro nem uma recuperação."},
+ q4:{id:4,code:"D04",lv:"d",title:"A foto · inferência 2",gen:"😄 Crônica (adaptada)",text:T_FOTO,src:S_FOTO,
+  cmd:"Entende-se que o bisavô mesmo tirou a foto porque:",
+  options:[{t:"ninguém na família conseguia se organizar.",c:true},{t:"ele era um fotógrafo profissional premiado.",c:false},{t:"os parentes pediram que ele fizesse isso.",c:false},{t:"a câmera só funcionava nas mãos dele.",c:false}],
+  comment:"O velho toma a câmera depois da confusão toda: infere-se que ele agiu justamente porque a família não se entendia. As demais opções inventam motivos que o texto não traz."},
+
+ /* TEXTO 2 — "A raposa e as uvas" (Esopo) */
+ q5:{id:5,code:"D04",lv:"b",title:"Raposa e uvas · inferência",gen:"🦊 Fábula (domínio público)",text:T_RAP,src:S_RAP,
+  cmd:"Depreende-se da atitude final da raposa que ela:",
+  options:[{t:"despreza as uvas só porque não as alcançou.",c:true},{t:"realmente descobriu que as uvas estavam ruins.",c:false},{t:"nunca teve vontade de comer aquelas uvas.",c:false},{t:"vai voltar outro dia com uma escada.",c:false}],
+  comment:"A raposa quis muito as uvas e tentou várias vezes; só depois de falhar é que as chama de verdes. Infere-se que ela despreza o que não conseguiu — as outras opções contrariam as pistas do texto."},
+ q6:{id:6,code:"D18",lv:"d",title:"Raposa e uvas · expressão",gen:"🦊 Fábula (domínio público)",text:T_RAP,src:S_RAP,
+  cmd:"Ao dizer que as uvas “estão verdes”, a raposa quer, na verdade:",
+  options:[{t:"arranjar uma desculpa para o próprio fracasso.",c:true},{t:"avisar os outros animais de que as uvas fazem mal.",c:false},{t:"explicar que prefere frutas já maduras.",c:false},{t:"mostrar que entende muito de plantação.",c:false}],
+  comment:"Dizer que as uvas “estão verdes” é desculpa: ela finge que não valiam a pena para esconder que não conseguiu alcançá-las. Daí nasceu a expressão para quem despreza o que não pode ter."},
+ q7:{id:7,code:"D16",lv:"d",title:"Raposa e uvas · ironia",gen:"🦊 Fábula (domínio público)",text:T_RAP,src:S_RAP,
+  cmd:"Há um tom irônico no fim da fábula porque a raposa:",
+  options:[{t:"finge desprezar justamente o que mais queria.",c:true},{t:"consegue pegar as uvas depois de insistir muito.",c:false},{t:"chama outros bichos para dividir as uvas.",c:false},{t:"chora de tristeza na frente de todos.",c:false}],
+  comment:"A ironia está no contraste entre o que ela faz (tenta muito pegar as uvas) e o que diz (que não as quer). Fingir desdém pelo que se deseja é o efeito irônico da cena."},
+
+ /* TEXTO 3 — Gato "rouba a cena" (notícia real) */
+ q8:{id:8,code:"D18",lv:"e",title:"Gato no palco · expressão",gen:"📰 Notícia/curiosidade (adaptada)",text:T_GATO,src:S_GATO,
+  cmd:"No trecho “foi o gato quem roubou a cena”, a expressão “roubar a cena” significa:",
+  options:[{t:"chamar para si toda a atenção do público.",c:true},{t:"levar embora objetos do cenário do teatro.",c:false},{t:"estragar por completo a apresentação.",c:false},{t:"copiar os gestos feitos pelos atores.",c:false}],
+  comment:"“Roubar a cena” é expressão figurada: virar o centro das atenções. O gato, sem querer, atraiu todos os olhares. Não se trata de roubo de verdade nem de estragar a peça."},
+ q9:{id:9,code:"D04",lv:"b",title:"Gato no palco · inferência",gen:"📰 Notícia/curiosidade (adaptada)",text:T_GATO,src:S_GATO,
+  cmd:"Depreende-se do texto que, para a plateia, a presença do gato foi:",
+  options:[{t:"um momento engraçado e inesperado.",c:true},{t:"um perigo sério para os atores.",c:false},{t:"algo combinado antes pela produção.",c:false},{t:"um motivo para vaiar a peça.",c:false}],
+  comment:"“O público caiu na risada” e os vídeos “viajaram o mundo” são pistas de que o episódio foi visto como engraçado e surpreendente. As demais opções não encontram apoio no texto."},
+ q10:{id:10,code:"D16",lv:"b",title:"Gato no palco · humor",gen:"📰 Notícia/curiosidade (adaptada)",text:T_GATO,src:S_GATO,
+  cmd:"O efeito de humor da notícia está, sobretudo:",
+  options:[{t:"no contraste entre a cena romântica e a invasão do gato.",c:true},{t:"na escolha da Turquia como local da peça.",c:false},{t:"na nacionalidade brasileira do ator que foi mordido pelo gato.",c:false},{t:"no tempo de duração da apresentação.",c:false}],
+  comment:"A graça nasce do contraste: uma cena séria e romântica (Romeu e Julieta) é interrompida por um gato tranquilo, que se comporta como ator. É esse choque que diverte."},
+
+ /* TEXTO 4 — "Dois mais dois" (Veríssimo) */
+ q11:{id:11,code:"D16",lv:"e",title:"Dois mais dois · humor",gen:"😄 Crônica (adaptada)",text:T_DOIS,src:S_DOIS,
+  cmd:"O humor do texto nasce:",
+  options:[{t:"da resposta inesperada e lógica do menino.",c:true},{t:"do erro de cálculo cometido pela professora.",c:false},{t:"da falha do supercomputador na hora da conta.",c:false},{t:"da bronca que o menino levou no fim.",c:false}],
+  comment:"A professora espera despertar o interesse de Rodrigo, mas ele vira o argumento do avesso: se a máquina nunca erra, ele não precisa aprender. A graça está nessa lógica inesperada da criança."},
+ q12:{id:12,code:"D04",lv:"b",title:"Dois mais dois · inferência",gen:"😄 Crônica (adaptada)",text:T_DOIS,src:S_DOIS,
+  cmd:"Depreende-se da resposta de Rodrigo que, para ele, estudar matemática é:",
+  options:[{t:"desnecessário, já que a máquina faz as contas.",c:true},{t:"a sua matéria favorita na escola.",c:false},{t:"importante para um dia se tornar um grande cientista.",c:false},{t:"fácil demais para a idade dele.",c:false}],
+  comment:"Ao dizer “que a máquina faça as contas, eu não preciso”, Rodrigo revela que considera o estudo dispensável. As outras opções contrariam a sua fala."},
+ q13:{id:13,code:"D18",lv:"b",title:"Dois mais dois · palavra",gen:"😄 Crônica (adaptada)",text:T_DOIS,src:S_DOIS,
+  cmd:"A palavra “convicto”, usada para Rodrigo, mostra que ele respondeu:",
+  options:[{t:"com toda a certeza do que dizia.",c:true},{t:"com medo de errar a resposta.",c:false},{t:"sem entender a pergunta da professora.",c:false},{t:"com vergonha de falar em voz alta.",c:false}],
+  comment:"“Convicto” é quem tem convicção, plena certeza. A escolha dessa palavra mostra que o menino respondeu com segurança — não com medo, dúvida ou vergonha."},
+
+ /* TEXTO 5 — Piada (trocadilho) */
+ q14:{id:14,code:"D16",lv:"e",title:"Piada · humor",gen:"🎭 Piada popular",text:T_PIADA,src:S_PIADA,
+  cmd:"A graça da piada está em:",
+  options:[{t:"brincar com os dois sentidos da palavra “problemas”.",c:true},{t:"afirmar que a matemática é uma matéria muito chata e difícil.",c:false},{t:"dizer que todo livro antigo fica triste com o tempo.",c:false},{t:"ensinar a resolver um exercício de matemática.",c:false}],
+  comment:"A piada é um trocadilho: joga com os dois sentidos de “problemas”. É esse duplo sentido que provoca o riso — não uma crítica à matéria nem uma aula."},
+ q15:{id:15,code:"D18",lv:"d",title:"Piada · palavra",gen:"🎭 Piada popular",text:T_PIADA,src:S_PIADA,
+  cmd:"Na piada, a palavra “problemas” é usada ao mesmo tempo no sentido de:",
+  options:[{t:"exercícios de matemática e aborrecimentos.",c:true},{t:"perguntas muito fáceis e respostas sempre erradas.",c:false},{t:"contas de somar e contas de dividir.",c:false},{t:"páginas rasgadas e capas estragadas.",c:false}],
+  comment:"“Problema” pode ser um exercício de matemática e também um aborrecimento, uma dificuldade. A piada usa os dois sentidos de uma vez: o livro tem muitos exercícios e, por isso, muitos “aborrecimentos”."}
+};
+
+/* ===== Efeitos sonoros — Web Audio API (sintetizado, sem arquivos; roda offline em qualquer navegador) ===== */
+const SFX=(function(){
+  var ctx=null,on=true;
+  function ac(){try{if(!ctx){var C=window.AudioContext||window.webkitAudioContext;if(!C)return null;ctx=new C();}if(ctx.state==='suspended')ctx.resume();return ctx;}catch(e){return null;}}
+  function tone(freq,start,dur,type,vol){var c=ac();if(!c||!on)return;var t0=c.currentTime+start;var o=c.createOscillator(),g=c.createGain();o.type=type||'sine';o.frequency.setValueAtTime(freq,t0);g.gain.setValueAtTime(0.0001,t0);g.gain.linearRampToValueAtTime(vol||0.2,t0+0.012);g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);o.connect(g);g.connect(c.destination);o.start(t0);o.stop(t0+dur+0.03);}
+  function slide(f1,f2,start,dur,type,vol){var c=ac();if(!c||!on)return;var t0=c.currentTime+start;var o=c.createOscillator(),g=c.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f1,t0);o.frequency.exponentialRampToValueAtTime(f2,t0+dur);g.gain.setValueAtTime(0.0001,t0);g.gain.linearRampToValueAtTime(vol||0.2,t0+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);o.connect(g);g.connect(c.destination);o.start(t0);o.stop(t0+dur+0.03);}
+  return {
+    unlock:function(){ac();},
+    toggle:function(){on=!on;if(on){ac();tone(880,0,0.08,'triangle',0.15);}return on;},
+    isOn:function(){return on;},
+    pop:function(){tone(660,0,0.06,'square',0.12);tone(990,0.05,0.06,'square',0.10);},
+    reveal:function(){tone(784,0,0.1,'triangle',0.16);tone(1175,0.09,0.16,'triangle',0.16);},
+    correct:function(){tone(659.25,0,0.12,'triangle',0.22);tone(830.6,0.1,0.12,'triangle',0.22);tone(1046.5,0.2,0.26,'triangle',0.22);},
+    wrong:function(){slide(320,200,0,0.32,'sine',0.16);},
+    win:function(){[523.25,659.25,783.99,1046.5].forEach(function(f,i){tone(f,i*0.13,0.26,'triangle',0.22);});tone(1318.5,0.58,0.55,'triangle',0.2);tone(1046.5,0.58,0.55,'triangle',0.14);}
+  };
+})();
+
+const COLORS=["#2E7D77","#E0922F","#6C4AB6","#C2267A","#2D6E9E","#2E9E5B"];
+const DEFAULT_TEAMS=["Detetives Teal","Detetives Âmbar","Detetives Violeta"];
+const PTS={e:10,b:15,d:20};
+const LV={e:"Elementar",b:"Básico",d:"Desejável"};
+const CASES=[
+ {title:"Caso 1 · O Bolo Sumido",
+  intro:"Alguém comeu o bolo de laranja da festa da sala! As pistas não dizem o nome do culpado — descrevem como ele é. Cruzem cada pista com o perfil dos suspeitos e descubram quem foi.",
+  culprit:1,
+  suspects:[
+   {nm:"Téo",e:"🧹",trait:"zelador"},
+   {nm:"Dona Zefa",e:"🍲",trait:"cantineira"},
+   {nm:"Prof. Bento",e:"🤓",trait:"de regime"},
+   {nm:"Rita",e:"🎧",trait:"chega tarde"},
+   {nm:"Dona Lu",e:"📚",trait:"chega tarde"},
+   {nm:"Seu Val",e:"🧢",trait:"fica no portão"}
+  ],
+  clues:[
+   {t:"O bolo sumiu de manhã cedo. Quem só chega mais tarde nem tinha pisado na escola ainda."},
+   {t:"Foi obra de alguém guloso de doce: quem vive de regime jamais atacaria o bolo."},
+   {t:"A sala estava trancada por dentro. Quem passou a manhã parado no portão não teria como subir e entrar."},
+   {t:"Na maçaneta ficou preso um fio branco de touca de cozinha — coisa de quem lida com comida o dia inteiro."},
+   {t:"Para completar, o prato voltou lavado e guardado, no capricho de quem conhece bem a cantina."},
+   {t:"Nada de marca de ferramenta ou de livro no local — só o jeito de quem trabalha entre panelas."}
+  ]},
+ {title:"Caso 2 · O Bilhete Irônico",
+  intro:"Apareceu um bilhete sarcástico no mural: \u201cParabéns pelo silêncio de vocês na prova…\u201d. Cada pista mostra um traço de quem escreveu — comparem com os suspeitos e achem o autor da ironia.",
+  culprit:1,
+  suspects:[
+   {nm:"Dedé",e:"😎",trait:"agitado"},
+   {nm:"Mila",e:"✏️",trait:"escreve muito"},
+   {nm:"Nina",e:"📓",trait:"letra de forma"},
+   {nm:"Rapha",e:"🎸",trait:"aula de música"},
+   {nm:"Tom",e:"🤫",trait:"fala literal"},
+   {nm:"Gal",e:"🎨",trait:"só desenha"}
+  ],
+  clues:[
+   {t:"O bilhete foi colado no recreio. Quem estava em outra aula, longe da sala, não pôde ter feito isso."},
+   {t:"A letra é cursiva e bem caprichada — nada a ver com quem só escreve em letra de forma."},
+   {t:"No papel há só palavras, nenhum desenho: quem se expressa desenhando teria deixado um rabisco no canto."},
+   {t:"O tom é de pura ironia, dizendo o contrário do que pensa. Quem leva tudo ao pé da letra não escreveria assim."},
+   {t:"O texto é longo e caprichado — não combina com quem é agitado e não para quieto um minuto."},
+   {t:"Reticências no fim das frases e um lápis rabiscado como assinatura: a cara de quem vive escrevendo."}
+  ]},
+ {title:"Caso 3 · O Grafite no Quadro",
+  intro:"Surgiu um desenho lindo (e não autorizado) no quadro, no recreio. As pistas revelam o jeito do autor — comparem com cada suspeito para achar o artista secreto.",
+  culprit:1,
+  suspects:[
+   {nm:"Rapha",e:"🎸",trait:"mãos no violão"},
+   {nm:"Gal",e:"🎨",trait:"sempre desenha"},
+   {nm:"Tom",e:"🤫",trait:"mãos limpas"},
+   {nm:"Dedé",e:"😎",trait:"joga bola"},
+   {nm:"Nina",e:"📓",trait:"vai à biblioteca"},
+   {nm:"Mila",e:"✏️",trait:"só escreve"}
+  ],
+  clues:[
+   {t:"O desenho surgiu no recreio. Quem passou o recreio jogando bola na quadra, à vista de todos, está fora."},
+   {t:"O autor ficou sozinho na sala. Quem foi à biblioteca naquele horário, como sempre, estava bem longe dali."},
+   {t:"É um desenho, não um texto: quem só escreve não faria uma arte tão caprichada."},
+   {t:"Havia giz colorido nas mãos do autor. Quem ficou o recreio todo com as mãos no violão não pôde ser."},
+   {t:"Dedos manchados de giz: impossível para alguém de mãos sempre limpas."},
+   {t:"No canto do quadro, o mesmo símbolo que enfeita os cadernos de quem vive desenhando."}
+  ]}
+];
+const app={
+ flowIdx:-1,teams:[],lessonIdx:0,lessonRevealed:false,workedIdx:0,
+ turn:0,played:[],current:null,caseIdx:0,revealedClues:0,accused:false,accuseIdx:0,accusePicks:[],
+ stats:{D04:{t:0,g:0},D16:{t:0,g:0},D18:{t:0,g:0}},
+ timer:150,tInt:null,tRun:false,
+ go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));const el=document.getElementById(id);el.classList.add('active');el.scrollTop=0;document.body.classList.toggle('in-game',this.teams.length>0&&id!=='screen-intro');if(this.tInt){clearInterval(this.tInt);this.tRun=false;}},
+ fullscreen(){if(!document.fullscreenElement){document.documentElement.requestFullscreen?.();}else{document.exitFullscreen?.();}},
+ flowGo(i){this.flowIdx=i;const f=FLOW[i];if(!f)return;
+   if(f.s==='warmup')this.go('screen-warmup');
+   else if(f.s==='lesson'){this.lessonIdx=0;this.renderLesson();this.go('screen-lesson');}
+   else if(f.s==='worked'){this.workedIdx=0;this.renderWorked();this.go('screen-worked');}
+   else if(f.s==='setup'){this.renderTeams();this.go('screen-setup');}
+   else if(f.s==='game'){this.renderGame();this.go('screen-game');}
+   else if(f.s==='podium')this.finish();},
+ flowNext(){this.flowGo(this.flowIdx+1);},
+ flowBack(){this.flowIdx>0?this.flowGo(this.flowIdx-1):this.go('screen-intro');},
+ toGame(){if(this.teams.length){this.renderGame();this.go('screen-game');}},
+ openBank(){const names={D04:'D04 — Inferir informação implícita',D16:'D16 — Efeito de humor ou ironia',D18:'D18 — Efeito da escolha da palavra'};const byc={D04:[],D16:[],D18:[]};Object.values(Q).forEach(q=>byc[q.code].push(q));const L=['A','B','C','D','E'];let html='';['D04','D16','D18'].forEach(code=>{html+=`<div class="bank-group"><h3>${names[code]} <span style="font-size:.82rem;color:var(--muted);font-weight:400">· ${byc[code].length} questões</span></h3>`;byc[code].forEach(q=>{html+=`<div class="bank-q"><div class="qh"><span class="tag">${q.code}</span><span class="tag lv">${LV[q.lv]}</span><span style="font-size:.8rem;color:var(--muted)">${q.gen}</span></div><div class="bt">${q.text}</div><div class="bsrc">${q.src}</div><div class="bcmd">${q.cmd}</div>${q.options.map((o,i)=>`<div class="bopt ${o.c?'ok':''}">${L[i]}) ${o.t}${o.c?' ✔':''}</div>`).join('')}<div class="bcmt"><b>Gabarito comentado:</b> ${q.comment}</div></div>`;});html+='</div>';});document.getElementById('bank-list').innerHTML=html;this.go('screen-bank');},
+
+ renderLesson(){const l=teach[this.lessonIdx];this.lessonRevealed=false;
+   document.getElementById('l-step').textContent=`Aula · ${this.lessonIdx+1} de ${teach.length}`;
+   document.getElementById('l-dots').innerHTML=teach.map((_,i)=>`<i class="${i===this.lessonIdx?'on':''}"></i>`).join('');
+   let html='';
+   if(l.t==='triad'){html=`<div style="text-align:center;margin-bottom:1.1rem"><h2 style="font-family:var(--serif);font-size:clamp(1.5rem,3.4vw,2.1rem)">${l.title}</h2></div><div class="triad">${l.tri.map(t=>`<div class="tri"><div class="bigic">${t.ic}</div><h4>${t.h}</h4><p>${t.p}</p></div>`).join('')}</div>`;}
+   else if(l.t==='metodo'){html=`<div style="text-align:center;margin-bottom:1.1rem"><h2 style="font-family:var(--serif);font-size:clamp(1.5rem,3.4vw,2.1rem)">${l.title}</h2></div><div class="metodo">${l.steps.map(s=>`<div class="m-step"><div class="big">${s.L} <b>${s.tag}</b></div><h4>${s.h}</h4><p>${s.p}</p></div>`).join('')}</div>`;}
+   else if(l.t==='energ'){html=`<div class="energ"><span class="ebadge">${l.badge}</span><span class="emoji">${l.e}</span><h2>${l.title}</h2><p>${l.desc}</p></div>`;}
+   else if(l.t==='c'){html=`<div class="sec-banner"><div class="big">${l.code}</div><div><h2>${l.title} <span style="opacity:.8;font-size:.7em">· parte ${l.part}</span></h2><p>${l.full}</p></div></div><div class="concept"><div class="art">${ART[l.art]}</div><div class="info">${l.kv.map(k=>`<div class="kv ${k.cls}"><span class="ic">${k.ic}</span><div><h4>${k.h}</h4><p>${k.p}</p></div></div>`).join('')}${l.genres?`<div><div style="font-size:.82rem;color:var(--muted);font-weight:600;margin-bottom:.3rem">Gêneros em que costuma aparecer:</div><div class="genres">${l.genres.map(g=>`<span>${g}</span>`).join('')}</div></div>`:''}${l.tip?`<div class="goldtip">${l.tip}</div>`:''}</div></div>`;}
+   else if(l.t==='ex'){
+     const banner=l.trap?`<div class="sec-banner alt"><div class="big">🕵️</div><div><h2>Caça à Cilada</h2><p>Treine o olho: onde o grupo escorregou?</p></div></div>`:`<div class="sec-banner alt"><div class="big">${l.code}</div><div><h2>Exemplo na prática</h2><p>Veja o Método 3P resolvendo uma questão deste descritor.</p></div></div>`;
+     html=`${banner}<div class="ex-slide"><div class="ex-left"><span class="gt">${l.gt}</span><div class="mini">${l.text}</div><span class="src">${l.src}</span></div><div class="ex-right"><div class="ecmd">${l.cmd}</div><div class="ex-opts" id="ex-opts">${l.options.map((o,i)=>`<div class="eopt" data-correct="${o.c}"><span class="lt">${['A','B','C','D','E'][i]}</span><span>${o.t}</span></div>`).join('')}</div><button class="btn sm" id="ex-btn" onclick="app.lessonReveal()">Mostrar resposta</button><div class="eexpl hide" id="ex-expl">${l.expl.map(x=>`<div>${x}</div>`).join('')}</div></div></div>`;
+   }
+   document.getElementById('l-card').innerHTML=html;
+   document.getElementById('l-next').textContent=this.lessonIdx===teach.length-1?'Resolver uma questão juntos ▸':'Próximo ▸';
+ },
+ lessonReveal(){if(this.lessonRevealed)return;this.lessonRevealed=true;document.querySelectorAll('#ex-opts .eopt').forEach(o=>o.classList.add(o.dataset.correct==='true'?'correct':'dim'));document.getElementById('ex-btn').classList.add('hide');document.getElementById('ex-expl').classList.remove('hide');},
+ lessonNext(){this.lessonIdx<teach.length-1?(this.lessonIdx++,this.renderLesson()):this.flowNext();},
+ lessonPrev(){this.lessonIdx>0?(this.lessonIdx--,this.renderLesson()):this.go('screen-warmup');},
+
+ renderWorked(){document.getElementById('wk-gt').textContent=worked.gt;document.getElementById('wk-text').textContent=worked.text;document.getElementById('wk-src').textContent=worked.src;document.getElementById('wk-cmd').textContent=worked.cmd;document.getElementById('wk-steps').innerHTML=worked.steps.map((s,i)=>`<div class="stp" id="wst-${i}"><span class="n">${['P1','P2','P3'][i]}</span><p>${s.t}</p></div>`).join('')+`<div class="ans" id="wk-ans">${worked.answer}</div>`;const b=document.getElementById('wk-step-btn');b.classList.remove('hide');b.textContent='Passo 1 — Pistas';document.getElementById('wk-go').classList.add('hide');},
+ workedStep(){if(this.workedIdx<worked.steps.length){document.getElementById('wst-'+this.workedIdx).classList.add('show');this.workedIdx++;const b=document.getElementById('wk-step-btn');b.textContent=this.workedIdx<worked.steps.length?`Passo ${this.workedIdx+1} — ${['Pistas','Pontes','Prova'][this.workedIdx]}`:'Revelar a resposta';}else{document.getElementById('wk-ans').classList.add('show');document.getElementById('wk-step-btn').classList.add('hide');document.getElementById('wk-go').classList.remove('hide');}},
+
+ renderTeams(){const box=document.getElementById('rows');if(box.dataset.init)return;box.dataset.init="1";DEFAULT_TEAMS.forEach(n=>this.addTeam(n));},
+ addTeam(name){const box=document.getElementById('rows');if(box.children.length>=6)return;const i=box.children.length;const r=document.createElement('div');r.className='row';r.innerHTML=`<span class="tag" style="background:${COLORS[i]}"></span><input type="text" value="${typeof name==='string'?name:''}" placeholder="Equipe ${i+1}"><button class="rm" onclick="this.parentElement.remove()">×</button>`;box.appendChild(r);},
+ start(){const inputs=document.querySelectorAll('#rows input');this.teams=[];inputs.forEach((inp,i)=>{const nm=inp.value.trim();if(nm)this.teams.push({id:i,name:nm,score:0,color:COLORS[i%COLORS.length]});});if(this.teams.length<2){alert('Crie pelo menos 2 equipes.');return;}this.turn=0;this.played=[];this.caseIdx=0;this.revealedClues=0;this.accused=false;this.maxQ=Math.max(this.teams.length,Math.floor(Object.keys(Q).length/this.teams.length)*this.teams.length);CASES.forEach(c=>{c.solved=false;});this.renderScore();this.flowNext();},
+ renderScore(){document.getElementById('scoreboard').innerHTML=this.teams.map((t,i)=>`<div class="chip ${i===this.turn?'turn':''}" id="chip-${t.id}"><span class="tag" style="background:${t.color}"></span><span class="nm">${t.name}</span><span class="pt" id="pt-${t.id}">${t.score}</span></div>`).join('');},
+ curTeam(){return this.teams[this.turn];},
+ nextTurn(){this.turn=(this.turn+1)%this.teams.length;this.renderScore();},
+
+ renderGame(){this.renderScore();const t=this.curTeam();const cc=CASES[this.caseIdx];
+   document.getElementById('turn-banner').innerHTML=`<span class="dot" style="background:${t.color}"></span> Vez dos <span style="color:${t.color}">${t.name}</span>`;
+   document.getElementById('case-tab').textContent=`🗂️ ${cc.title}  ·  Caso ${this.caseIdx+1} de ${CASES.length}`;
+   document.getElementById('case-intro').textContent=cc.intro;
+   document.getElementById('suspects').innerHTML=cc.suspects.map((s,i)=>`<div class="suspect ${(this.accused&&i===cc.culprit)?'culprit':''}"><div class="ph">${s.e}</div><div class="snm">${s.nm}</div><div class="strait">${s.trait}</div></div>`).join('');
+   document.getElementById('clue-list').innerHTML=cc.clues.map((c,i)=>i<this.revealedClues?`<div class="clue"><span class="cn">PISTA ${i+1}</span>${c.t}</div>`:`<div class="clue locked"><span class="cn">PISTA ${i+1}</span>🔒 acerte para revelar</div>`).join('');
+   const max=Math.max(1,...this.teams.map(x=>x.score));
+   document.getElementById('rank').innerHTML=this.teams.map(tm=>`<div class="rank-row"><span class="nm"><span class="dot" style="background:${tm.color}"></span>${tm.name}</span><div class="rank-track"><i style="width:${Math.round(tm.score/max*100)}%;background:${tm.color}"></i></div><span class="sc">${tm.score} pts</span></div>`).join('');
+   const tot=this.maxQ;document.getElementById('qprog-label').textContent=`${this.played.length} de ${tot} questões`;document.getElementById('qprog-fill').style.width=Math.round(this.played.length/tot*100)+'%';
+   document.getElementById('accuse-btn').classList.toggle('hide',!(this.revealedClues>=cc.clues.length&&!this.accused));
+   document.getElementById('accuse-panel').classList.add('hide');
+ },
+ toast(msg){const d=document.createElement('div');d.className='toast';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>{d.classList.add('out');setTimeout(()=>d.remove(),400);},2800);},
+ toggleSfx(){const on=SFX.toggle();const b=document.getElementById('sfx-btn');if(b){b.textContent=on?'🔊':'🔇';b.title=on?'Som ligado (clique para desligar)':'Som desligado (clique para ligar)';}},
+ drawQuestion(){if(this.played.length>=this.maxQ){this.finish();return;}SFX.pop();const avail=Object.values(Q).filter(q=>!this.played.includes(q.id));if(avail.length===0){this.finish();return;}this.current=avail[Math.floor(Math.random()*avail.length)];this.played.push(this.current.id);this.openQuestion(this.current);},
+ openQuestion(q){const t=this.curTeam();document.getElementById('q-badge').textContent=q.code;document.getElementById('q-full').textContent=FULL[q.code]||'';document.getElementById('q-turn').innerHTML=`<span class="dot" style="background:${t.color}"></span> ${t.name} · ${LV[q.lv]} · vale ${PTS[q.lv]} pts`;
+   document.getElementById('q-prog-mini').textContent=`Questão ${this.played.length} de ${this.maxQ}`;
+   document.getElementById('q-gtag').textContent=q.gen||'';document.getElementById('q-text').textContent=q.text||'';document.getElementById('q-src').textContent=q.src||'';document.getElementById('q-cmd').textContent=q.cmd;
+   const opts=[...q.options].sort(()=>Math.random()-0.5);const L=['A','B','C','D','E','F'];
+   document.getElementById('q-opts').innerHTML=opts.map((o,i)=>`<div class="opt" data-correct="${o.c}"><span class="lt">${L[i]}</span><span>${o.t}</span></div>`).join('');
+   document.getElementById('q-cmt').classList.add('hide');document.getElementById('q-judge').classList.add('hide');document.getElementById('q-reveal').classList.remove('hide');
+   document.getElementById('q-judge-h').textContent=`Os ${t.name} acertaram?`;
+   this.timer=150;this.tRun=false;this.updateTimer();document.getElementById('ttoggle').textContent='▶';this.go('screen-question');},
+ adjustTimer(n){if(this.timer+n>0){this.timer+=n;this.updateTimer();}},
+ toggleTimer(){const b=document.getElementById('ttoggle');if(this.tRun){clearInterval(this.tInt);this.tRun=false;b.textContent='▶';}else{this.tRun=true;b.textContent='⏸';this.tInt=setInterval(()=>{this.timer--;this.updateTimer();if(this.timer<=0){clearInterval(this.tInt);this.tRun=false;b.textContent='⏱';document.getElementById('tv').style.color='var(--red)';}},1000);}},
+ updateTimer(){const m=String(Math.floor(this.timer/60)).padStart(2,'0');const s=String(this.timer%60).padStart(2,'0');const el=document.getElementById('tv');el.textContent=`${m}:${s}`;if(this.timer>5)el.style.color='';},
+ reveal(){SFX.reveal();if(this.tInt)clearInterval(this.tInt);this.tRun=false;document.getElementById('ttoggle').textContent='▶';document.getElementById('q-reveal').classList.add('hide');document.querySelectorAll('#q-opts .opt').forEach(o=>o.classList.add(o.dataset.correct==='true'?'correct':'dim'));document.getElementById('q-cmt-txt').textContent=this.current.comment;document.getElementById('q-cmt').classList.remove('hide');document.getElementById('q-judge').classList.remove('hide');},
+ resolveQ(correct){const q=this.current;const t=this.curTeam();const cc=CASES[this.caseIdx];correct?SFX.correct():SFX.wrong();this.stats[q.code].t++;
+   if(correct){this.stats[q.code].g++;t.score+=PTS[q.lv];if(this.revealedClues<cc.clues.length){this.revealedClues++;SFX.reveal();}}
+   this.nextTurn();
+   if(this.played.length>=this.maxQ){this.finish();return;}
+   this.renderGame();this.go('screen-game');},
+ openAccuse(){SFX.pop();this.accuseIdx=0;this.accusePicks=[];this.showAccuseStep();},
+ showAccuseStep(){const cc=CASES[this.caseIdx];const team=this.teams[this.accuseIdx];
+   document.getElementById('accuse-h').innerHTML=`<span class="dot" style="background:${team.color};width:12px;height:12px;border-radius:50%;display:inline-block"></span> <b>${team.name}</b>, quem vocês acusam? <span style="color:var(--muted);font-weight:400">(${this.accuseIdx+1} de ${this.teams.length})</span>`;
+   document.getElementById('accuse-opts').innerHTML=cc.suspects.map((s,i)=>`<button class="btn ghost sm" onclick="app.pickAccuse(${i})">${s.e} ${s.nm}</button>`).join('');
+   document.getElementById('accuse-panel').classList.remove('hide');},
+ pickAccuse(idx){this.accusePicks[this.accuseIdx]=idx;this.accuseIdx++;if(this.accuseIdx<this.teams.length){SFX.pop();this.showAccuseStep();}else{this.finishAccusation();}},
+ finishAccusation(){document.getElementById('accuse-panel').classList.add('hide');const cc=CASES[this.caseIdx];this.accused=true;
+   let winners=[];this.teams.forEach((t,i)=>{if(this.accusePicks[i]===cc.culprit){t.score+=30;winners.push(t.name);}});
+   cc.solved=winners.length>0;this.renderScore();
+   const cul=cc.suspects[cc.culprit];
+   winners.length?SFX.win():SFX.wrong();
+   this.toast(winners.length?`🎯 O culpado era ${cul.e} ${cul.nm}! Acertaram (+30): ${winners.join(', ')}.`:`🕵️ O culpado era ${cul.e} ${cul.nm}. Ninguém acertou dessa vez!`);
+   this.renderGame();
+   if(this.caseIdx<CASES.length-1){const self=this;setTimeout(()=>{self.caseIdx++;self.revealedClues=0;self.accused=false;if(document.getElementById('screen-game').classList.contains('active')){self.renderGame();}},3400);}},
+
+ finish(){SFX.win();const r=[...this.teams].sort((a,b)=>b.score-a.score);
+   const slots=[{t:r[1],cls:'p2',rk:2},{t:r[0],cls:'p1',rk:1},{t:r[2],cls:'p3',rk:3}];
+   document.getElementById('podium').innerHTML=slots.map(o=>o.t?`<div class="pstep ${o.cls}" style="background:${o.t.color}">${o.rk===1?'<div class="crown">👑</div>':''}<div class="medal">${o.rk}</div><div class="nm">${o.t.name}</div><div class="sc">${o.t.score} pts</div><div class="rk">${o.rk}º</div></div>`:'').join('');
+   const solvedN=CASES.filter(c=>c.solved).length;
+   const caseLines=CASES.map((c,idx)=>{if(idx>this.caseIdx)return '';const cul=c.suspects[c.culprit];return `<div class="r first" style="justify-content:center;gap:.4rem"><span class="pos">🕵️ ${c.title}:</span><span style="font-family:var(--serif);font-weight:700;color:var(--c1-d)">${c.solved?('resolvido — '+cul.e+' '+cul.nm):('ficou em aberto (era '+cul.e+' '+cul.nm+')')}</span></div>`;}).join('')+`<div class="r" style="justify-content:center"><b style="color:var(--c1-d)">Casos resolvidos: ${solvedN} de ${CASES.length}</b></div>`;
+   document.getElementById('pod-list').innerHTML=caseLines+r.map((t,i)=>`<div class="r ${i===0?'first':''}"><span class="pos">${i+1}º</span><span style="flex:1;text-align:left;padding-left:.6rem">${t.name}</span><span>${t.score} pts</span></div>`).join('');
+   this.renderRaioX();this.go('screen-podium');this.confetti();},
+ renderRaioX(){const codes=['D04','D16','D18'];const names={D04:'Inferência',D16:'Humor/Ironia',D18:'Escolha da palavra'};let rows='',worst=null,worstPct=101;codes.forEach(c=>{const s=this.stats[c]||{t:0,g:0};const pct=s.t?Math.round(s.g/s.t*100):null;const col=pct===null?'#c9cfdb':(pct>=70?'var(--good)':pct>=40?'var(--gold)':'var(--red)');rows+=`<div class="rx-row"><span class="lab">${c} · ${names[c]}</span><div class="rx-bar"><i style="width:${pct===null?0:pct}%;background:${col}"></i></div><span class="pct">${pct===null?'—':pct+'%'}</span></div>`;if(pct!==null&&pct<worstPct){worstPct=pct;worst=c;}});let tip='Marque “acertou / não acertou” em cada questão para o Raio-X refletir o desempenho real da turma.';if(worst!==null)tip=`A turma teve mais dificuldade em <b>${worst} — ${names[worst]}</b>. Vale reforçar esse descritor com o Método 3P no próximo encontro.`;document.getElementById('raiox').innerHTML=`<h3>🔎 Raio-X da turma</h3><div class="sb">Acertos por descritor ao longo do jogo</div>${rows}<div class="rx-tip">${tip}</div>`;},
+ confetti(){for(let i=0;i<70;i++){const c=document.createElement('div');c.className='cf';c.style.left=Math.random()*100+'vw';c.style.background=COLORS[i%COLORS.length];c.style.animationDuration=(2.5+Math.random()*2)+'s';c.style.animationDelay=(Math.random()*.6)+'s';c.style.transform=`rotate(${Math.random()*360}deg)`;document.body.appendChild(c);setTimeout(()=>c.remove(),5300);}}
+};
+const FLOW=[{s:'warmup'},{s:'lesson'},{s:'worked'},{s:'setup'},{s:'game'},{s:'podium'}];
+document.addEventListener('keydown',e=>{const a=document.querySelector('.screen.active')?.id;if(a==='screen-question'&&(e.key==='Enter'||e.key===' ')&&!document.getElementById('q-reveal').classList.contains('hide')){e.preventDefault();app.reveal();}if(a==='screen-lesson'){if(e.key==='ArrowRight')app.lessonNext();if(e.key==='ArrowLeft')app.lessonPrev();}if(a==='screen-worked'&&(e.key==='Enter'||e.key===' ')){e.preventDefault();if(!document.getElementById('wk-step-btn').classList.contains('hide'))app.workedStep();}});
+</script>
+</body>
+</html>
