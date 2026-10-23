@@ -180,7 +180,7 @@ button{font-family:var(--body); cursor:pointer;}
 .soon-panel{background:var(--surface); border:1px dashed var(--line-2); border-radius:var(--r); padding:54px 40px; text-align:left; max-width:640px;}
 .soon-panel .ic{font-size:2.2rem; margin-bottom:14px;}
 .soon-panel h2{font-size:1.6rem; margin-bottom:10px;}
-.soon-panel p{color:var(--muted); font-size:1rem; line-height:1.6; max-width:48ch; text-align: left;}
+.soon-panel p{color:var(--muted); font-size:1rem; line-height:1.6; max-width:48ch; text-align: right;}
 .soon-panel .badge-soon{margin-top:18px; display:inline-block;}
 
 /* ---------- Painel do aulão (overlay) ---------- */
