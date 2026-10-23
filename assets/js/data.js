@@ -25,7 +25,8 @@ const DESCRITORES = {
   D18: "Efeito da escolha da palavra",
   D19: "Recursos ortográficos/morfossintáticos",
   D20: "Tratamento comparativo",
-  D21: "Posições distintas"
+  D21: "Posições distintas",
+  D24: "Reconhecer gênero discursivo"
 };
 
 const AULOES = [
@@ -134,7 +135,7 @@ const AULOES = [
     prova: "spaece", serie: "9", id: "spaece-9-1", numero: 1,
     titulo: "Mapa do Texto",
     jogo: "Baamboozle", icone: "🎯", corJogo: "mapa",
-    descritores: ["D01", "D03", "D05", "D12"],
+    descritores: ["D01", "D03", "D05", "D12", "D24"],
     resumo: "Tema, assunto, finalidade e tipo textual — a primeira leitura de qualquer texto.",
     status: "ready", path: "auloes/spaece/9ano/aulao-1.html"
   },
@@ -185,6 +186,12 @@ const AULOES = [
     titulo: "Mapa do Texto",
     jogo: "Baamboozle", icone: "🎯", corJogo: "mapa",
     descritores: ["D01", "D03", "D04", "D10"],
+    descritorLabels: {
+      D01: "Localizar informações explícitas em um texto",
+      D03: "Inferir o sentido de uma palavra ou expressão",
+      D04: "Interpretar textos não verbais e textos que articulam elementos verbais e não verbais",
+      D10: "Identificar o propósito comunicativo em diferentes gêneros"
+    },
     resumo: "Tema, assunto, finalidade e tipo textual — a primeira leitura de qualquer texto.",
     status: "ready", path: "auloes/spaece/3ano/aulao-1.html"
   },
@@ -193,6 +200,12 @@ const AULOES = [
     titulo: "Arquitetura do Texto",
     jogo: "Pirâmide", icone: "🏔️", corJogo: "arquitetura",
     descritores: ["D05", "D15", "D16", "D07"],
+    descritorLabels: {
+      D05: "Identificar o tema ou assunto de um texto",
+      D15: "Identificar a tese de um texto",
+      D16: "Estabelecer relação entre tese e os argumentos oferecidos para sustentá-la",
+      D07: "Diferenciar a informação principal das secundárias em um texto"
+    },
     resumo: "Como o texto se organiza: estrutura, progressão de ideias e função do título.",
     status: "ready", path: "auloes/spaece/3ano/aulao-2.html"
   },
@@ -201,6 +214,11 @@ const AULOES = [
     titulo: "Nas Entrelinhas",
     jogo: "Detetive das Entrelinhas", icone: "🕵️", corJogo: "entrelinhas",
     descritores: ["D02", "D22", "D19"],
+    descritorLabels: {
+      D02: "Inferir informação em texto verbal",
+      D22: "Reconhecer efeitos de humor e ironia",
+      D19: "Reconhecer o efeito de sentido decorrente da escolha de palavras, frases ou expressões"
+    },
     resumo: "O que o texto sugere sem dizer: inferência, pressuposto e ironia.",
     status: "ready", path: "auloes/spaece/3ano/aulao-3.html"
   },
@@ -209,6 +227,11 @@ const AULOES = [
     titulo: "O Nó da Coesão",
     jogo: "Trilha", icone: "🧭", corJogo: "coesao",
     descritores: ["D14", "D11_SAEB", "D17"],
+    descritorLabels: {
+      D14: "Reconhecer as relações entre partes de um texto, identificando os recursos coesivos que contribuem para sua continuidade",
+      D11_SAEB: "Estabelecer relação causa/consequência entre partes e elementos do texto",
+      D17: "Reconhecer o sentido das relações lógico-discursivas marcadas por conjunções, advérbios, etc."
+    },
     resumo: "Como as partes do texto se amarram: referência, causa/consequência e conectivos.",
     status: "ready", path: "auloes/spaece/3ano/aulao-4.html"
   },
@@ -217,6 +240,11 @@ const AULOES = [
     titulo: "Batalha de Ideias",
     jogo: "Batalha Naval", icone: "🚢", corJogo: "batalha",
     descritores: ["D06", "D13", "D12"],
+    descritorLabels: {
+      D06: "Distinguir fato de opinião relativa ao fato",
+      D13: "Reconhecer diferentes formas de tratar uma informação na comparação de textos de um mesmo tema",
+      D12: "Identificar semelhanças e/ou diferenças de ideias e opiniões na comparação entre textos"
+    },
     resumo: "Opinião, defesa de ponto de vista e efeitos de sentido na argumentação.",
     status: "ready", path: "auloes/spaece/3ano/aulao-5.html"
   },
@@ -225,6 +253,12 @@ const AULOES = [
     titulo: "Estilo e Narrativa",
     jogo: "Memória", icone: "🧠", corJogo: "narrativa",
     descritores: ["D11", "D23", "D20", "D19_SAEB"],
+    descritorLabels: {
+      D11: "Reconhecer os elementos que compõem uma narrativa e o conflito gerador",
+      D23: "Identificar os níveis de linguagem e/ou as marcas linguísticas que evidenciam locutor e/ou interlocutor",
+      D20: "Identificar o efeito de sentido decorrente do uso da pontuação e de outras notações",
+      D19_SAEB: "Reconhecer o efeito de sentido decorrente da exploração de recursos ortográficos e/ou morfossintáticos"
+    },
     resumo: "Recursos de estilo, variação linguística e elementos da narrativa.",
     status: "ready", path: "auloes/spaece/3ano/aulao-6.html"
   },

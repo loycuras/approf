@@ -47,7 +47,8 @@
   function cardHTML(a){
     var tags = a.descritores.length
       ? '<ul class="card-desc-list">' + a.descritores.map(function(d){
-          return '<li><b>' + d + '</b><span>' + (DESCRITORES[d] || "") + '</span></li>';
+          var txt = (a.descritorLabels && a.descritorLabels[d]) || DESCRITORES[d] || "";
+          return '<li><b>' + d + '</b><span>' + txt + '</span></li>';
         }).join("") + '</ul>'
       : '<p class="card-desc-pending">Descritores em preparação.</p>';
 
