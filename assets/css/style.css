@@ -98,7 +98,7 @@ button{font-family:var(--body); cursor:pointer;}
 
 .hero-eyebrow{display:inline-flex; align-items:center; gap:8px; background:var(--primary-soft); color:var(--primary-d); padding:6px 14px; border-radius:999px; font-size:.84rem; font-weight:700; margin-bottom:18px;}
 .hero h1{font-size:clamp(2.1rem,4.4vw,3.4rem); line-height:1.08; letter-spacing:-.01em; max-width:12.5ch;}
-.hero-sub{margin-top:18px; font-size:1.12rem; color:var(--muted); max-width:46ch; line-height:1.6;}
+.hero-sub{margin-top:18px; font-size:1.12rem; color:var(--muted); max-width:46ch; line-height:1.6;text-align: justify;}
 .hero-actions{display:flex; gap:14px; margin-top:30px; flex-wrap:wrap;}
 .btn{display:inline-flex; align-items:center; gap:8px; padding:13px 24px; border-radius:11px; font-weight:700; font-size:.98rem; text-decoration:none; border:1px solid transparent; transition:transform .15s,box-shadow .15s,background .15s;}
 .btn-primary{background:var(--primary); color:#fff; box-shadow:0 10px 24px rgba(106,76,147,.3);}
